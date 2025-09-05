@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G7 • Unit 1 • Addition & Subtraction of Rational Numbers (QLA)</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX: CSS + JS (robust auto-render bootstrap) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  /* Boot KaTeX once DOM is parsed; expose global helper for re-typeset after dynamic updates. */
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root = document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t = setInterval(() => {
+        if (window.renderMathInElement) { clearInterval(t); run(); }
+      }, 25);
+      setTimeout(() => clearInterval(t), 6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  /* Stage */
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:120px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  /* Popover (glossary) */
+  #pop{position:fixed;inset:auto auto 20px 20px;max-width:min(560px,90vw);background:#fff;border:2px solid var(--gold);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding:14px 16px;z-index:40;display:none;text-align:left}
+  #pop strong{color:var(--maroon)} #pop .close{float:right;color:#666;cursor:pointer;font-weight:800}
+
+  /* Number line */
+  .nl-wrap{width:100%;max-width:920px}
+  canvas.nline{width:100%;height:160px;border-radius:12px;background:linear-gradient(180deg,#fff,#fafafa);border:2px solid #ececec}
+
+  .sortable li{user-select:none}.sortable .dragging{opacity:.5}
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+</style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('../assets/qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-24 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Unit 1 — The Number System</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Lesson: Addition &amp; Subtraction of Rational Numbers</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Grade 7</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Aligned to AERO 7.NS.1b–1c. Member of Qatar Foundation.</div>
+    </section>
+
+    <!-- 1 • LOs + Keywords (no absolute value) -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Objectives &amp; Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Objectives</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Interpret \(p+q\) on a number line as moving \(q\) units from \(p\): right if \(q&gt;0\), left if \(q&lt;0\).</li>
+            <li>Understand subtraction as adding the additive inverse: \(p-q=p+(-q)\).</li>
+            <li>Add/subtract rational numbers (integers, fractions, decimals) and justify results using number‑line and arithmetic methods.</li>
+            <li>Find least common multiples using prime factorization to support fraction operations with unlike denominators.</li>
+          </ul>
+          <p class="text-xs text-gray-500 mt-2">Standards focus: AERO 7.NS.1b–1c (school scope Unit 1).</p>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap for definitions)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="rational">rational number</span>
+            <span class="chip" data-key="integer">integer</span>
+            <span class="chip" data-key="sum">sum</span>
+            <span class="chip" data-key="difference">difference</span>
+            <span class="chip" data-key="inverse">additive inverse</span>
+            <span class="chip" data-key="prime">prime</span>
+            <span class="chip" data-key="composite">composite</span>
+            <span class="chip" data-key="primefact">prime factorization</span>
+            <span class="chip" data-key="common">common denominator</span>
+            <span class="chip" data-key="lcm">LCM</span>
+            <span class="chip" data-key="simplest">simplest form</span>
+            <span class="chip" data-key="numberline">number line</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">Prime → prime factorization → LCM is introduced before fraction operations with unlike denominators.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Warm‑up examples -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Warm‑Up: What do you notice?</h2>
+      <div class="grid md:grid-cols-3 gap-4 w-full max-w-5xl">
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Integers</div>
+          <div class="text-2xl">\( -3 + 7 = \) <span class="font-extrabold">4</span></div>
+          <div class="text-sm mt-1">We moved 7 right from −3.</div>
+        </div>
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Fractions (same denominator)</div>
+          <div class="text-2xl">\( \frac{5}{8}-\frac{3}{8}=\frac{2}{8}=\frac{1}{4} \)</div>
+          <div class="text-sm mt-1">Subtract numerators; keep denominator; simplify.</div>
+        </div>
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Decimals</div>
+          <div class="text-2xl">\( 2.6 + (-1.25) = 1.35 \)</div>
+          <div class="text-sm mt-1">Add signed numbers by place value.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 • PRIMES: definition + classify -->
+    <section class="slide" id="primeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Prime Numbers</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <p class="mb-2">A <strong>prime</strong> is an integer \( \ge 2 \) with exactly two positive factors: 1 and itself. A <strong>composite</strong> has more than two positive factors. 1 is <em>neither</em> prime nor composite.</p>
+        <div id="primeList" class="grid md:grid-cols-4 gap-2"></div>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button id="primeNew" class="btn">New set</button>
+          <button id="primeCheck" class="btn maroon">Check</button>
+          <button id="primeExportCSV" class="btn">Export CSV</button>
+          <button id="primeExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="primeFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 4 • PRIME FACTORIZATION practice -->
+    <section class="slide" id="pfSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Prime Factorization (Exponent Form)</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <p class="mb-2">Write each number as a product of primes using exponents, e.g., \( 60 = 2^{2}\cdot 3^{1}\cdot 5^{1} \).</p>
+        <div id="pfList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button id="pfNew" class="btn">New set</button>
+          <button id="pfCheck" class="btn maroon">Check</button>
+          <button id="pfExportCSV" class="btn">Export CSV</button>
+          <button id="pfExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="pfFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 5 • LCM — Worked Examples (before use) -->
+    <section class="slide" id="lcmExSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">LCM — Worked Examples</h2>
+      <div class="grid lg:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Method 1: Listing Multiples</h3>
+          <div id="lcmListArea" class="text-lg"></div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Method 2: Prime Exponents</h3>
+          <div id="lcmPrimeArea" class="text-lg"></div>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button id="lcmNew" class="btn">New example</button>
+        <button id="lcmExportCSV" class="btn">Export CSV</button>
+        <button id="lcmExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div class="hint mt-3 text-left text-sm">For \(a\) and \(b\): list multiples to find the first match, or write \(a=\prod p_i^{\alpha_i},\, b=\prod p_i^{\beta_i}\) and take \( \mathrm{LCM}(a,b)=\prod p_i^{\max(\alpha_i,\beta_i)} \).</div>
+    </section>
+
+    <!-- 6 • Number‑line Explorer: p + q -->
+    <section id="addSlide" class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Explorer: \(p+q\) on a Number Line</h2>
+      <p class="text-gray-600 mb-2">Drag the maroon point for \(p\). The gold arrow shows \(q\). Result is \(p+q\).</p>
+      <div class="nl-wrap"><canvas id="lineAdd" class="nline" aria-label="Interactive number line (addition)"></canvas></div>
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+        <label class="chip">p = <input id="pInput" class="border rounded px-2 py-1 w-24" value="-2"/></label>
+        <label class="chip">q = <input id="qInput" class="border rounded px-2 py-1 w-24" value="3.5"/></label>
+        <span class="chip">p+q = <b id="sumOut">1.5</b></span>
+        <button id="randAdd" class="btn">Randomize</button>
+        <button id="snapAdd" class="btn">Snap to tenths</button>
+        <button id="resetAdd" class="btn">Reset</button>
+        <button id="addExportCSV" class="btn">Export CSV</button>
+        <button id="addExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div class="hint mt-3 text-left text-sm">Rule (AERO 7.NS.1b): start at \(p\) and move \(q\) units — right if \(q&gt;0\), left if \(q&lt;0\).</div>
+    </section>
+
+    <!-- 7 • Subtraction as adding the inverse -->
+    <section id="subSlide" class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Subtraction: \(p-q = p + (-q)\)</h2>
+      <div class="grid lg:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Visualize</h3>
+          <div class="nl-wrap"><canvas id="lineSub" class="nline" aria-label="Interactive number line (subtraction)"></canvas></div>
+          <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+            <label class="chip">p = <input id="p2Input" class="border rounded px-2 py-1 w-24" value="1"/></label>
+            <label class="chip">q = <input id="q2Input" class="border rounded px-2 py-1 w-24" value="-4"/></label>
+            <span class="chip">p−q = <b id="diffOut">5</b></span>
+            <button id="randSub" class="btn">Randomize</button>
+            <button id="subExportCSV" class="btn">Export CSV</button>
+            <button id="subExportJSON" class="btn">Export JSON</button>
+          </div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Quick Check</h3>
+          <div class="grid gap-2">
+            <div>1) \( 6 - 9 =\) <input class="qc border rounded px-2 py-1 w-24" data-prob="6-9" data-ans="-3"></div>
+            <div>2) \( -4 - (-7) =\) <input class="qc border rounded px-2 py-1 w-24" data-prob="-4 - (-7)" data-ans="3"></div>
+            <div>3) \( -2.5 - 1.5 =\) <input class="qc border rounded px-2 py-1 w-24" data-prob="-2.5 - 1.5" data-ans="-4"></div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button id="checkQC" class="btn maroon">Check</button>
+            <button id="resetQC" class="btn">Reset</button>
+            <button id="qcExportCSV" class="btn">Export CSV</button>
+            <button id="qcExportJSON" class="btn">Export JSON</button>
+          </div>
+          <div id="qcFb" class="mt-2 h-6 font-semibold"></div>
+          <p class="text-xs text-gray-500 mt-1">Idea (AERO 7.NS.1c): “subtract \(q\)” is the same as “add \(-q\)”.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 • Fractions: Like denominators -->
+    <section class="slide" id="likeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Fractions: Like Denominators</h2>
+      <p class="text-gray-600 mb-2">Add/subtract numerators; keep the denominator; simplify.</p>
+      <div id="likeList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="likeCheck" class="btn maroon">Check</button>
+        <button id="likeNew" class="btn">New set</button>
+        <button id="likeExportCSV" class="btn">Export CSV</button>
+        <button id="likeExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="likeFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 9 • Fractions: Unlike denominators (LCM used after examples) -->
+    <section class="slide" id="unlikeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Fractions: Unlike Denominators</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="mb-2">Find the <span class="chip" data-key="lcm">LCM</span>, build equivalent fractions, then add/subtract and simplify.</div>
+        <div id="unlikeBox" class="grid md:grid-cols-2 gap-4"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="unlikeCheck" class="btn maroon">Check</button>
+          <button id="unlikeNew" class="btn">New pair</button>
+          <button id="unlikeExportCSV" class="btn">Export CSV</button>
+          <button id="unlikeExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="unlikeFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 10 • Decimals practice -->
+    <section class="slide" id="decSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Decimals (place‑value alignment)</h2>
+      <div id="decList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="decCheck" class="btn maroon">Check</button>
+        <button id="decNew" class="btn">New set</button>
+        <button id="decExportCSV" class="btn">Export CSV</button>
+        <button id="decExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="decFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 11 • Order rational numbers (drag to sort) -->
+    <section class="slide" id="sortSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Order Rational Numbers (Low → High)</h2>
+      <div class="card p-5 w-full max-w-3xl text-left">
+        <ul id="sortList" class="sortable border rounded-md bg-white p-3 space-y-2"></ul>
+        <div class="mt-3 flex gap-2">
+          <button id="sortNew" class="btn">New set</button>
+          <button id="sortCheck" class="btn maroon">Check</button>
+          <button id="sortExportCSV" class="btn">Export CSV</button>
+          <button id="sortExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="sortFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 12 • Mixed Generator + Hints -->
+    <section class="slide" id="mixedSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice Generator (mixed forms)</h2>
+      <div class="card p-5 w-full max-w-3xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Difficulty:</span>
+          <select id="level" class="border rounded px-2 py-1">
+            <option value="easy">easy (integers)</option>
+            <option value="med" selected>medium (like‑denominator fractions &amp; decimals)</option>
+            <option value="hard">hard (unlike denominators; signed)</option>
+          </select>
+          <button id="newQ" class="btn">New question</button>
+        </div>
+        <div class="mt-3 text-2xl">Compute: <span id="qText" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="ans" class="border rounded px-3 py-2 w-60" placeholder="e.g., -7/6 or  -1.166..." />
+          <button id="checkQ" class="btn maroon">Check</button>
+          <button id="hintQ" class="btn">Hint</button>
+          <button id="mixedExportCSV" class="btn">Export CSV</button>
+          <button id="mixedExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="qHint" class="mt-3 text-sm"></div>
+        <div id="qFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 13 • Real‑world practice (expanded) -->
+    <section class="slide" id="realSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Real‑World Practice</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="realList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="realNew" class="btn">New set</button>
+          <button id="realCheck" class="btn maroon">Check</button>
+          <button id="realExportCSV" class="btn">Export CSV</button>
+          <button id="realExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="realFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 14 • Challenge problems -->
+    <section class="slide" id="challengeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge: Missing Addend / Contexts</h2>
+      <div class="grid md:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-1">Missing number</h3>
+          <div class="grid gap-2">
+            <div>\( p + q = r \).  If \(p=-4.5\) and \(r=1.25\), then \(q=\) <input class="ch1 border rounded px-2 py-1 w-28" data-ans="5.75"></div>
+            <div>\( p - q = r \).  If \(p=\frac{3}{4}\) and \(r=-\frac{5}{4}\), then \(q=\) <input class="ch1 border rounded px-2 py-1 w-28" data-ans="2"></div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-1">Error Analysis</h3>
+          <div id="errBox" class="text-lg"></div>
+          <div class="mt-2">
+            <label class="mr-2"><input type="radio" name="errChoice" value="A"> Added/subtracted denominators directly</label><br/>
+            <label class="mr-2"><input type="radio" name="errChoice" value="B"> Failed to use common denominator</label><br/>
+            <label class="mr-2"><input type="radio" name="errChoice" value="C"> Sign error</label><br/>
+            <label class="mr-2"><input type="radio" name="errChoice" value="D"> Decimal place-value misalignment</label>
+          </div>
+          <div class="mt-2 flex gap-2">
+            <button id="errCheck" class="btn maroon">Check</button>
+            <button id="errReveal" class="btn">Reveal correct work</button>
+            <button id="errNew" class="btn">New example</button>
+            <button id="errExportCSV" class="btn">Export CSV</button>
+            <button id="errExportJSON" class="btn">Export JSON</button>
+          </div>
+          <div id="errFb" class="mt-2 h-6 font-semibold"></div>
+          <div id="errRevealBox" class="mt-2 text-sm"></div>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="chCheck" class="btn maroon">Check</button>
+        <button id="chReset" class="btn">Reset</button>
+        <button id="chExportCSV" class="btn">Export CSV</button>
+        <button id="chExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="chFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 15 • Exit ticket -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 ideas you learned about adding/subtracting rationals</li>
+            <li>2 strategies you can use (visual &amp; arithmetic)</li>
+            <li>1 question you still have</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p>We’ll extend to <strong>multi‑step problems</strong> with rational numbers and estimation for reasonableness (AERO 7.EE.3).</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[110px] banner rounded-md" style="background-image:url('../assets/qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 16</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* ---------- Deck Navigation, Math Render Hook, Export Helpers ---------- */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G7_Unit1_AddSub_Rationals_QLA';
+  let i=0;
+
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    const sid=slides[i].id||'';
+    if(sid==='addSlide') drawAdd();
+    if(sid==='subSlide') drawSub();
+    if(sid==='lcmExSlide') newLCMEx(false);
+    renderMath(slides[i]);
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  function id(x){return document.getElementById(x)}
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<18;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+
+  /* Math re-render helper */
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+
+  /* Export helpers */
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  /* Number utilities */
+  const gcd=(a,b)=>{a=Math.trunc(Math.abs(a));b=Math.trunc(Math.abs(b));while(b){[a,b]=[b,a%b]}return a||1};
+  const lcm=(a,b)=>Math.abs(a*b)/gcd(a,b);
+  function isPrime(n){ if(n<2 || n%1) return false; for(let k=2;k*k<=n;k++) if(n%k===0) return false; return true; }
+  function primeFactorMap(n){
+    const m=new Map(); let x=Math.abs(n); let p=2;
+    while(p*p<=x){
+      while(x%p===0){ m.set(p,(m.get(p)||0)+1); x/=p; }
+      p=(p===2)?3:p+2; // 2 then odds
+    }
+    if(x>1) m.set(x,(m.get(x)||0)+1);
+    return m;
+  }
+
+  /* Rational helpers */
+  function parseRational(s){
+    if(typeof s==='number') return [Math.trunc(s*1000),1000]; // rough
+    if(!s) return null;
+    s=s.toString().trim().replace('−','-');
+    const m=s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/);
+    if(m){const A=+m[1],B=+m[2],C=+m[3];const sign=A<0?-1:1;return [A*C+sign*B, C];}
+    const f=s.match(/^(-?\d+)\/(-?\d+)$/);
+    if(f){let n=+f[1],d=+f[2]; if(d===0) return null; let g=gcd(n,d); d<0&&(g=-g); return [n/g,d/g];}
+    if(!isNaN(Number(s))){
+      const parts=s.split('.');
+      if(parts.length===1) return [Number(s),1];
+      const k=parts[1].length; const n=Math.round(Number(s)*10**k); const d=10**k; let g=gcd(n,d); return [n/g,d/g];
+    }
+    return null;
+  }
+  function toFrac(n,d){let g=gcd(n,d); d<0&&(g=-g); return [n/g,d/g]}
+  const addFrac=(a,b)=>toFrac(a[0]*b[1]+b[0]*a[1], a[1]*b[1]);
+  const subFrac=(a,b)=>toFrac(a[0]*b[1]-b[0]*a[1], a[1]*b[1]);
+  const fracEq=(a,b)=>a[0]*b[1]===b[0]*a[1];
+  const sFrac=([n,d])=> d===1? String(n) : `${n}/${d}`;
+  const asNumber=([n,d])=> n/d;
+
+  /* ---------- Glossary popover ---------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    rational:'<strong>Rational number</strong>: any number that can be written as a fraction of integers (terminating or repeating decimal).',
+    integer:'<strong>Integer</strong>: {..., −3, −2, −1, 0, 1, 2, 3, ...}',
+    sum:'<strong>Sum</strong>: result of addition.',
+    difference:'<strong>Difference</strong>: result of subtraction.',
+    inverse:'<strong>Additive inverse</strong> of p is −p (they add to 0).',
+    prime:'<strong>Prime</strong>: integer ≥2 with exactly two positive factors (1 and itself).',
+    composite:'<strong>Composite</strong>: integer ≥2 with more than two positive factors.',
+    primefact:'<strong>Prime factorization</strong>: writing a number as a product of primes, e.g., \(72=2^{3}\cdot 3^{2}\).',
+    common:'<strong>Common denominator</strong>: a shared denominator for two fractions.',
+    lcm:'<strong>LCM</strong> (least common multiple): the smallest positive number that is a multiple of each denominator.',
+    simplest:'<strong>Simplest form</strong>: numerator/denominator share no common factor > 1.',
+    numberline:'<strong>Number line</strong>: points laid out in order; left is less, right is greater.'
+  };
+  function showPop(html,anchor){
+    POP_BODY.innerHTML=html; POP.style.display='block';
+    const r=anchor?anchor.getBoundingClientRect():{left:20,top:window.innerHeight-120};
+    POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px';
+    POP.style.bottom=(window.innerHeight - r.top + 10)+'px';
+  }
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(el){const key=el.dataset.key; if(GLOS[key]) showPop(GLOS[key], el);}
+  });
+
+  /* ---------- PRIMES: definition + classify ---------- */
+  const primeState={set:[]};
+  function primeNew(){
+    const nums=new Set();
+    while(nums.size<8){
+      const x=Math.floor(Math.random()*98)+2; // 2..99
+      nums.add(x);
+    }
+    primeState.set=[...nums].sort((a,b)=>a-b).map(n=>({n,prime:isPrime(n)}));
+    const box=id('primeList'); box.innerHTML='';
+    primeState.set.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-3 flex items-center justify-between';
+      row.innerHTML=`
+        <div class="text-xl">\\( ${o.n} \\)</div>
+        <select class="border rounded px-2 py-1" id="pc_${idx}">
+          <option value="">— classify —</option>
+          <option value="P">Prime</option>
+          <option value="C">Composite</option>
+        </select>`;
+      box.appendChild(row);
+    });
+    renderMath(id('primeSlide'));
+  }
+  function primeCheck(){
+    let ok=0; primeState.set.forEach((o,idx)=>{
+      const sel=id('pc_'+idx); const got=sel.value; const want=o.prime?'P':'C';
+      sel.style.borderColor= (got===want && got!=='') ? '#22c55e' : '#ef4444';
+      if(got===want && got!=='') ok++;
+    });
+    id('primeFb').textContent= (ok===primeState.set.length)?'✅ All correct!':'Score: '+ok+'/'+primeState.set.length;
+    if(ok===primeState.set.length) confetti();
+  }
+  id('primeNew').addEventListener('click',primeNew);
+  id('primeCheck').addEventListener('click',primeCheck);
+  id('primeExportCSV').addEventListener('click',()=>{
+    const rows=[['number','isPrime','userChoice']];
+    primeState.set.forEach((o,idx)=>rows.push([o.n, o.prime? 'Prime':'Composite', (id('pc_'+idx).value==='P'?'Prime':id('pc_'+idx).value==='C'?'Composite':'') ]));
+    downloadCSV(`${deckTitle}_primes.csv`, rows);
+  });
+  id('primeExportJSON').addEventListener('click',()=>{
+    const data=primeState.set.map((o,idx)=>({number:o.n, isPrime:o.prime, userChoice:(id('pc_'+idx).value||'')})); downloadJSON(`${deckTitle}_primes.json`, data);
+  });
+  primeNew();
+
+  /* ---------- PRIME FACTORIZATION practice ---------- */
+  const pfState={set:[], primes:[2,3,5,7,11,13]};
+  function buildN(exps){ return pfState.primes.reduce((acc,p)=>acc*Math.pow(p,exps[p]||0),1) }
+  function pfNew(){
+    const list=[];
+    while(list.length<4){
+      const exps={};
+      pfState.primes.forEach(p=>{
+        let e=0;
+        if(p<=5){ e=Math.floor(Math.random()*3); }   // 0..2
+        else if(p===7){ e=Math.random()<0.7?0:1; }   // mostly 0..1
+        else { e=Math.random()<0.8?0:1; }            // 11,13: 0 or 1
+        exps[p]=e;
+      });
+      if(Object.values(exps).every(e=>e===0)) exps[2]=1; // avoid n=1
+      // encourage moderate numbers for G7
+      const n=buildN(exps);
+      if(n>=60 && n<=5000){ list.push({n,exps}); }
+    }
+    pfState.set=list;
+    const box=id('pfList'); box.innerHTML='';
+    pfState.set.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`
+        <div class="text-xl mb-1">\\( ${o.n} = 2^{\\square}\\cdot 3^{\\square}\\cdot 5^{\\square}\\cdot 7^{\\square}\\cdot 11^{\\square}\\cdot 13^{\\square} \\)</div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          ${pfState.primes.map(p=>`<label class="chip">${p}: <input class="pfexp border rounded px-2 py-1 w-16" id="pf_${idx}_${p}" placeholder="exp"></label>`).join('')}
+        </div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('pfSlide'));
+  }
+  function pfCheck(){
+    let total=0,ok=0;
+    pfState.set.forEach((o,idx)=>{
+      total++;
+      let good=true;
+      pfState.primes.forEach(p=>{
+        const inp=id(`pf_${idx}_${p}`); const g=Number(inp.value||0); const want=o.exps[p]||0;
+        if(g===want){ inp.style.borderColor='#22c55e'; } else { good=false; inp.style.borderColor='#ef4444'; }
+      });
+      if(good) ok++;
+    });
+    id('pfFb').textContent= ok===total ? '✅ All correct!' : 'Score: '+ok+'/'+total;
+    if(ok===total) confetti();
+  }
+  id('pfNew').addEventListener('click',pfNew);
+  id('pfCheck').addEventListener('click',pfCheck);
+  id('pfExportCSV').addEventListener('click',()=>{
+    const rows=[['n',...pfState.primes.map(p=>`exp_${p}`), ...pfState.primes.map(p=>`user_${p}`)]];
+    pfState.set.forEach((o,idx)=>{
+      const want=pfState.primes.map(p=>o.exps[p]||0);
+      const got=pfState.primes.map(p=>Number((id(`pf_${idx}_${p}`).value||0)));
+      rows.push([o.n, ...want, ...got]);
+    });
+    downloadCSV(`${deckTitle}_prime_factorization.csv`, rows);
+  });
+  id('pfExportJSON').addEventListener('click',()=>{
+    const data=pfState.set.map((o,idx)=>({
+      n:o.n, want:o.exps, got:Object.fromEntries(pfState.primes.map(p=>[p, Number((id(`pf_${idx}_${p}`).value||0))]))
+    }));
+    downloadJSON(`${deckTitle}_prime_factorization.json`, data);
+  });
+  pfNew();
+
+  /* ---------- LCM Worked Examples ---------- */
+  const lcmState={a:0,b:0, l:0, listA:[], listB:[], expA:{}, expB:{}, expLCM:{}};
+  function mults(a, count=10){ return Array.from({length:count},(_,i)=>a*(i+1)); }
+  function mapToObj(m){ const o={}; m.forEach((v,k)=>o[k]=v); return o; }
+  function newLCMEx(regen=true){
+    let a=0,b=0;
+    while(a===b || a<4 || b<4){ a=Math.floor(Math.random()*15)+4; b=Math.floor(Math.random()*15)+4; }
+    const listA=mults(a,10), listB=mults(b,10);
+    const common=listA.find(x=>listB.includes(x)) || lcm(a,b);
+    const fa=primeFactorMap(a), fb=primeFactorMap(b);
+    const primes=[...new Set([...fa.keys(), ...fb.keys()])].sort((x,y)=>x-y);
+    const expLCM={}; primes.forEach(p=>expLCM[p]=Math.max(fa.get(p)||0, fb.get(p)||0));
+    const L=primes.reduce((acc,p)=>acc*Math.pow(p,expLCM[p]),1);
+
+    lcmState.a=a; lcmState.b=b; lcmState.l=L; lcmState.listA=listA; lcmState.listB=listB;
+    lcmState.expA=mapToObj(fa); lcmState.expB=mapToObj(fb); lcmState.expLCM=expLCM;
+
+    id('lcmListArea').innerHTML=`
+      <div class="mb-2">\\( a=${a},\\; b=${b} \\)</div>
+      <div>Multiples of \\(a\\): ${listA.map(x=> x===common? '<b>'+x+'</b>' : x).join(', ')}</div>
+      <div>Multiples of \\(b\\): ${listB.map(x=> x===common? '<b>'+x+'</b>' : x).join(', ')}</div>
+      <div class="mt-2">First common multiple: <b>${common}</b></div>`;
+    const fmt=(obj)=>Object.keys(obj).sort((x,y)=>+x-+y).map(p=>` ${p}^{${obj[p]}}`).join('\\cdot');
+    id('lcmPrimeArea').innerHTML=`
+      <div>\\( a = ${ fmt(lcmState.expA) || '1'} \\)</div>
+      <div>\\( b = ${ fmt(lcmState.expB) || '1'} \\)</div>
+      <div class="mt-2">\\( \\mathrm{LCM}(a,b) = ${ fmt(lcmState.expLCM) } = ${L} \\)</div>`;
+    renderMath(id('lcmExSlide'));
+    if(regen===true) confetti();
+  }
+  id('lcmNew').addEventListener('click',()=>newLCMEx(true));
+  id('lcmExportCSV').addEventListener('click',()=>{
+    const rows=[['a','b','LCM','multiples_a','multiples_b','expA','expB','expLCM']];
+    rows.push([lcmState.a,lcmState.b,lcmState.l, lcmState.listA.join(' '), lcmState.listB.join(' '), JSON.stringify(lcmState.expA), JSON.stringify(lcmState.expB), JSON.stringify(lcmState.expLCM)]);
+    downloadCSV(`${deckTitle}_lcm_example.csv`, rows);
+  });
+  id('lcmExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_lcm_example.json`, lcmState);
+  });
+  newLCMEx(false);
+
+  /* ---------- Number‑line: Addition ---------- */
+  const cA=id('lineAdd'); const pIn=id('pInput'), qIn=id('qInput'), sumOut=id('sumOut');
+  const addState={min:-12,max:12,snap:false,p:-2,q:3.5,drag:false};
+  function map(x){const m=28,W=cA.clientWidth;return m+(x-addState.min)*(W-2*m)/(addState.max-addState.min)}
+  function unmap(px){const m=28,W=cA.clientWidth;return addState.min+(px-m)*(addState.max-addState.min)/(W-2*m)}
+  function drawAdd(){
+    if(!cA) return; const ctx=cA.getContext('2d');
+    cA.width=cA.clientWidth*devicePixelRatio; cA.height=cA.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+    const y=cA.clientHeight/2, m=28; ctx.clearRect(0,0,cA.clientWidth,cA.clientHeight);
+    // axis
+    ctx.lineWidth=2; ctx.strokeStyle='#6C1D45'; ctx.beginPath(); ctx.moveTo(m,y); ctx.lineTo(cA.clientWidth-m,y); ctx.stroke();
+    for(let t=addState.min;t<=addState.max;t++){const x=map(t); ctx.beginPath(); ctx.moveTo(x,y-8); ctx.lineTo(x,y+8); ctx.stroke(); if(t%2==0){ctx.fillStyle='#555'; ctx.font='12px Inter'; ctx.fillText(String(t),x-6,y+24);}}
+    // p point
+    const px=map(addState.p); ctx.fillStyle='#6C1D45'; ctx.beginPath(); ctx.arc(px,y,9,0,Math.PI*2); ctx.fill();
+    // q arrow
+    const qx=map(addState.p+addState.q); ctx.strokeStyle='#C7A34F'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(px,y); ctx.lineTo(qx,y); ctx.stroke();
+    ctx.fillStyle='#C7A34F'; ctx.beginPath(); ctx.arc(qx,y,9,0,Math.PI*2); ctx.fill();
+    sumOut.textContent=(addState.p+addState.q).toFixed(2).replace(/\.00$/,'');
+  }
+  function setFromInputs(){ addState.p=Number(pIn.value||0); addState.q=Number(qIn.value||0); drawAdd(); }
+  pIn.addEventListener('input', setFromInputs); qIn.addEventListener('input', setFromInputs);
+  cA.addEventListener('mousedown',e=>{addState.drag=true; handle(e)}); window.addEventListener('mouseup',()=>addState.drag=false);
+  window.addEventListener('mousemove',e=>{if(addState.drag) handle(e)});
+  function handle(e){const r=cA.getBoundingClientRect(); let val=unmap((e.clientX||e.touches?.[0].clientX)-r.left); if(addState.snap) val=Math.round(val*10)/10; addState.p=clamp(val,addState.min,addState.max); pIn.value=addState.p; drawAdd();}
+  id('randAdd').addEventListener('click',()=>{addState.p=+(Math.random()*12-6).toFixed(1); addState.q=+(Math.random()*8-4).toFixed(1); pIn.value=addState.p; qIn.value=addState.q; drawAdd();});
+  id('resetAdd').addEventListener('click',()=>{addState.p=-2;addState.q=3.5;pIn.value=-2;qIn.value=3.5;drawAdd()});
+  id('snapAdd').addEventListener('click',()=>{addState.snap=!addState.snap; id('snapAdd').classList.toggle('ring-2')});
+  id('addExportCSV').addEventListener('click',()=>{
+    downloadCSV(`${deckTitle}_numberline_add.csv`, [['p','q','p+q'], [addState.p, addState.q, addState.p+addState.q]]);
+  });
+  id('addExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_numberline_add.json`, {p:addState.p,q:addState.q,sum:addState.p+addState.q});
+  });
+
+  /* ---------- Number‑line: Subtraction ---------- */
+  const cS=id('lineSub'); const p2=id('p2Input'), q2=id('q2Input'), diffOut=id('diffOut');
+  const subState={min:-12,max:12,p:1,q:-4};
+  function mapS(x){const m=28,W=cS.clientWidth;return m+(x-subState.min)*(W-2*m)/(subState.max-subState.min)}
+  function drawSub(){
+    const ctx=cS.getContext('2d'); cS.width=cS.clientWidth*devicePixelRatio; cS.height=cS.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+    const y=cS.clientHeight/2, m=28; ctx.clearRect(0,0,cS.clientWidth,cS.clientHeight);
+    ctx.lineWidth=2; ctx.strokeStyle='#6C1D45'; ctx.beginPath(); ctx.moveTo(m,y); ctx.lineTo(cS.clientWidth-m,y); ctx.stroke();
+    for(let t=subState.min;t<=subState.max;t++){const x=mapS(t); ctx.beginPath(); ctx.moveTo(x,y-8); ctx.lineTo(x,y+8); ctx.stroke(); if(t%2==0){ctx.fillStyle='#555'; ctx.font='12px Inter'; ctx.fillText(String(t),x-6,y+24);}}
+    // show p and -q
+    const px=mapS(subState.p); const qx=mapS(subState.p - subState.q); // move by -q for subtraction
+    ctx.fillStyle='#6C1D45'; ctx.beginPath(); ctx.arc(px,y,9,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#C7A34F'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(px,y); ctx.lineTo(qx,y); ctx.stroke();
+    ctx.fillStyle='#C7A34F'; ctx.beginPath(); ctx.arc(qx,y,9,0,Math.PI*2); ctx.fill();
+    diffOut.textContent=(subState.p - subState.q).toFixed(2).replace(/\.00$/,'');
+  }
+  function setSub(){subState.p=Number(p2.value||0); subState.q=Number(q2.value||0); drawSub()}
+  p2.addEventListener('input', setSub); q2.addEventListener('input', setSub);
+  id('randSub').addEventListener('click',()=>{subState.p=+(Math.random()*8-4).toFixed(1); subState.q=+(Math.random()*8-4).toFixed(1); p2.value=subState.p; q2.value=subState.q; drawSub()});
+  id('subExportCSV').addEventListener('click',()=>{
+    downloadCSV(`${deckTitle}_numberline_sub.csv`, [['p','q','p-q'], [subState.p, subState.q, subState.p - subState.q]]);
+  });
+  id('subExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_numberline_sub.json`, {p:subState.p,q:subState.q,diff:subState.p - subState.q});
+  });
+
+  /* ---------- Quick Check (export too) ---------- */
+  id('checkQC').addEventListener('click',()=>{
+    let total=0,ok=0; [...document.querySelectorAll('.qc')].forEach(inp=>{total++; const want=Number(inp.dataset.ans); const got=Number(inp.value); if(got===want){inp.style.borderColor='#22c55e'; ok++;} else {inp.style.borderColor='#ef4444';}});
+    id('qcFb').textContent= ok===total?'✅ Great!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('resetQC').addEventListener('click',()=>{document.querySelectorAll('.qc').forEach(i=>{i.value='';i.style.borderColor='#e5e7eb'}); id('qcFb').textContent=''});
+  id('qcExportCSV').addEventListener('click',()=>{
+    const rows=[['problem','correct','user']];
+    document.querySelectorAll('.qc').forEach(inp=>{
+      rows.push([inp.dataset.prob, inp.dataset.ans, inp.value||'']);
+    });
+    downloadCSV(`${deckTitle}_quickcheck.csv`, rows);
+  });
+  id('qcExportJSON').addEventListener('click',()=>{
+    const data=[...document.querySelectorAll('.qc')].map(inp=>({problem:inp.dataset.prob, correct:Number(inp.dataset.ans), user: inp.value || ''}));
+    downloadJSON(`${deckTitle}_quickcheck.json`, data);
+  });
+
+  /* ---------- Like denominators ---------- */
+  const likePairs=[['5/8','-1/8','+'],['7/9','2/9','-'],['-3/10','4/10','+'],['-5/6','-1/6','+'],['11/12','1/12','-'],['-7/15','2/15','+']];
+  const likeState={set:[]};
+  function renderLike(){
+    const box=id('likeList'); box.innerHTML=''; likeState.set=[];
+    likePairs.sort(()=>Math.random()-0.5).slice(0,4).forEach((t,idx)=>{
+      const [a,b,op]=t; const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">\\( ${a} ${op} ${b} \\) = <input class="lin border rounded px-2 py-1 w-32" placeholder="e.g., 1/4"></div>`;
+      row.dataset.a=a; row.dataset.b=b; row.dataset.op=op; box.appendChild(row);
+      likeState.set.push({a,b,op});
+    });
+    renderMath(id('likeSlide'));
+  }
+  renderLike();
+  id('likeNew').addEventListener('click',renderLike);
+  id('likeCheck').addEventListener('click',()=>{
+    let total=0,ok=0; id('likeList').querySelectorAll('.card').forEach(row=>{
+      total++; const A=parseRational(row.dataset.a), B=parseRational(row.dataset.b); const op=row.dataset.op;
+      const ans=(op==='+')? addFrac(A,B): subFrac(A,B);
+      const inp=row.querySelector('.lin'); const got=parseRational(inp.value);
+      if(got && fracEq(toFrac(got[0],got[1]), ans)){inp.style.borderColor='#22c55e'; ok++;} else {inp.style.borderColor='#ef4444';}
+    });
+    id('likeFb').textContent= ok===total?'✅ All correct!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('likeExportCSV').addEventListener('click',()=>{
+    const rows=[['a','op','b','correct']];
+    likeState.set.forEach(({a,b,op})=>{
+      const ans = (op==='+')? addFrac(parseRational(a),parseRational(b)): subFrac(parseRational(a),parseRational(b));
+      rows.push([a,op,b,sFrac(ans)]);
+    });
+    downloadCSV(`${deckTitle}_like_denominators.csv`,rows);
+  });
+  id('likeExportJSON').addEventListener('click',()=>{
+    const data=likeState.set.map(({a,b,op})=>{
+      const ans=(op==='+')? addFrac(parseRational(a),parseRational(b)): subFrac(parseRational(a),parseRational(b));
+      return {a,op,b,correct:sFrac(ans)};
+    });
+    downloadJSON(`${deckTitle}_like_denominators.json`,data);
+  });
+
+  /* ---------- Unlike denominators (no inputs inside math) ---------- */
+  const unlikeState={a:null,b:null,op:null,ans:null,L:0,Aeq:null,Beq:null};
+  function newUnlike(){
+    const den1=[3,4,5,6,8,9][Math.floor(Math.random()*6)];
+    const den2=[4,5,6,7,8,9,10][Math.floor(Math.random()*7)];
+    const n1=Math.floor(Math.random()*den1), n2=Math.floor(Math.random()*den2);
+    const op=Math.random()<0.5?'+':'-';
+    const box=id('unlikeBox'); 
+    box.innerHTML = `
+      <div class="card p-4">
+        <div class="text-xl">\\( \\frac{${n1}}{${den1}} ${op} \\frac{${n2}}{${den2}} \\)</div>
+        <div class="mt-2">LCM = <input id="lcmIn" class="border rounded px-2 py-1 w-28" placeholder="LCM"></div>
+        <div class="mt-2 flex flex-wrap items-center gap-3">
+          <span>\\( \\frac{${n1}}{${den1}} = \\)</span>
+          <input id="eq1" class="border rounded px-2 py-1 w-24" placeholder="?"> /
+          <input id="d1"  class="border rounded px-2 py-1 w-24" placeholder="?">
+          <span class="ml-6">\\( \\frac{${n2}}{${den2}} = \\)</span>
+          <input id="eq2" class="border rounded px-2 py-1 w-24" placeholder="?"> /
+          <input id="d2"  class="border rounded px-2 py-1 w-24" placeholder="?">
+        </div>
+      </div>
+      <div class="card p-4">
+        <div>Final answer (simplest): <input id="unAns" class="border rounded px-2 py-1 w-32" placeholder="e.g., 7/12"></div>
+      </div>`;
+    renderMath(id('unlikeSlide'));
+    unlikeState.a=`${n1}/${den1}`; unlikeState.b=`${n2}/${den2}`; unlikeState.op=op;
+  }
+  newUnlike();
+  id('unlikeNew').addEventListener('click',newUnlike);
+  id('unlikeCheck').addEventListener('click',()=>{
+    const a=parseRational(unlikeState.a), b=parseRational(unlikeState.b); const op=unlikeState.op;
+    const L=lcm(a[1],b[1]);
+    const A=[a[0]*(L/a[1]), L], B=[b[0]*(L/b[1]), L];
+    const ans = (op==='+')? addFrac(A,B) : subFrac(A,B);
+    unlikeState.L=L; unlikeState.Aeq=A; unlikeState.Beq=B; unlikeState.ans=ans;
+    let ok=true;
+    const lcmIn=id('lcmIn'); if(Number(lcmIn.value)==L){lcmIn.style.borderColor='#22c55e'} else {ok=false; lcmIn.style.borderColor='#ef4444'}
+    function eqCheck(idn, val){const el=id(idn); if(Number(el.value)==val){el.style.borderColor='#22c55e'} else {ok=false; el.style.borderColor='#ef4444'}}
+    eqCheck('eq1', A[0]); eqCheck('d1', A[1]); eqCheck('eq2', B[0]); eqCheck('d2', B[1]);
+    const got=parseRational(id('unAns').value);
+    if(!(got && fracEq(got, ans))){ok=false; id('unAns').style.borderColor='#ef4444'} else id('unAns').style.borderColor='#22c55e';
+    id('unlikeFb').textContent= ok?'✅ Nice work!':'❌ Check highlights'; if(ok) confetti();
+  });
+  id('unlikeExportCSV').addEventListener('click',()=>{
+    const rows=[['a','op','b','LCM','A_eq_num','A_eq_den','B_eq_num','B_eq_den','correct']];
+    const a=parseRational(unlikeState.a), b=parseRational(unlikeState.b), op=unlikeState.op;
+    const L=lcm(a[1],b[1]); const A=[a[0]*(L/a[1]), L], B=[b[0]*(L/b[1]), L];
+    const ans=(op==='+')? addFrac(A,B): subFrac(A,B);
+    rows.push([unlikeState.a, op, unlikeState.b, L, A[0],A[1], B[0],B[1], sFrac(ans)]);
+    downloadCSV(`${deckTitle}_unlike_denominators.csv`, rows);
+  });
+  id('unlikeExportJSON').addEventListener('click',()=>{
+    const a=parseRational(unlikeState.a), b=parseRational(unlikeState.b), op=unlikeState.op;
+    const L=lcm(a[1],b[1]); const A=[a[0]*(L/a[1]), L], B=[b[0]*(L/b[1]), L];
+    const ans=(op==='+')? addFrac(A,B): subFrac(A,B);
+    downloadJSON(`${deckTitle}_unlike_denominators.json`, {a:unlikeState.a,b:unlikeState.b,op,LCM:L,Aeq:{n:A[0],d:A[1]},Beq:{n:B[0],d:B[1]},correct:sFrac(ans)});
+  });
+
+  /* ---------- Decimals ---------- */
+  const decState={set:[]};
+  function newDecSet(){
+    const bank=[['2.75','-3.4'],['-1.2','-0.8'],['5.06','-2.31'],['-4.5','1.75'],['3.2','0.45'],['-6.75','-1.25']];
+    const box=id('decList'); box.innerHTML=''; decState.set=[];
+    bank.sort(()=>Math.random()-0.5).slice(0,4).forEach((p,idx)=>{
+      const [a,b]=p; const op=Math.random()<0.5?'+':'-';
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">${a} ${op} ${b} = <input class="din border rounded px-2 py-1 w-32" placeholder="e.g., 0.44"></div>`;
+      row.dataset.a=a; row.dataset.b=b; row.dataset.op=op; box.appendChild(row);
+      decState.set.push({a,b,op});
+    });
+  }
+  newDecSet(); id('decNew').addEventListener('click',newDecSet);
+  id('decCheck').addEventListener('click',()=>{
+    let total=0,ok=0; id('decList').querySelectorAll('.card').forEach(row=>{
+      total++;
+      const a=parseFloat(row.dataset.a), b=parseFloat(row.dataset.b), op=row.dataset.op;
+      const ans = op==='+' ? a + b : a - b;
+      const got = Number(row.querySelector('.din').value);
+      if(Math.abs(got-ans)<1e-10){row.querySelector('.din').style.borderColor='#22c55e'; ok++;} else {row.querySelector('.din').style.borderColor='#ef4444'}
+    });
+    id('decFb').textContent= ok===total?'✅ All correct!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('decExportCSV').addEventListener('click',()=>{
+    const rows=[['a','op','b','correct']];
+    decState.set.forEach(({a,b,op})=>{
+      const ans= op==='+' ? (parseFloat(a)+parseFloat(b)) : (parseFloat(a)-parseFloat(b));
+      rows.push([a,op,b,ans]);
+    });
+    downloadCSV(`${deckTitle}_decimals.csv`,rows);
+  });
+  id('decExportJSON').addEventListener('click',()=>{
+    const data=decState.set.map(({a,b,op})=>({a,b,op,correct: (op==='+'? (parseFloat(a)+parseFloat(b)) : (parseFloat(a)-parseFloat(b)))}));
+    downloadJSON(`${deckTitle}_decimals.json`, data);
+  });
+
+  /* ---------- Sort rational numbers (drag to sort) ---------- */
+  const sortState={items:[]};
+  function genRationalString(){
+    const t=Math.random();
+    if(t<0.33){ // integer
+      const v=Math.floor(Math.random()*21)-10; return {disp:String(v), val:v};
+    } else if(t<0.66){ // fraction
+      const den=[4,5,6,8,10,12][Math.floor(Math.random()*6)];
+      const num=Math.floor(Math.random()* (den*2+1)) - den; // -den..den
+      return {disp:`\\( \\frac{${num}}{${den}} \\)`, val:num/den};
+    } else { // decimal
+      const v=Math.round((Math.random()*20-10)*10)/10; return {disp:String(v.toFixed(1).replace(/\\.0$/,'')), val:v};
+    }
+  }
+  function sortNew(){
+    const set=[]; while(set.length<5){ const x=genRationalString(); set.push(x); }
+    sortState.items=set;
+    const ul=id('sortList'); ul.innerHTML='';
+    set.forEach((o,idx)=>{
+      const li=document.createElement('li'); li.className='border rounded px-3 py-2 flex items-center justify-between cursor-move';
+      li.setAttribute('draggable','true'); li.dataset.val=o.val; li.innerHTML=`<span class="text-xl">${o.disp}</span><span class="text-gray-400 text-sm">drag</span>`;
+      ul.appendChild(li);
+    });
+    enableDrag(ul);
+    renderMath(id('sortSlide'));
+  }
+  function enableDrag(ul){
+    let dragEl=null;
+    ul.querySelectorAll('li').forEach(li=>{
+      li.addEventListener('dragstart',()=>{dragEl=li; li.classList.add('dragging')});
+      li.addEventListener('dragend',()=>{dragEl=null; li.classList.remove('dragging')});
+    });
+    ul.addEventListener('dragover',e=>{
+      e.preventDefault();
+      const after=getDragAfterElement(ul,e.clientY);
+      if(after==null) ul.appendChild(dragEl); else ul.insertBefore(dragEl,after);
+    });
+    function getDragAfterElement(container, y){
+      const els=[...container.querySelectorAll('li:not(.dragging)')];
+      return els.reduce((closest,child)=>{
+        const box=child.getBoundingClientRect();
+        const offset=y - box.top - box.height/2;
+        if(offset<0 && offset>closest.offset){ return {offset,element:child}; } else { return closest; }
+      }, {offset:Number.NEGATIVE_INFINITY}).element;
+    }
+  }
+  id('sortNew').addEventListener('click',sortNew);
+  id('sortCheck').addEventListener('click',()=>{
+    const now=[...id('sortList').children].map(li=>({val:Number(li.dataset.val), el:li}));
+    const sorted=[...now].sort((a,b)=>a.val-b.val);
+    let ok=true;
+    now.forEach((o,idx)=>{ if(o!==sorted[idx]) ok=false; });
+    now.forEach((o,idx)=>o.el.style.borderColor = (o===sorted[idx])? '#22c55e' : '#ef4444');
+    id('sortFb').textContent= ok? '✅ Correct order!' : 'Some items are out of order.';
+    if(ok) confetti();
+  });
+  id('sortExportCSV').addEventListener('click',()=>{
+    const items=[...id('sortList').children].map(li=>({disp:li.querySelector('span').textContent.trim(), val:Number(li.dataset.val)}));
+    const sorted=[...items].sort((a,b)=>a.val-b.val);
+    const rows=[['position','item_display','value','correct_position']];
+    items.forEach((it,idx)=>{
+      const cp=sorted.findIndex(x=>x===it)+1;
+      rows.push([idx+1,it.disp,it.val,cp]);
+    });
+    downloadCSV(`${deckTitle}_ordering.csv`,rows);
+  });
+  id('sortExportJSON').addEventListener('click',()=>{
+    const items=[...id('sortList').children].map(li=>({disp:li.querySelector('span').textContent.trim(), val:Number(li.dataset.val)}));
+    const sorted=[...items].sort((a,b)=>a.val-b.val);
+    downloadJSON(`${deckTitle}_ordering.json`, {items, correctOrder:sorted});
+  });
+  sortNew();
+
+  /* ---------- Mixed Generator ---------- */
+  const qText=id('qText'), ansIn=id('ans'), qFb=id('qFb'), qHint=id('qHint'), level=id('level');
+  let current=null;
+  function frac(n,d){return [n,d]}
+  function randomInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+  function newQuestion(){
+    qFb.textContent=''; qHint.textContent=''; ansIn.value='';
+    const lvl=level.value; let A,B,op;
+    if(lvl==='easy'){ A=frac(randomInt(-9,9),1); B=frac(randomInt(-9,9),1); op=Math.random()<0.5?'+':'-'; }
+    else if(lvl==='med'){
+      if(Math.random()<0.5){ // like denom fractions
+        const d=[4,5,6,8,10][randomInt(0,4)]; A=frac(randomInt(-d+1,d-1),d); B=frac(randomInt(-d+1,d-1),d);
+      } else { // decimals
+        const a=(randomInt(-30,30)/10), b=(randomInt(-30,30)/10); A=parseRational(String(a)); B=parseRational(String(b));
+      }
+      op=Math.random()<0.5?'+':'-';
+    } else { // hard
+      const d1=[3,4,5,6,8,9][randomInt(0,5)], d2=[4,5,6,7,8,10][randomInt(0,5)];
+      A=frac(randomInt(-d1+1,d1-1),d1); B=frac(randomInt(-d2+1,d2-1),d2); op=Math.random()<0.5?'+':'-';
+    }
+    current={A,B,op};
+    qText.innerHTML = `\\( ${sFrac(A)} \\ ${op}\\ ${sFrac(B)} \\)`;
+    renderMath(id('mixedSlide'));
+  }
+  id('newQ').addEventListener('click',newQuestion); newQuestion();
+  id('hintQ').addEventListener('click',()=>{
+    if(!current) return;
+    const {A,B,op}=current;
+    if(A[1]===B[1]) qHint.innerHTML=`<div class="hint">Like denominators: \\( ${sFrac(A)} ${op} ${sFrac(B)} \\Rightarrow ${(op==='+')? (A[0]+'+'+B[0]): (A[0]+'-'+B[0])} \\) over \\( ${A[1]} \\).</div>`;
+    else {const L=lcm(A[1],B[1]); qHint.innerHTML=`<div class="hint">Unlike denominators: \\(\\mathrm{LCM}(${A[1]}, ${B[1]}) = ${L}\\). Make equivalents: \\( ${sFrac([A[0]*(L/A[1]),L])} ${op} ${sFrac([B[0]*(L/B[1]),L])} \\).</div>`}
+    renderMath(id('mixedSlide'));
+  });
+  id('checkQ').addEventListener('click',()=>{
+    if(!current) return;
+    const got=parseRational(ansIn.value); if(!got){qFb.textContent='Enter a valid number/fraction.'; qFb.className='mt-2 h-6 font-semibold text-red-700'; return;}
+    const {A,B,op}=current; const ans = op==='+'? addFrac(A,B): subFrac(A,B);
+    if(fracEq(got, ans)){qFb.textContent='✅ Correct! '+sFrac(ans); qFb.className='mt-2 h-6 font-semibold text-green-700'; confetti();}
+    else {qFb.textContent='❌ Not quite. Expected '+sFrac(ans); qFb.className='mt-2 h-6 font-semibold text-red-700';}
+  });
+  id('mixedExportCSV').addEventListener('click',()=>{
+    if(!current) return;
+    const {A,B,op}=current; const ans=op==='+'? addFrac(A,B): subFrac(A,B);
+    downloadCSV(`${deckTitle}_mixed_current.csv`, [['A','op','B','correct'], [sFrac(A),op,sFrac(B),sFrac(ans)]]);
+  });
+  id('mixedExportJSON').addEventListener('click',()=>{
+    if(!current) return;
+    const {A,B,op}=current; const ans=op==='+'? addFrac(A,B): subFrac(A,B);
+    downloadJSON(`${deckTitle}_mixed_current.json`, {A:sFrac(A),op,B:sFrac(B),correct:sFrac(ans)});
+  });
+
+  /* ---------- Real‑world practice ---------- */
+  const realState={items:[]};
+  function randomInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+  function realTemplates(){
+    const items=[];
+    // Temperature
+    const t0=randomInt(-6,10), d=randomInt(-6,6);
+    items.push({text:`Temperature: morning ${t0}\\(^\\circ\\!\\text{C}\\), changes by ${d}\\(^\\circ\\!\\text{C}\\) → final =`, ans:t0+d, suffix:'°C'});
+    // Bank
+    const bal=randomInt(80,200), w=randomInt(50,180); const act=Math.random()<0.5?'withdraw':'deposit';
+    const final= act==='withdraw'? bal-w : bal+w;
+    items.push({text:`Bank balance: start QAR ${bal}, ${act} QAR ${w} → balance =`, ans:final, suffix:'QAR'});
+    // Elevation
+    const e0=randomInt(-50,20), climb=randomInt(-15,25);
+    items.push({text:`Elevation: start ${e0} m (below sea level negative), change by ${climb} m → elevation =`, ans:e0+climb, suffix:'m'});
+    // Score
+    const s0=randomInt(-10,10), gain=randomInt(-8,12);
+    items.push({text:`Game score: starts at ${s0}, then ${gain>=0? 'gains':'loses'} ${Math.abs(gain)} → score =`, ans:s0+gain, suffix:''});
+    return items;
+  }
+  function realNew(){
+    realState.items=realTemplates();
+    const box=id('realList'); box.innerHTML='';
+    realState.items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl"> ${o.text} <input class="rin border rounded px-2 py-1 w-28" id="r_${idx}" placeholder="answer"> ${o.suffix}</div>`;
+      box.appendChild(row);
+    });
+  }
+  id('realNew').addEventListener('click',realNew); realNew();
+  id('realCheck').addEventListener('click',()=>{
+    let ok=0; realState.items.forEach((o,idx)=>{
+      const el=id('r_'+idx); const got=Number(el.value);
+      if(Math.abs(got-o.ans)<1e-10){ok++; el.style.borderColor='#22c55e'} else el.style.borderColor='#ef4444';
+    });
+    id('realFb').textContent = ok===realState.items.length? '✅ Excellent!' : 'Score: '+ok+'/'+realState.items.length;
+    if(ok===realState.items.length) confetti();
+  });
+  id('realExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer','user']];
+    realState.items.forEach((o,idx)=>rows.push([o.text,o.ans, id('r_'+idx).value || '' ]));
+    downloadCSV(`${deckTitle}_real_world.csv`, rows);
+  });
+  id('realExportJSON').addEventListener('click',()=>{
+    const data=realState.items.map((o,idx)=>({prompt:o.text, answer:o.ans, user:id('r_'+idx).value || ''}));
+    downloadJSON(`${deckTitle}_real_world.json`, data);
+  });
+
+  /* ---------- Challenge + Error Analysis ---------- */
+  function errorBank(){
+    return [
+      {
+        work:'\\( (-\\tfrac{3}{4}) + (\\tfrac{1}{2}) = -\\tfrac{4}{6} = -\\tfrac{2}{3} \\)',
+        correct:'Use a common denominator 4: \\( -\\tfrac{3}{4} + \\tfrac{1}{2} = -\\tfrac{3}{4} + \\tfrac{2}{4} = -\\tfrac{1}{4} \\).',
+        key:'A'
+      },
+      {
+        work:'\\( 6 - 9 = 3 \\)',
+        correct:'Subtracting a larger number yields a negative: \\( 6-9=-3 \\).',
+        key:'C'
+      },
+      {
+        work:'\\( -2.5 - 1.5 = -1.0 \\)',
+        correct:'Both negative: difference is \\( -4.0 \\).',
+        key:'C'
+      },
+      {
+        work:'\\( \\tfrac{3}{5} + \\tfrac{1}{2} = \\tfrac{4}{7} \\)',
+        correct:'LCD 10: \\( \\tfrac{3}{5}+\\tfrac{1}{2}=\\tfrac{6}{10}+\\tfrac{5}{10}=\\tfrac{11}{10}=1\\tfrac{1}{10} \\).',
+        key:'A'
+      },
+      {
+        work:'\\( 2.6 + (-1.25) = 2. - 1.25 = 0.75 \\) (misaligned)',
+        correct:'Align decimals: \\( 2.60 + (-1.25)=1.35 \\).',
+        key:'D'
+      }
+    ];
+  }
+  const errState={item:null};
+  function errNew(){
+    const bank=errorBank(); errState.item=bank[Math.floor(Math.random()*bank.length)];
+    id('errBox').innerHTML=`Incorrect work:<br/> <div class="mt-1 text-maroon"> ${errState.item.work} </div>`;
+    id('errFb').textContent=''; id('errRevealBox').textContent='';
+    renderMath(id('challengeSlide'));
+  }
+  id('errNew').addEventListener('click',errNew); errNew();
+  id('errCheck').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    if(!sel){ id('errFb').textContent='Choose an option.'; return; }
+    if(sel.value===errState.item.key){ id('errFb').textContent='✅ Correct diagnosis.'; confetti(); }
+    else { id('errFb').textContent='❌ Not quite. Try again or reveal the correct work.'; }
+  });
+  id('errReveal').addEventListener('click',()=>{
+    id('errRevealBox').innerHTML = `<div class="hint">${errState.item.correct}</div>`;
+    renderMath(id('challengeSlide'));
+  });
+  id('errExportCSV').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    downloadCSV(`${deckTitle}_error_analysis.csv`, [['incorrect_work','correct_explanation','answer_key','user_choice'], [errState.item.work, errState.item.correct, errState.item.key, sel?sel.value:'']]);
+  });
+  id('errExportJSON').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    downloadJSON(`${deckTitle}_error_analysis.json`, {incorrect:errState.item.work, correct:errState.item.correct, key:errState.item.key, user: sel?sel.value:''});
+  });
+
+  /* Challenge export for missing addend + contexts */
+  id('chCheck').addEventListener('click',()=>{
+    let ok=true; document.querySelectorAll('.ch1').forEach(inp=>{const want=parseRational(inp.dataset.ans); const got=parseRational(inp.value); if(!(got && fracEq(got,want))){ok=false; inp.style.borderColor='#ef4444'} else inp.style.borderColor='#22c55e'}); id('chFb').textContent= ok?'✅ Excellent!':'❌ Try to fix the red ones'; if(ok) confetti();
+  });
+  id('chReset').addEventListener('click',()=>{document.querySelectorAll('.ch1').forEach(i=>{i.value='';i.style.borderColor='#e5e7eb'}); id('chFb').textContent=''});
+  id('chExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']];
+    document.querySelectorAll('.ch1').forEach(inp=>{
+      rows.push([inp.parentElement.textContent.replace(/\s+/g,' ').trim(), inp.dataset.ans, inp.value||'']);
+    });
+    downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('chExportJSON').addEventListener('click',()=>{
+    const data=[...document.querySelectorAll('.ch1')].map(inp=>({prompt:inp.parentElement.textContent.replace(/\s+/g,' ').trim(), correct:inp.dataset.ans, user:inp.value||''}));
+    downloadJSON(`${deckTitle}_challenge.json`, data);
+  });
+
+  /* ---------- Init ---------- */
+  window.addEventListener('resize',()=>{ if(slides[i].id==='addSlide') drawAdd(); if(slides[i].id==='subSlide') drawSub(); });
+  show(0); // start
+})();
+</script>
+</body>
+</html>

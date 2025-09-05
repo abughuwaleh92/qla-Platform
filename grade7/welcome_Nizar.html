@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Grade 7 Mathematics – Orientation (QLA)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --maroon:#6C1D45; --gold:#C7A34F; --dark:#2C2C2E; --light:#F5F5F5; --accent:#E8D5B7;
+    }
+    html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    /* Stage */
+    #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:0.75rem}
+    #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+    .slide{position:absolute;inset:0;padding:3.75%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(12px) scale(.985);transition:.55s ease;pointer-events:none}
+    .slide.active{opacity:1;transform:none;pointer-events:auto}
+    .bg-maroon{background-color:var(--maroon)}
+    .text-maroon{color:var(--maroon)}
+    .text-gold{color:var(--gold)}
+    .border-maroon{border-color:var(--maroon)}
+    .ring-gold{--tw-ring-color: var(--gold)}
+    .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem}
+    /* Controls */
+    #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+    #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+    #controls button:hover{transform:scale(1.06)}
+    #counter{color:#fff;font-weight:700;min-width:70px;text-align:center}
+    #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+    /* Banner */
+    .banner{width:100%;height:140px;background:#fff url('../assets/qla_banner.png') center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+    /* Teacher image */
+    .avatar{width:200px;height:200px;border-radius:9999px;object-fit:cover;border:6px solid var(--maroon);background:#eee}
+    /* Spinner for Icebreaker */
+    .spinner{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+    .spin-card{padding:1rem;border-radius:12px;border:2px solid #e5e7eb;background:#fafafa;transition:.25s}
+    .spin-card.active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(199,163,79,.25)}
+    /* Drag list for Sorter */
+    .sortable li{user-select:none}
+    .sortable .dragging{opacity:.5}
+    /* Number line canvas container */
+    .nl-wrap{width:100%;max-width:900px}
+    canvas.nline{width:100%;height:140px;border-radius:12px;background:linear-gradient(180deg,#fff,#fafafa);border:2px solid #ececec}
+    /* Tooltip */
+    .tip{position:relative}
+    .tip:hover::after{content:attr(data-tip);position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:.4rem .6rem;border-radius:6px;white-space:nowrap;font-size:.75rem}
+    /* Fullscreen hint (top-right) */
+    #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+    /* Small fade-in cascade */
+    .a{opacity:0;transform:translateY(8px);animation:up .7s ease forwards}
+    .a2{animation-delay:.08s}.a3{animation-delay:.16s}.a4{animation-delay:.24s}.a5{animation-delay:.32s}.a6{animation-delay:.40s}
+    @keyframes up{to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- SLIDE 1 — Title -->
+    <section class="slide active bg-maroon text-white">
+      <div class="w-full h-16 banner mb-6 rounded-md"></div>
+      <div class="flex items-center gap-8">
+        <img src="../assets/qla_logo.png" alt="QLA Logo" class="h-28 w-auto a" />
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight a2">Welcome to Grade 7 Mathematics</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold a3">Qatar Leadership Academy</p>
+          <p class="mt-2 text-lg a4">Mr. Nizar Omar
+• Sunday, August 31, 2025</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Member of Qatar Foundation</div>
+    </section>
+
+    <!-- SLIDE 2 — About Your Teacher -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-4">Meet Your Teacher</h2>
+      <div class="flex flex-col lg:flex-row items-center gap-10">
+        <img src="../assets/teacher_parallel.jpg" alt="Teacher Photo" class="avatar shadow a" onerror="this.src='data:image/svg+xml;utf8,<?xml version=&quot;1.0&quot;?><svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;200&quot; height=&quot;200&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23eee&quot;/><text x=&quot;50%&quot; y=&quot;54%&quot; text-anchor=&quot;middle&quot; font-size=&quot;16&quot; fill=&quot;%23666&quot; font-family=&quot;Arial&quot;>../assets/teacher_parallel.jpg</text></svg>'" />
+        <div class="text-left max-w-xl">
+          <div class="grid gap-3 text-lg">
+            <div class="chip"><span class="font-semibold">Email:</span> 2hg662@qla.qfschools.qa</div>
+            <div class="chip"><span class="font-semibold">Office Hours:</span> Sun-Thu 2:00–3:00 PM</div>
+            <div class="chip"><span class="font-semibold">Room:</span> 09</div>
+          </div>
+          <div class="mt-6">
+            <h3 class="text-2xl font-bold text-maroon">Our Core Values</h3>
+            <p class="mt-2 text-xl"><span class="font-semibold text-maroon">Respect</span> • <span class="font-semibold text-gray-700">Effort</span> • <span class="font-semibold text-green-700">Growth</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 text-sm text-gray-600">Banner fits best around 1920×200 px; this area scales responsively.</div>
+    </section>
+
+    <!-- SLIDE 3 — Digital Ecosystem -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-1">Our Digital Learning Ecosystem</h2>
+      <p class="mb-6 text-gray-600">Class resources, assignments, and communication</p>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl">
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <div class="text-3xl">🧭</div>
+          <h3 class="font-bold text-maroon mt-1">Google Classroom</h3>
+          <p class="text-sm text-gray-600">Hub for assignments & announcements</p>
+        </div>
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <div class="text-3xl">📊</div>
+          <h3 class="font-bold text-maroon mt-1">IXL</h3>
+          <p class="text-sm text-gray-600">Personalized practice</p>
+        </div>
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <div class="text-3xl">🧮</div>
+          <h3 class="font-bold text-maroon mt-1">MyiMaths</h3>
+          <p class="text-sm text-gray-600">Lessons & interactive tasks</p>
+        </div>
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <div class="text-3xl">👥</div>
+          <h3 class="font-bold text-maroon mt-1">MS Teams</h3>
+          <p class="text-sm text-gray-600">Collaboration</p>
+        </div>
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <div class="text-3xl">🧾</div>
+          <h3 class="font-bold text-maroon mt-1">Portfolio</h3>
+          <p class="text-sm text-gray-600">Share your best work</p>
+        </div>
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <div class="text-3xl">🧠</div>
+          <h3 class="font-bold text-maroon mt-1">Calculator</h3>
+          <p class="text-sm text-gray-600">Use appropriately during tasks</p>
+        </div>
+      </div>
+      <div class="mt-6 text-lg">
+        <span class="chip bg-yellow-50 border border-yellow-200"><span class="font-semibold text-maroon">Google Classroom Code:</span> MATH7‑2025</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 4 — Expectations -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Classroom Expectations</h2>
+      <div class="grid md:grid-cols-2 gap-6 max-w-5xl text-left">
+        <div class="p-5 rounded-2xl bg-gray-50 border">
+          <h3 class="text-2xl font-bold text-maroon">QLA Excellence Standards</h3>
+          <ul class="mt-2 space-y-2 text-lg">
+            <li>⏰ Be seated when the bell rings; submit work on time</li>
+            <li>🔊 Voice levels: 0 (silent), 1 (partner), 2 (group)</li>
+            <li>💻 Use technology for learning only; follow the 1:1 device policy</li>
+          </ul>
+        </div>
+        <div class="p-5 rounded-2xl bg-gray-50 border">
+          <h3 class="text-2xl font-bold text-maroon">Communication & Support</h3>
+          <ul class="mt-2 space-y-2 text-lg">
+            <li>🧑‍🤝‍🧑 Ask a peer → 📘 check resources → ✋ signal teacher → 📅 attend office hours</li>
+            <li>📥 Late work: 1 day (max 90%), 2 days (max 80%), 3+ days (case by case)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-6 chip bg-green-50 border border-green-200">QLA Motto: <strong>Excellence Through Leadership</strong></div>
+    </section>
+
+    <!-- SLIDE 5 — Icebreaker (after Expectations) -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Icebreaker: “Math About Me” Spinner</h2>
+      <p class="text-gray-600 mb-4">Each student answers one quick math‑flavored prompt. Fun, fast, and friendly!</p>
+      <div class="spinner max-w-3xl">
+        <div class="spin-card">🔢 My favorite number and why</div>
+        <div class="spin-card">🎵 Where I notice math in music</div>
+        <div class="spin-card">🏀 Math I use in sports or games</div>
+        <div class="spin-card">🍳 A time I used math while cooking</div>
+        <div class="spin-card">🧭 A math goal for this year</div>
+        <div class="spin-card">🧩 A puzzle or pattern I enjoy</div>
+      </div>
+      <div class="mt-5 flex gap-3">
+        <button id="spinBtn" class="px-5 py-2 rounded-full bg-maroon text-white font-semibold hover:opacity-90">Spin Prompt</button>
+        <button id="spinStopBtn" class="px-5 py-2 rounded-full border font-semibold">Stop</button>
+      </div>
+      <p class="mt-3 text-sm text-gray-500">Tip: 20–30 seconds per response keeps the pace lively.</p>
+    </section>
+
+    <!-- SLIDE 6 — Year @ a Glance (aligned) -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-1">Your Mathematical Journey (Year at a Glance)</h2>
+      <p class="text-gray-600 mb-6">Sequenced to match the Grade 7 outline & scope</p>
+      <div class="grid md:grid-cols-3 gap-4 max-w-4xl text-left">
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <h3 class="font-bold text-maroon">Unit 1: Numbers</h3>
+          <ul class="mt-2 text-sm text-gray-700 list-disc list-inside">
+            <li>Opposites (positive & negative)</li>
+            <li>Rational numbers</li>
+            <li>Add/Subtract rational numbers</li>
+            <li>Multiplication/Division of rationals</li>
+            <li><em>Combined operations (later)</em></li>
+          </ul>
+        </div>
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <h3 class="font-bold text-maroon">Unit 2: Properties & Fractions</h3>
+          <ul class="mt-2 text-sm text-gray-700 list-disc list-inside">
+            <li>Factors, HCF/LCM, primes</li>
+            <li>Equivalent/simplifying fractions</li>
+            <li>Operations with fractions</li>
+          </ul>
+        </div>
+        <div class="p-4 rounded-xl border-2 border-maroon/20">
+          <h3 class="font-bold text-maroon">Next Units</h3>
+          <ul class="mt-2 text-sm text-gray-700 list-disc list-inside">
+            <li>Expressions & Equations</li>
+            <li>Ratios & Proportions</li>
+            <li>Coordinates</li>
+            <li>Statistics & Probability</li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-4 text-xs text-gray-500">Week‑1 focus: intros/expectations, then **opposites** and **ordering & comparing numbers**. Diagnostic announced now, taken later.</div>
+    </section>
+
+    <!-- SLIDE 7 — Assessment Overview (counts) -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Assessment Overview</h2>
+      <p class="text-gray-600 mb-3">Counts per quarter (coursework, homework minima, quizzes & tests)</p>
+      <div class="max-w-4xl w-full">
+        <canvas id="assessChart" height="220"></canvas>
+      </div>
+      <div class="mt-3 text-sm text-gray-600">Mid‑term & final exam: once per semester. PBL process/product & presentation: once per semester.</div>
+    </section>
+
+    <!-- SLIDE 8 — Unit 1 Mini-lesson: Opposites -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-1">Opposites (Additive Inverses)</h2>
+      <p class="text-gray-600 mb-4 max-w-3xl">A number and its opposite are the same distance from 0 on the number line but in opposite directions. They add to zero.</p>
+      <div class="nl-wrap">
+        <canvas id="oppoLine" class="nline"></canvas>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+        <div class="chip bg-amber-50 border"><span class="font-semibold text-maroon">p =</span> <span id="pVal">–</span></div>
+        <div class="chip bg-amber-50 border"><span class="font-semibold text-maroon">–p =</span> <span id="negPVal">–</span></div>
+        <div class="chip bg-green-50 border"><span class="font-semibold text-maroon">Sum:</span> <span id="sumVal">–</span></div>
+        <div class="chip bg-blue-50 border"><span class="font-semibold text-maroon">Distance |p|:</span> <span id="absVal">–</span></div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button id="randP" class="px-4 py-2 bg-maroon text-white rounded-full">Randomize p</button>
+        <button id="snapGrid" class="px-4 py-2 border rounded-full">Snap to tenths</button>
+        <button id="resetP" class="px-4 py-2 border rounded-full">Reset</button>
+      </div>
+      <p class="text-sm text-gray-500 mt-3">Drag the maroon point; gold point shows the opposite.</p>
+    </section>
+
+    <!-- SLIDE 9 — Comparing Numbers (Trainer) -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-1">Compare Trainer (&lt;, &gt;, =)</h2>
+      <p class="text-gray-600 mb-4">Integers and decimals, positive and negative (no fractions yet)</p>
+      <div class="flex flex-col items-center gap-3">
+        <div id="comparePanel" class="text-4xl font-extrabold">
+          <span id="leftNum" class="text-maroon">–</span>
+          <span class="mx-4 text-gray-400">?</span>
+          <span id="rightNum" class="text-maroon">–</span>
+        </div>
+        <div class="flex gap-3">
+          <button class="cmpBtn px-6 py-2 rounded-full border font-bold text-2xl" data-op="<">&lt;</button>
+          <button class="cmpBtn px-6 py-2 rounded-full border font-bold text-2xl" data-op="=">=</button>
+          <button class="cmpBtn px-6 py-2 rounded-full border font-bold text-2xl" data-op=">">&gt;</button>
+        </div>
+        <div id="cmpFeedback" class="text-lg font-semibold h-7"></div>
+        <div class="flex gap-3 items-center mt-2 text-sm">
+          <label class="chip"><input id="decimalsToggle" type="checkbox" class="mr-2">Include decimals</label>
+          <label class="chip"><input id="negativesToggle" type="checkbox" checked class="mr-2">Include negatives</label>
+          <button id="newPair" class="px-4 py-1.5 bg-maroon text-white rounded-full">New pair</button>
+          <div class="chip bg-green-50 border">Streak: <span id="streak">0</span></div>
+        </div>
+      </div>
+      <div class="mt-5 nl-wrap">
+        <canvas id="cmpLine" class="nline"></canvas>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">The number line highlights both numbers to justify the comparison.</p>
+    </section>
+
+    <!-- SLIDE 10 — Sort the Numbers -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-1">Sort the Numbers (Least → Greatest)</h2>
+      <p class="text-gray-600 mb-3">Drag to reorder, then check.</p>
+      <div class="w-full max-w-xl">
+        <ul id="sortList" class="sortable space-y-2"></ul>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="checkSort" class="px-4 py-2 bg-maroon text-white rounded-full">Check</button>
+        <button id="newSort" class="px-4 py-2 border rounded-full">New set</button>
+      </div>
+      <div id="sortFeedback" class="mt-2 h-7 font-semibold"></div>
+    </section>
+
+    <!-- SLIDE 11 — Rational Numbers (Intro/Check) -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-1">Rational Numbers (Intro)</h2>
+      <p class="text-gray-600 mb-4 max-w-3xl">A rational number can be written as a fraction of integers (denominator ≠ 0). That includes integers (like –3), terminating decimals (0.25), and repeating decimals (0.3̅). We will operate on them later.</p>
+      <div class="grid md:grid-cols-2 gap-6 max-w-4xl">
+        <div class="p-4 rounded-xl border">
+          <h3 class="text-xl font-bold text-maroon mb-2">Quick Check: Rational or Not?</h3>
+          <div class="grid gap-2" id="ratCards">
+            <!-- Cards injected by JS -->
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button id="ratNew" class="px-4 py-2 border rounded-full">New examples</button>
+            <div id="ratScore" class="chip bg-green-50 border">Score: 0</div>
+          </div>
+        </div>
+        <div class="p-4 rounded-xl border text-left">
+          <h3 class="text-xl font-bold text-maroon mb-2">Why it matters (this unit)</h3>
+          <ul class="list-disc list-inside text-gray-700">
+            <li>Understand **opposites** and **distance** on the number line</li>
+            <li>Compare and order numbers accurately</li>
+            <li>Prepare for **operations with rational numbers** (add/subtract, multiply/divide)</li>
+          </ul>
+          <p class="text-sm text-gray-500 mt-2">Note: We will do **combined operations (BEDMAS)** later—<em>not in Week 1</em>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 — Technology Check -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Technology Check: Let’s Connect</h2>
+      <div class="grid md:grid-cols-3 gap-6 max-w-5xl">
+        <div class="p-5 rounded-2xl bg-gray-50 border">
+          <div class="text-5xl">①</div>
+          <h3 class="text-xl font-bold text-maroon">Join Google Classroom</h3>
+          <div class="mt-1 chip bg-yellow-50 border"><span class="font-semibold text-maroon">Code</span> MATH7‑2025</div>
+        </div>
+        <div class="p-5 rounded-2xl bg-gray-50 border">
+          <div class="text-5xl">②</div>
+          <h3 class="text-xl font-bold text-maroon">Submit “Hello” file</h3>
+          <p class="text-sm text-gray-600">Practice file upload</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-gray-50 border">
+          <div class="text-5xl">③</div>
+          <h3 class="text-xl font-bold text-maroon">Comment in the stream</h3>
+          <p class="text-sm text-gray-600">Introduce yourself</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 13 — Diagnostic (announcement only) -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Upcoming: Diagnostic Check</h2>
+      <p class="text-gray-700 max-w-3xl">A short, **ungraded** diagnostic will help us understand class starting points and plan review/extension accordingly. Not recorded as a grade; used only to support learning.</p>
+      <div class="mt-4 grid md:grid-cols-3 gap-4 max-w-3xl">
+        <div class="p-4 rounded-xl bg-green-50 border">✅ Not on your record</div>
+        <div class="p-4 rounded-xl bg-blue-50 border">🗺️ Informs lesson planning</div>
+        <div class="p-4 rounded-xl bg-amber-50 border">🧩 Targets practice groups</div>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 — Q&A / Contact -->
+    <section class="slide">
+      <h2 class="text-5xl font-extrabold text-maroon mb-2">Questions?</h2>
+      <p class="text-2xl text-gold mb-3">“Let’s make math amazing!”</p>
+      <div class="text-lg">
+        <p class="font-semibold">Mr. Nizar Bani Omar</p>
+        <p>2hg662@qla.qfschools.qa • Room 02</p>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+        <img src="../assets/qla_logo.png" alt="QLA Logo" class="h-16" />
+        <div class="w-[88%] h-[120px] banner rounded-md"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 14</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<script>
+(function(){
+  const slides = [...document.querySelectorAll('.slide')];
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  const deck = document.getElementById('slides');
+  const fsBtn = document.getElementById('fs');
+
+  let i = 0;
+
+  function show(k){
+    i = (k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+    counter.textContent = (i+1) + ' / ' + slides.length;
+    progress.style.width = ((i+1)/slides.length*100) + '%';
+    // Lazy render charts the first time their slide shows
+    if (document.getElementById('assessChart') && i === assessSlideIndex && !charts.assess) renderAssessChart();
+  }
+
+  prev.addEventListener('click', ()=>show(i-1));
+  next.addEventListener('click', ()=>show(i+1));
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFullscreen();
+  });
+
+  function toggleFullscreen(){
+    const el = document.getElementById('slides');
+    if (!document.fullscreenElement){
+      (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen).call(document);
+    }
+  }
+  fsBtn.addEventListener('click', toggleFullscreen);
+
+  /* ---------- ICEBREAKER SPINNER ---------- */
+  const spinCards = [...document.querySelectorAll('.spin-card')];
+  let spinTimer=null, idx=0;
+  function spin(){
+    spinTimer = setInterval(()=>{
+      spinCards.forEach(c=>c.classList.remove('active'));
+      spinCards[idx%spinCards.length].classList.add('active');
+      idx++;
+    },120);
+  }
+  function stopSpin(){ if(spinTimer){ clearInterval(spinTimer); spinTimer=null; } }
+  document.getElementById('spinBtn')?.addEventListener('click', ()=>{ stopSpin(); spin(); });
+  document.getElementById('spinStopBtn')?.addEventListener('click', stopSpin);
+
+  /* ---------- ASSESSMENT CHART ---------- */
+  const assessSlideIndex = 6; // slide #7 zero-based
+  const charts = { assess: null };
+  function renderAssessChart(){
+    // Data from Grade 7 Course Outline: counts per quarter (minima where listed)
+    const ctx = document.getElementById('assessChart').getContext('2d');
+    charts.assess = new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:['Q1','Q2','Q3','Q4'],
+        datasets:[
+          {label:'Coursework', data:[3,3,4,4], backgroundColor:'#6C1D45'},
+          {label:'Homework (min)', data:[6,4,6,6], backgroundColor:'#8a3d64'},
+          {label:'Quizzes', data:[1,2,2,2], backgroundColor:'#C7A34F'},
+          {label:'Tests', data:[1,0,2,1], backgroundColor:'#E8D5B7'}
+        ]
+      },
+      options:{
+        responsive:true,
+        scales:{ x:{ stacked:true }, y:{ beginAtZero:true, stacked:true } },
+        plugins:{ legend:{ position:'bottom' } }
+      }
+    });
+  }
+
+  /* ---------- OPPOSITES EXPLORER ---------- */
+  const oppoCanvas = document.getElementById('oppoLine');
+  const pDisp = id('pVal'), negPDisp=id('negPVal'), sumDisp=id('sumVal'), absDisp=id('absVal');
+  const randBtn = id('randP'), resetBtn=id('resetP'), snapBtn=id('snapGrid');
+
+  let NL = { min:-10, max:10, p: -3.2, dragging:false, snap:false };
+
+  function id(x){return document.getElementById(x)}
+  function map(x, a1,a2, b1,b2){ return b1 + (x-a1)*(b2-b1)/(a2-a1) }
+  function unmap(px, a1,a2, b1,b2){ return a1 + (px-b1)*(a2-a1)/(b2-b1) }
+
+  function drawOpposites(){
+    if(!oppoCanvas) return;
+    const c = oppoCanvas.getContext('2d');
+    const W = oppoCanvas.width = oppoCanvas.clientWidth * devicePixelRatio;
+    const H = oppoCanvas.height = oppoCanvas.clientHeight * devicePixelRatio;
+    c.scale(devicePixelRatio, devicePixelRatio);
+    c.clearRect(0,0,oppoCanvas.clientWidth,oppoCanvas.clientHeight);
+
+    const m = 24, y = oppoCanvas.clientHeight/2;
+    // Axis
+    c.lineWidth=2; c.strokeStyle='#6C1D45';
+    c.beginPath(); c.moveTo(m,y); c.lineTo(oppoCanvas.clientWidth-m,y); c.stroke();
+    // Ticks
+    for(let t=NL.min;t<=NL.max;t++){
+      const x = map(t, NL.min,NL.max, m,oppoCanvas.clientWidth-m);
+      c.beginPath(); c.moveTo(x,y-8); c.lineTo(x,y+8); c.stroke();
+      if(t%2===0){ c.fillStyle='#555'; c.font='12px Inter'; c.fillText(String(t), x-6, y+22); }
+    }
+    // Points
+    const px = map(NL.p, NL.min,NL.max, m,oppoCanvas.clientWidth-m);
+    const q = -NL.p; const qx = map(q, NL.min,NL.max, m,oppoCanvas.clientWidth-m);
+
+    // Segment to 0
+    const zeroX = map(0, NL.min,NL.max, m,oppoCanvas.clientWidth-m);
+    c.strokeStyle='#C7A34F'; c.lineWidth=4; c.beginPath(); c.moveTo(px,y); c.lineTo(qx,y); c.stroke();
+
+    // p point
+    c.fillStyle='#6C1D45'; c.beginPath(); c.arc(px,y,9,0,Math.PI*2); c.fill();
+    // -p point
+    c.fillStyle='#C7A34F'; c.beginPath(); c.arc(qx,y,9,0,Math.PI*2); c.fill();
+
+    // Labels
+    pDisp.textContent = NL.p.toFixed(2);
+    negPDisp.textContent = (-NL.p).toFixed(2);
+    sumDisp.textContent = (NL.p + (-NL.p)).toFixed(0);
+    absDisp.textContent = Math.abs(NL.p).toFixed(2);
+  }
+
+  function handleOppoPointer(e){
+    const rect = oppoCanvas.getBoundingClientRect();
+    const clientX = (e.touches? e.touches[0].clientX : e.clientX);
+    const x = clientX - rect.left;
+    let val = unmap(x, NL.min,NL.max, 24, oppoCanvas.clientWidth-24);
+    if(NL.snap){ val = Math.round(val*10)/10; }
+    val = Math.max(NL.min, Math.min(NL.max, val));
+    NL.p = val; drawOpposites();
+  }
+
+  if(oppoCanvas){
+    oppoCanvas.addEventListener('mousedown', e=>{ NL.dragging=true; handleOppoPointer(e) });
+    window.addEventListener('mousemove', e=>{ if(NL.dragging) handleOppoPointer(e) });
+    window.addEventListener('mouseup', ()=> NL.dragging=false);
+    oppoCanvas.addEventListener('touchstart', e=>{ NL.dragging=true; handleOppoPointer(e) }, {passive:false});
+    oppoCanvas.addEventListener('touchmove', e=>{ if(NL.dragging) handleOppoPointer(e) }, {passive:false});
+    oppoCanvas.addEventListener('touchend', ()=>NL.dragging=false);
+    randBtn?.addEventListener('click', ()=>{ NL.p = +( (Math.random()*20 -10).toFixed(2) ); drawOpposites(); });
+    resetBtn?.addEventListener('click', ()=>{ NL.p = -3.2; drawOpposites(); });
+    snapBtn?.addEventListener('click', ()=>{ NL.snap = !NL.snap; snapBtn.classList.toggle('ring-2'); drawOpposites(); });
+    // draw when slide first shows
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{ if(en.isIntersecting) drawOpposites(); });
+    },{threshold:.6});
+    obs.observe(oppoCanvas);
+  }
+
+  /* ---------- COMPARE TRAINER ---------- */
+  const leftNum = id('leftNum'), rightNum = id('rightNum'), cmpFb = id('cmpFeedback');
+  const decT = id('decimalsToggle'), negT = id('negativesToggle'), newPair = id('newPair');
+  const cmpBtns = [...document.querySelectorAll('.cmpBtn')];
+  const cmpCanvas = id('cmpLine');
+
+  let pair = {a: 0, b: 0}, streak=0;
+
+  function rndInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a }
+  function rndDec(a,b){ return Math.round((Math.random()*(b-a)+a)*100)/100 }
+  function newCompare(){
+    const useDec = decT.checked;
+    const includeNeg = negT.checked;
+    const lo = includeNeg ? -20 : 0, hi = 20;
+    pair.a = useDec ? rndDec(lo,hi) : rndInt(lo,hi);
+    pair.b = useDec ? rndDec(lo,hi) : rndInt(lo,hi);
+    leftNum.textContent = formatNum(pair.a);
+    rightNum.textContent = formatNum(pair.b);
+    cmpFb.textContent = '';
+    drawCmpLine();
+  }
+  function formatNum(x){
+    // show negative sign as '−' for typographic clarity
+    return (x<0 ? '−' + Math.abs(x).toString() : x.toString());
+  }
+  cmpBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const op = btn.dataset.op;
+      const correct = (op==='<' && pair.a < pair.b) || (op==='=' && pair.a === pair.b) || (op==='>' && pair.a > pair.b);
+      if(correct){ streak++; cmpFb.textContent='✅ Correct!'; cmpFb.className='text-green-700 font-semibold'; }
+      else { streak=0; cmpFb.textContent='❌ Try again'; cmpFb.className='text-red-700 font-semibold'; }
+      id('streak').textContent = streak;
+      drawCmpLine();
+    })
+  });
+  newPair?.addEventListener('click', newCompare);
+  decT?.addEventListener('change', newCompare);
+  negT?.addEventListener('change', newCompare);
+
+  function drawCmpLine(){
+    if(!cmpCanvas) return;
+    const c = cmpCanvas.getContext('2d');
+    const W = cmpCanvas.width = cmpCanvas.clientWidth * devicePixelRatio;
+    const H = cmpCanvas.height = cmpCanvas.clientHeight * devicePixelRatio;
+    c.scale(devicePixelRatio, devicePixelRatio);
+    c.clearRect(0,0,cmpCanvas.clientWidth,cmpCanvas.clientHeight);
+
+    const m=24, y = cmpCanvas.clientHeight/2;
+    const min=-20, max=20;
+    c.lineWidth=2; c.strokeStyle='#6C1D45';
+    c.beginPath(); c.moveTo(m,y); c.lineTo(cmpCanvas.clientWidth-m,y); c.stroke();
+    for(let t=min;t<=max;t+=5){
+      const x = map(t,min,max,m,cmpCanvas.clientWidth-m);
+      c.beginPath(); c.moveTo(x,y-8); c.lineTo(x,y+8); c.stroke();
+      c.fillStyle='#555'; c.font='12px Inter'; c.fillText(String(t), x-8,y+22);
+    }
+    const ax = map(pair.a,min,max,m,cmpCanvas.clientWidth-m);
+    const bx = map(pair.b,min,max,m,cmpCanvas.clientWidth-m);
+    c.fillStyle='#6C1D45'; c.beginPath(); c.arc(ax,y,9,0,Math.PI*2); c.fill();
+    c.fillStyle='#C7A34F'; c.beginPath(); c.arc(bx,y,9,0,Math.PI*2); c.fill();
+    // highlight smaller→larger region
+    c.globalAlpha=.15; c.fillStyle = pair.a<=pair.b ? '#C7A34F' : '#6C1D45';
+    const [L,R] = [Math.min(ax,bx), Math.max(ax,bx)];
+    c.fillRect(L,y-14, R-L, 28);
+    c.globalAlpha=1;
+  }
+
+  /* ---------- SORT THE NUMBERS ---------- */
+  const sortList = id('sortList'), sortFb = id('sortFeedback');
+  let sortData = [];
+  function newSortSet(){
+    sortData = [];
+    // 6 numbers with mix of ints & decimals including negatives
+    for(let k=0;k<6;k++){
+      const isDec = Math.random()<0.5;
+      const v = isDec ? rndDec(-20,20) : rndInt(-20,20);
+      sortData.push(v);
+    }
+    const shuffled = sortData.slice().sort(()=>Math.random()-0.5);
+    renderSort(shuffled);
+    sortFb.textContent='';
+  }
+  function renderSort(arr){
+    sortList.innerHTML='';
+    arr.forEach(v=>{
+      const li = document.createElement('li');
+      li.draggable = true;
+      li.className='bg-gray-50 border rounded-xl px-4 py-2 text-lg flex items-center justify-between';
+      li.innerHTML = `<span class="value">${formatNum(v)}</span><span class="cursor-move">⋮⋮</span>`;
+      sortList.appendChild(li);
+    });
+    makeSortable(sortList);
+  }
+  function makeSortable(ul){
+    let dragEl=null;
+    ul.querySelectorAll('li').forEach(li=>{
+      li.addEventListener('dragstart',()=>{ dragEl=li; li.classList.add('dragging'); });
+      li.addEventListener('dragend',()=>{ dragEl=null; li.classList.remove('dragging'); });
+    });
+    ul.addEventListener('dragover',(e)=>{
+      e.preventDefault();
+      const after = getDragAfterElement(ul, e.clientY);
+      if(after==null) ul.appendChild(dragEl); else ul.insertBefore(dragEl, after);
+    });
+    function getDragAfterElement(container, y){
+      const els = [...container.querySelectorAll('li:not(.dragging)')];
+      return els.reduce((closest,child)=>{
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height/2;
+        if(offset<0 && offset>closest.offset) return {offset, element:child};
+        else return closest;
+      },{offset:Number.NEGATIVE_INFINITY}).element;
+    }
+  }
+  id('checkSort')?.addEventListener('click', ()=>{
+    const current = [...sortList.querySelectorAll('.value')].map(s=> s.textContent.replace('−','-')).map(Number);
+    const correct = current.every((v,idx,arr)=> idx===0 || arr[idx-1]<=v);
+    sortFb.textContent = correct ? '✅ Correct order' : '❌ Not quite—try again';
+    sortFb.className = 'mt-2 h-7 font-semibold ' + (correct ? 'text-green-700':'text-red-700');
+  });
+  id('newSort')?.addEventListener('click', newSortSet);
+
+  /* ---------- RATIONAL QUICK CHECK ---------- */
+  const ratBank = [
+    {txt:'-3', rat:true}, {txt:'0.25', rat:true}, {txt:'1.5', rat:true}, {txt:'0.3̅', rat:true},
+    {txt:'7', rat:true}, {txt:'-12.75', rat:true}, {txt:'2.0', rat:true},
+    // Include one or two non-examples gently (labelled “later”)
+    {txt:'√2 (later)', rat:false}, {txt:'π (later)', rat:false}
+  ];
+  let ratScore=0;
+  function drawRatCards(){
+    const ct = id('ratCards'); ct.innerHTML='';
+    const pick = ratBank.slice().sort(()=>Math.random()-0.5).slice(0,6);
+    pick.forEach((item, idx)=>{
+      const row = document.createElement('div');
+      row.className='flex items-center justify-between gap-2';
+      row.innerHTML = `<div class="px-3 py-2 rounded-lg bg-gray-50 border flex-1 text-left">${item.txt}</div>
+        <div class="flex gap-2">
+          <button class="px-3 py-1 border rounded" data-i="${idx}" data-ans="rat">Rational</button>
+          <button class="px-3 py-1 border rounded" data-i="${idx}" data-ans="not">Not</button>
+        </div>`;
+      ct.appendChild(row);
+    });
+    // wire up
+    [...ct.querySelectorAll('button')].forEach((b)=>{
+      b.addEventListener('click', ()=>{
+        const label = b.parentElement.previousElementSibling.textContent.trim();
+        const truth = ratBank.find(x=>x.txt===label)?.rat ?? true;
+        const guess = b.dataset.ans==='rat';
+        if(guess===truth){ ratScore++; id('ratScore').textContent='Score: '+ratScore; flash(b,'#d1fae5'); }
+        else { ratScore=0; id('ratScore').textContent='Score: 0'; flash(b,'#fee2e2'); }
+      })
+    });
+  }
+  function flash(el, color){
+    const orig = el.style.backgroundColor; el.style.backgroundColor = color;
+    setTimeout(()=>{ el.style.backgroundColor = orig }, 320);
+  }
+  id('ratNew')?.addEventListener('click', drawRatCards);
+
+  /* ---------- INIT ---------- */
+  function init(){
+    show(0);
+    newCompare();
+    newSortSet();
+    drawRatCards();
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>

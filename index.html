@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>QLA Mathematics Portal | Qatar Leadership Academy</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root{
+      --maroon:#6C1D45; --maroon2:#8B2450; --gold:#C7A34F; --gold2:#E4D4A8;
+      --ink:#0F172A; --slate:#5b6572; --line:#e9eef2; --bg:#F7FAFC;
+      --ok:#136f3a; --soon:#8a3d00;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5}
+
+    /* HERO (keeps ONLY the background banner) */
+    .hero{
+      position:relative; color:#fff;
+      background:
+        linear-gradient(135deg, rgba(108,29,69,.88) 0%, rgba(139,36,80,.84) 45%, rgba(108,29,69,.88) 100%),
+        url('assets/qla_banner.png') center/cover no-repeat;
+      overflow:hidden;
+    }
+    .hero::before{
+      content:""; position:absolute; inset:-40% -40% auto auto;
+      width:200%; height:200%;
+      background:radial-gradient(circle, rgba(199,163,79,.22) 0%, transparent 70%);
+      animation:float 22s ease-in-out infinite; pointer-events:none;
+    }
+    @keyframes float{0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(30px,-30px) rotate(120deg)} 66%{transform:translate(-20px,20px) rotate(240deg)}}
+    @media (prefers-reduced-motion: reduce){ .hero::before{animation:none} }
+
+    /* White logo tile for clarity */
+    .logo-tile{
+      background:#fff; border:1px solid var(--line); border-radius:16px;
+      padding:8px 10px; display:inline-flex; align-items:center; justify-content:center;
+      box-shadow:0 10px 24px rgba(0,0,0,.08)
+    }
+    .logo-crisp{height:60px;width:auto;image-rendering:auto}
+    @media (min-width:1024px){ .logo-crisp{height:68px} }
+
+    /* Tabs */
+    .tabs{ display:flex; gap:10px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.35); border-radius:14px; padding:6px }
+    .tab{ flex:1; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); color:#fff; background:transparent; cursor:pointer; font-weight:800 }
+    .tab[aria-selected="true"]{ background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--maroon) }
+
+    /* Cards & rows */
+    .card{ background:#fff; border:1px solid var(--line); border-radius:18px; }
+    .row{ border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+          display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff;
+          transition:transform .2s ease, box-shadow .2s ease }
+    .row:hover{ transform:translateX(4px); box-shadow:0 12px 28px rgba(0,0,0,.06) }
+    .status{font-size:11px; padding:6px 12px; border-radius:999px; border:1px solid transparent; text-transform:uppercase; letter-spacing:.3px}
+    .open{ background:rgba(19,111,58,.1); color:var(--ok); border-color:rgba(19,111,58,.25) }
+    .soon{ background:rgba(186,91,8,.08); color:var(--soon); border-color:rgba(186,91,8,.25) }
+
+    .kbd{ font-variant-numeric:tabular-nums; font-weight:700; padding:.1rem .35rem; border-radius:.4rem; border:1px solid #d1d5db; background:#fff }
+  </style>
+</head>
+<body>
+
+  <!-- HERO (banner only; no right-side block) -->
+  <header class="hero shadow-2xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="flex items-center justify-between py-6">
+        <div class="flex items-center gap-4">
+          <!-- White background tile for clarity -->
+          <span class="logo-tile">
+            <!-- Use SVG if you placed one at assets/qla_logo.svg; fallback to PNG -->
+            <img src="assets/qla_logo.svg" onerror="this.onerror=null;this.src='assets/qla_logo.png'" alt="QLA Logo" class="logo-crisp"/>
+          </span>
+          <div>
+            <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins,Inter,sans-serif">Mathematics Portal</h1>
+            <p class="text-sm opacity-90 mt-1">Qatar Leadership Academy • Qatar Foundation</p>
+          </div>
+        </div>
+        <!-- nothing on the right per your request -->
+        <div class="hidden lg:block"></div>
+      </div>
+
+      <div class="pb-6 flex items-center gap-4">
+        <div class="tabs" role="tablist" aria-label="Grade tabs">
+          <button id="tab7" role="tab" class="tab" aria-selected="true" aria-controls="panel7"><i class="fas fa-graduation-cap"></i> Grade 7</button>
+          <button id="tab8" role="tab" class="tab" aria-selected="false" aria-controls="panel8"><i class="fas fa-graduation-cap"></i> Grade 8</button>
+        </div>
+        <div class="ml-auto hidden sm:flex items-center gap-4 bg-white/10 backdrop-blur rounded-2xl px-4 py-2">
+          <div class="flex items-center gap-2"><span class="kbd">/</span><span class="text-xs">Search</span></div>
+          <div class="flex items-center gap-2"><span class="kbd">G</span><span class="text-xs">Switch Grade</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Teacher + search -->
+   <section class="grid gap-6 md:grid-cols-2">
+  <!-- Teacher 1: Mr. Mohammad Abu Ghuwaleh -->
+  <div class="card p-5">
+    <div class="flex items-start gap-4">
+      <img src="assets/teacher_photo.jpg" alt="Mr. Mohammad Abu Ghuwaleh"
+           class="w-16 h-16 rounded-lg object-cover border border-[--line]"/>
+      <div>
+        <div class="font-extrabold">Mr. Mohammad Abu Ghuwaleh</div>
+        <div class="text-sm text-white bg-[--maroon] inline-block px-2 py-0.5 rounded mt-1">Room 02</div>
+        <div class="text-sm mt-2">
+          <a class="underline decoration-dotted" href="mailto:2ed944@qla.qfschools.qa">2ed944@qla.qfschools.qa</a>
+        </div>
+        <div class="text-xs text-slate-600 mt-2"> </div>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-2">
+      <a class="row" href="grade7/welcome.html">
+        <span>Grade 7 — Welcome & Orientation</span><span class="status open">Open</span>
+      </a>
+      <a class="row" href="grade8/welcome.html">
+        <span>Grade 8 — Welcome & Orientation</span><span class="status open">Open</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Teacher 2: Mr. Nizar Bani Omar -->
+  <div class="card p-5">
+    <div class="flex items-start gap-4">
+      <img src="assets/teacher_parallel.jpg" alt="Mr. Nizar Bani Omar"
+           class="w-16 h-16 rounded-lg object-cover border border-[--line]"/>
+      <div>
+        <div class="font-extrabold">Mr. Nizar Bani Omar</div>
+        <div class="text-sm text-white bg-[--maroon] inline-block px-2 py-0.5 rounded mt-1">Room 09</div>
+        <div class="text-sm mt-2">
+          <a class="underline decoration-dotted" href="mailto:2hg662@qla.qfschools.qa">2hg662@qla.qfschools.qa</a>
+        </div>
+        <div class="text-xs text-slate-600 mt-2"></div>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-2">
+      <a class="row" href="grade7/welcome_Nizar.html">
+        <span>Grade 7 — Welcome & Orientation </span><span class="status open">Open</span>
+      </a>
+      <a class="row" href="grade8/welcome_Nizar.html">
+        <span>Grade 8 — Welcome & Orientation </span><span class="status open">Open</span>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="card p-5 mt-6">
+  <label class="block text-sm font-semibold text-slate-700 mb-1" for="q">
+    Search lessons (title, keywords)…
+  </label>
+  <div class="relative">
+    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+    <input id="q" type="search"
+           placeholder="e.g., Fractions, BIDMAS, Pythagoras, Geometry"
+           class="w-full rounded-xl border border-[--line] pl-10 pr-3 py-2
+                  focus:outline-none focus:border-[--gold]"/>
+  </div>
+  <p class="text-xs text-slate-500 mt-1">
+    Tip: press <span class="kbd">/</span> to focus; <span class="kbd">G</span> to switch grade.
+  </p>
+</section>
+    
+<!-- Panels -->
+    <section id="panel7" role="tabpanel" aria-labelledby="tab7" aria-hidden="false" class="mt-8">
+      <div class="card p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <div class="rounded-xl bg-[--maroon] text-white w-11 h-11 grid place-items-center shadow"><i class="fas fa-flag"></i></div>
+          <div>
+            <div class="font-extrabold text-lg">Lesson 1 — Welcome & Orientation</div>
+            <div class="text-sm text-slate-600">Course overview • Expectations • Digital tools</div>
+          </div>
+          <div class="ml-auto"><a class="status open" href="grade7/welcome.html">Open</a></div>
+        </div>
+      </div>
+      <div id="g7-units"></div>
+    </section>
+
+    <section id="panel8" role="tabpanel" aria-labelledby="tab8" aria-hidden="true" class="mt-8 hidden">
+      <div class="card p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <div class="rounded-xl bg-[--maroon] text-white w-11 h-11 grid place-items-center shadow"><i class="fas fa-flag"></i></div>
+          <div>
+            <div class="font-extrabold text-lg">Lesson 1 — Welcome & Orientation</div>
+            <div class="text-sm text-slate-600">Course overview • Expectations • Digital tools</div>
+          </div>
+          <div class="ml-auto"><a class="status open" href="grade8/welcome.html">Open</a></div>
+        </div>
+      </div>
+      <div id="g8-units"></div>
+    </section>
+
+    <footer class="mt-12 mb-8 text-center text-sm text-slate-500">
+      © <span id="year"></span> Qatar Leadership Academy — Member of Qatar Foundation • <strong>Created by Mohammad Abu Ghuwaleh</strong>
+    </footer>
+  </main>
+
+  <script>
+    // --------- Course Outline data ----------
+   const grade7Units = [
+  {
+    num: 1,
+    when: "Sep–Nov 2025 (9 wks)",
+    name: "Unit 1 — Numbers; Properties of Numbers & Fractions",
+    lessons: [
+      "Number System Overview (Rational & Irrational Numbers)",
+      "Prime Factorization Toolkit (Factors/Multiples • Prime/Composite • Factor Trees • HCF/LCM)",
+      "Comparing & Simplifying Rational Numbers",
+      "Add/Sub across Rationals",
+      "Multiply/Divide across Rationals",
+      "Absolute Value of Numbers",
+      "Applications & Word Problems",
+      "BEDMAS with Rationals"
+    ]
+  },
+  {
+    num: 2,
+    when: "Nov–Dec 2025 (3 wks)",
+    name: "Unit 2 — Expressions (Linear Expressions)",
+    lessons: [
+      "Rules for Writing Algebraic Expressions ",
+      "Simplify by Collecting Like Terms ",
+      "Algebraic Products ",
+      "Evaluating Algebraic Expressions ",
+      "Expanding Brackets ",
+      "Factorizing Expressions "
+    ]
+  },
+  {
+    num: 3,
+    when: "Dec 2025 (2 wks)",
+    name: "Unit 3 — Equations (Solving Linear Equations)",
+    lessons: [
+      "Solving One‑step Equations ",
+      "Solving Two‑step Equations ",
+      "Multi‑step Equations "
+    ]
+  },
+  {
+    num: 4,
+    when: "Jan–Feb 2026 (2 wks)",
+    name: "Unit 4 — Ratios & Proportional Relationships",
+    lessons: [
+      "Expressing Ratios & Writing Ratios as Fractions",
+      "Simplifying & Equivalent Ratios ",
+      "Problem Solving Using Ratios ",
+      "Using Ratios to Divide Quantities "
+    ]
+  },
+  {
+    num: 5,
+    when: "Feb–Mar 2026 (3 wks)",
+    name: "Unit 5 — Coordinates (Coordinate Plane)",
+    lessons: [
+      "Plotting Positive & Negative Coordinates ",
+      "Plotting Points from a Table of Values ",
+      "Graphing Straight Lines ",
+      "Drawing Linear Graphs ",
+      "Horizontal & Vertical Lines ",
+      "Drawing Using X, Y Intercepts "
+    ]
+  },
+  {
+    num: 6,
+    when: "Apr 2026 (3 wks)",
+    name: "Unit 6 — Statistics & Probability — Statistics",
+    lessons: [
+      "Tally & Frequency Tables ",
+      "Grouping Data (Worksheet)",
+      "Reading Bar Charts ",
+      "Drawing Bar Charts  — Q1, Q2, Q4",
+      "Stem & Leaf Plots ",
+      "Mode, Median, Mean & Range ",
+      "Mean from a Frequency Table "
+    ]
+  },
+  {
+    num: 7,
+    when: "May–Jun 2026 (4 wks)",
+    name: "Unit 7 — Statistics & Probability — Simple Probability",
+    lessons: [
+      "Describing Probability ",
+      "Assigning Numbers to Probability ",
+      "Sample Space ",
+      "Compound Events ",
+      "Probability Trees ",
+      "Theoretical Probability ",
+      "Complementary Events "
+    ]
+  }
+];
+
+
+    const grade8Units = [
+      { name:"Unit 1 — The Number System", lessons:[
+        "Review of BEDMAS & absolute value","Converting recurring decimals",
+        "Rounding numbers","Squares & roots","Operations on fractions"
+      ]},
+      { name:"Unit 2 — Geometry of Polygons", lessons:[
+        "Angle facts (supplementary, complementary, vertical, adjacent)","Angles in triangles","Isosceles triangle",
+        "Angles of quadrilaterals","Algebraic equations in geometry (worksheet)","Parallel lines (worksheet)",
+        "Angles in polygons (sum, interior & exterior)"
+      ]},
+      { name:"Unit 3 — Transformations & Congruence", lessons:[
+        "Translations (worksheet)","Rotations (worksheet)","Reflections (worksheet)","Enlargements (worksheet)"
+      ]},
+      { name:"Unit 4 — Statistics", lessons:["Pie charts (worksheet)","Histograms (worksheet)"]},
+      { name:"Unit 5 — Pythagorean Theorem", lessons:[
+        "Find hypotenuse","Find missing sides","Converse of Pythagoras","Problem solving"
+      ]},
+      { name:"Unit 6 — Expressions & Equations (Systems)", lessons:[
+        "Two- & three-step equations","Solution by elimination","Solution by equating","Solution by substitution"
+      ]},
+      { name:"Unit 7 — Geometry Measurement", lessons:[
+        "Converting metric units","Parts of a circle (worksheet)","Circumference & area of a circle",
+        "Perimeter of polygons","Area of polygons","Composite shapes (area)",
+        "Volume of cuboids","Volume of prisms","Volume of a cylinder"
+      ]},
+      { name:"Unit 8 — Statistics & Probability (Compound)", lessons:["Simple events with & without replacement"]},
+      { name:"Unit 9 — Constructions (Congruence & Similarity)", lessons:[
+        "Construct ASA triangle (worksheet)","Construct SAS triangle (worksheet)","Construct SSS triangle (worksheet)"
+      ]},
+      { name:"Unit 10 — Percentages", lessons:[
+        "Interchanging number forms","Decimals ⇄ percentages","One quantity as % of another","% increase & decrease","% change"
+      ]}
+    ];
+
+    // --------- Helpers ----------
+    const $=(s,el=document)=>el.querySelector(s);
+    const panel7=$("#panel7"), panel8=$("#panel8");
+    const tab7=$("#tab7"), tab8=$("#tab8"); const q=$("#q");
+
+    function buildUnits(container, gradeFolder, units){
+      container.innerHTML="";
+      let idx=2; // after welcome
+      units.forEach((u,ui)=>{
+        const block=document.createElement("div");
+        block.className="card p-5 mb-5";
+        block.innerHTML=`
+          <div class="flex items-center gap-3 mb-3">
+            <div class="rounded-xl bg-[--maroon] text-white w-11 h-11 grid place-items-center shadow">${ui+1}</div>
+            <div>
+              <h3 class="font-bold text-lg">${u.name}</h3>
+              <div class="text-xs text-slate-600">${u.lessons.length} lesson(s)</div>
+            </div>
+          </div>
+          <div class="grid gap-2 md:grid-cols-2 lg:grid-cols-3" id="${gradeFolder}-u${ui}"></div>
+        `;
+        container.appendChild(block);
+        const list=$(`#${gradeFolder}-u${ui}`);
+        u.lessons.forEach(title=>{
+          const href=`${gradeFolder}/lesson-${idx}.html`;
+          const row=document.createElement("div");
+          row.className="row";
+          row.innerHTML=`<span class="font-semibold">${title}</span><span class="status">Checking…</span>`;
+          // Existence check
+          fetch(href,{method:"HEAD"}).then(r=>{
+            const badge=row.querySelector(".status");
+            if(r.ok){
+              badge.className="status open"; badge.textContent="Open";
+              row.style.cursor="pointer"; row.addEventListener("click",()=>location.href=href);
+            }else{
+              badge.className="status soon"; badge.textContent="Coming soon";
+              row.classList.add("opacity-80");
+            }
+          }).catch(()=>{
+            const badge=row.querySelector(".status");
+            badge.className="status soon"; badge.textContent="Coming soon";
+            row.classList.add("opacity-80");
+          });
+          list.appendChild(row);
+          idx++;
+        });
+      });
+    }
+
+    function activate(which){
+      const is7 = which==="7";
+      tab7.setAttribute("aria-selected", is7?"true":"false");
+      tab8.setAttribute("aria-selected", is7?"false":"true");
+      panel7.classList.toggle("hidden", !is7);
+      panel8.classList.toggle("hidden", is7);
+      panel7.setAttribute("aria-hidden", is7?"false":"true");
+      panel8.setAttribute("aria-hidden", is7?"true":"false");
+      q.value=""; filter("");
+      localStorage.setItem("qla_grade", which);
+    }
+
+    function filter(text){
+      const panel = panel7.getAttribute("aria-hidden")==="false" ? panel7 : panel8;
+      const rows = panel.querySelectorAll(".row");
+      const t=(text||"").toLowerCase();
+      rows.forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(t) ? "" : "none"; });
+      panel.querySelectorAll(".card").forEach(c=>{
+        const any=[...c.querySelectorAll(".row")].some(x=>x.style.display!=="none"); c.style.display=any?"":"none";
+      });
+    }
+
+    tab7.addEventListener("click",()=>activate("7"));
+    tab8.addEventListener("click",()=>activate("8"));
+    document.addEventListener("keydown",(e)=>{
+      if(e.key==="/"){ e.preventDefault(); q.focus(); }
+      if(e.key.toLowerCase()==="g"){ activate(tab7.getAttribute("aria-selected")==="true" ? "8" : "7"); }
+    });
+    q.addEventListener("input",e=>filter(e.target.value));
+
+    // Render
+    buildUnits($("#g7-units"),"grade7",grade7Units);
+    buildUnits($("#g8-units"),"grade8",grade8Units);
+    activate(localStorage.getItem("qla_grade")||"7");
+    document.getElementById("year").textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

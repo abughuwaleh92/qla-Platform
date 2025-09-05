@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G7 • Unit 1 • Number System Overview (Rational & Irrational) — QLA</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX (auto-render) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  // Boot KaTeX & expose rerender helper
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root=document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t=setInterval(()=>{ if(window.renderMathInElement){ clearInterval(t); run(); }},25);
+      setTimeout(()=>clearInterval(t),6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:110px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  /* Popover */
+  #pop{position:fixed;inset:auto auto 20px 20px;max-width:min(560px,90vw);background:#fff;border:2px solid var(--gold);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding:14px 16px;z-index:40;display:none;text-align:left}
+  #pop strong{color:var(--maroon)} #pop .close{float:right;color:#666;cursor:pointer;font-weight:800}
+
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+
+  /* Clean SVG Venn */
+  #venn svg{width:100%;height:auto;max-height:420px}
+  .ring{fill-opacity:.24;stroke:#C7A34F;stroke-width:3}
+  .ring.R{fill:#fdeaf2} .ring.Q{fill:#e7f5ff} .ring.Z{fill:#eafbe7} .ring.W{fill:#f6f7ff} .ring.N{fill:#fff7e6}
+  .ring.dim{opacity:.25} .ring.hl{stroke-width:5;fill-opacity:.42}
+  .legend-badge{display:inline-block;padding:.15rem .45rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;margin-right:.35rem}
+</style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white" id="titleSlide">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-20 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Number System Overview</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Rational &amp; Irrational • Sets N/W/Z/Q • Terminating vs Repeating • \( \overline{\text{Repeats}} \rightarrow \) Fractions</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Grade 7</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Aligned to AERO 7.NS readiness.</div>
+    </section>
+
+    <!-- 1 • LOs + Keywords -->
+    <section class="slide" id="loSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Objectives &amp; Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Objectives</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Classify numbers into \( \mathbb N \) (N), \( \mathbb W \) (W), \( \mathbb Z \) (Z), \( \mathbb Q \) (Q), or Irrational.</li>
+            <li>Explain why **terminating** and **repeating** decimals are rational; others are **irrational**.</li>
+            <li>Convert repeating decimals like \(0.\overline{3}\) or \(2.\overline{7}\) into **fractions**.</li>
+            <li>Apply classification in short **real‑world** contexts.</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="Nkey">Natural numbers (N)</span>
+            <span class="chip" data-key="Wkey">Whole numbers (W)</span>
+            <span class="chip" data-key="Zkey">Integers (Z)</span>
+            <span class="chip" data-key="Qkey">Rational numbers (Q)</span>
+            <span class="chip" data-key="Ikey">Irrational numbers</span>
+            <span class="chip" data-key="term">Terminating decimals</span>
+            <span class="chip" data-key="rep">Repeating decimals</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">Convention: \( \mathbb N=\{1,2,3,\dots\} \), \( \mathbb W=\{0,1,2,3,\dots\} \).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Tap-to-reveal -->
+    <section class="slide" id="revealSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Tap to Reveal</h2>
+      <div class="grid md:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Sets (short &amp; sweet)</h3>
+          <div class="space-y-2 text-lg">
+            <button class="chip rev" data-t="N">Natural numbers (N)</button>
+            <button class="chip rev" data-t="W">Whole numbers (W)</button>
+            <button class="chip rev" data-t="Z">Integers (Z)</button>
+            <button class="chip rev" data-t="Q">Rational (Q)</button>
+            <button class="chip rev" data-t="I">Irrational</button>
+            <div id="revBox1" class="mt-3"></div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Decimals</h3>
+          <div class="space-y-2 text-lg">
+            <button class="chip revd" data-t="term">Terminating</button>
+            <button class="chip revd" data-t="rep">Repeating</button>
+            <button class="chip revd" data-t="irr">Non‑repeating</button>
+            <div id="revBox2" class="mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 • Clean SVG Venn -->
+    <section class="slide" id="vennSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Sets Inside Sets — Clean Venn</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="venn" class="w-full">
+          <svg viewBox="0 0 960 420" role="img" aria-label="Nested sets">
+            <ellipse class="ring R" cx="480" cy="210" rx="430" ry="170"></ellipse>
+            <ellipse class="ring Q" cx="480" cy="210" rx="365" ry="145"></ellipse>
+            <ellipse class="ring Z" cx="480" cy="210" rx="300" ry="120"></ellipse>
+            <ellipse class="ring W" cx="480" cy="210" rx="235" ry="95"></ellipse>
+            <ellipse class="ring N" cx="480" cy="210" rx="170" ry="70"></ellipse>
+
+            <text x="90" y="85" font-size="16" font-weight="700">ℝ (Real)</text>
+            <text x="120" y="120" font-size="16" font-weight="700">ℚ (Rational)</text>
+            <text x="150" y="155" font-size="16" font-weight="700">ℤ (Integers)</text>
+            <text x="180" y="190" font-size="16" font-weight="700">𝕎 (Whole)</text>
+            <text x="210" y="225" font-size="16" font-weight="700">ℕ (Natural)</text>
+
+            <text x="690" y="95"  font-size="14">e.g., all real numbers</text>
+            <text x="690" y="130" font-size="14">… , −1, 0, 1/2, 2.75, 0.\u0305(3)</text>
+            <text x="690" y="165" font-size="14">… , −2, −1, 0, 1, 2, …</text>
+            <text x="690" y="200" font-size="14">0, 1, 2, 3, …</text>
+            <text x="690" y="235" font-size="14">1, 2, 3, …</text>
+          </svg>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2 text-sm">
+          <button class="btn hlBtn" data-k="R">Highlight ℝ</button>
+          <button class="btn hlBtn" data-k="Q">Highlight ℚ</button>
+          <button class="btn hlBtn" data-k="Z">Highlight ℤ</button>
+          <button class="btn hlBtn" data-k="W">Highlight 𝕎</button>
+          <button class="btn hlBtn" data-k="N">Highlight ℕ</button>
+          <button class="btn" id="hlClear">Clear</button>
+        </div>
+        <div class="mt-2 text-sm">
+          <span class="legend-badge">ℕ ⊂ 𝕎 ⊂ ℤ ⊂ ℚ ⊂ ℝ</span>
+          <span class="legend-badge">Irrational = ℝ \ ℚ (e.g., \( \pi, \sqrt2, e \))</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 • Hierarchy Map -->
+    <section class="slide" id="mapSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Hierarchy Map of the Real Numbers</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="text-lg">
+          <p>\( \mathbb N \subset \mathbb W \subset \mathbb Z \subset \mathbb Q \subset \mathbb R \). Irrational \(=\mathbb R\setminus\mathbb Q\).</p>
+          <div class="grid md:grid-cols-3 gap-3 mt-3">
+            <div class="p-3 border rounded bg-white"><b>\( \mathbb N \)</b> (N): \(1,2,3,\dots\)</div>
+            <div class="p-3 border rounded bg-white"><b>\( \mathbb W \)</b> (W): \(0,1,2,3,\dots\)</div>
+            <div class="p-3 border rounded bg-white"><b>\( \mathbb Z \)</b> (Z): \(\dots,-2,-1,0,1,2,\dots\)</div>
+            <div class="p-3 border rounded bg-white"><b>\( \mathbb Q \)</b> (Q): \(\frac ab\) with \(a,b\in\mathbb Z, b\neq0\)</div>
+            <div class="p-3 border rounded bg-white"><b>Irrational</b>: \( \pi,\ \sqrt2,\ e,\ \sqrt{3},\dots \)</div>
+            <div class="p-3 border rounded bg-white">Decimals: terminating / repeating ⇒ rational; otherwise irrational.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 • Classify (levels) -->
+    <section class="slide" id="classSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Classify Each Number (smallest set)</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="clLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard</option>
+          </select>
+          <button id="clNew" class="btn">New set</button>
+          <button id="clExportCSV" class="btn">Export CSV</button>
+          <button id="clExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="clList" class="grid md:grid-cols-2 gap-3 mt-3"></div>
+        <div class="mt-3">
+          <button id="clCheck" class="btn maroon">Check</button>
+          <div id="clFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 • Terminating vs Repeating — Intuition (no PF words) -->
+    <section class="slide" id="tvrexpSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Terminating vs Repeating — Intuition</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="text-lg space-y-2">
+          <p><b>Big idea:</b> A fraction \( \tfrac{a}{b} \) has a <b>terminating</b> decimal when we can make a denominator like \(10, 100, 1000,\dots\).</p>
+          <p>That happens exactly when \(b\) is made only by multiplying <b>2s</b> and <b>5s</b> (e.g., \(4=2\cdot2\), \(20=2\cdot2\cdot5\)).  
+             If we need any other number (like 3 or 7), the decimal will <b>repeat</b>.</p>
+          <p><b>Quick test:</b> Reduce \( \tfrac{a}{b} \). Keep dividing the denominator by 2 while you can, then by 5 while you can.  
+             If you end at 1 → <b>terminating</b>; otherwise → <b>repeating</b>.</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4 mt-3">
+          <div class="card p-4">
+            <div class="text-sm">Tester (enter a denominator \(b\) from a reduced fraction):</div>
+            <input id="tvb" class="border rounded px-2 py-1 w-40 mt-1" placeholder="e.g., 40 or 12"/>
+            <button id="tvTest" class="btn maroon mt-1">Test \(b\)</button>
+            <div id="tvOut" class="mt-2"></div>
+          </div>
+          <div class="card p-4">
+            <div>Examples:</div>
+            <ul class="list-disc list-inside text-lg">
+              <li>\( \tfrac14 = 0.25\) (since \(4=2\cdot2\)) → terminating</li>
+              <li>\( \tfrac25 = 0.4\) (since \(5\)) → terminating</li>
+              <li>\( \tfrac16 = 0.1666\dots\) (needs a 3) → repeating</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 • Terminating or Repeating? (activity) -->
+    <section class="slide" id="termRepSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Terminating or Repeating? (Fractions)</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="trList" class="grid md:grid-cols-2 gap-3 mt-2"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="trNew" class="btn">New set</button>
+          <button id="trCheck" class="btn maroon">Check</button>
+          <button id="trExportCSV" class="btn">Export CSV</button>
+          <button id="trExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="trFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 8 • EXPLAIN: Repeating → Fraction (using overline) -->
+    <section class="slide" id="repExplSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Repeating Decimals → Fractions (with \( \overline{\phantom{9}} \))</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="text-lg space-y-2">
+          <p>We use an <b>overline</b> to show the repeating part: \(0.\overline{3}\), \(0.\overline{27}\), \(3.\overline{6}\).</p>
+          <p><b>Rule A — pure repeat:</b> If \(x=0.\overline{R}\) and the block \(R\) has \(r\) digits, then  
+            \[ x=\frac{R}{\underbrace{99\ldots 9}_{r\ \text{nines}}}. \]
+            Examples: \(0.\overline{3}=\tfrac{3}{9}=\tfrac13\), \(0.\overline{27}=\tfrac{27}{99}=\tfrac{3}{11}\).</p>
+          <p><b>Rule B — whole number + repeat:</b> If \(x=I.\overline{R}\) (same \(R\) of length \(r\)), then  
+            \[ x=\frac{I\cdot(\underbrace{99\ldots9}_{r})+R}{\underbrace{99\ldots9}_{r}}. \]
+            Example: \(3.\overline{6}=\dfrac{3\cdot 9+6}{9}=\dfrac{33}{9}=\dfrac{11}{3}\).</p>
+        </div>
+
+        <!-- Builders: students do not need to type \overline{} -->
+        <div class="grid md:grid-cols-2 gap-4 mt-3">
+          <div class="card p-4">
+            <h4 class="font-bold text-maroon mb-1">Pure repeat \(0.\overline{R}\)</h4>
+            <div class="text-sm mb-1">Repeating block \(R\) (1–3 digits):</div>
+            <input id="pureBlock" class="border rounded px-2 py-1 w-32" placeholder="e.g., 3 or 27">
+            <div class="mt-1 flex flex-wrap gap-2">
+              <button class="btn fillPure" data-block="3">\(0.\overline{3}\)</button>
+              <button class="btn fillPure" data-block="6">\(0.\overline{6}\)</button>
+              <button class="btn fillPure" data-block="27">\(0.\overline{27}\)</button>
+            </div>
+            <button id="pureSolve" class="btn maroon mt-2">Show fraction</button>
+            <div id="pureOut" class="mt-2"></div>
+          </div>
+
+          <div class="card p-4">
+            <h4 class="font-bold text-maroon mb-1">Whole + repeat \(I.\overline{R}\)</h4>
+            <div class="text-sm">Whole \(I\):</div>
+            <input id="wholeI" class="border rounded px-2 py-1 w-24" placeholder="e.g., 2">
+            <div class="text-sm mt-2">Repeating block \(R\) (1–3 digits):</div>
+            <input id="wholeBlock" class="border rounded px-2 py-1 w-32" placeholder="e.g., 7 or 45">
+            <div class="mt-1 flex flex-wrap gap-2">
+              <button class="btn fillWhole" data-i="2" data-block="7">\(2.\overline{7}\)</button>
+              <button class="btn fillWhole" data-i="3" data-block="45">\(3.\overline{45}\)</button>
+            </div>
+            <button id="wholeSolve" class="btn maroon mt-2">Show fraction</button>
+            <div id="wholeOut" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 • Practice: Repeating → Fraction -->
+    <section class="slide" id="repFracSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice: Convert \( \overline{\text{Repeats}} \) → Fractions</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="rfList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="rfNew" class="btn">New set</button>
+          <button id="rfCheck" class="btn maroon">Check</button>
+          <button id="rfExportCSV" class="btn">Export CSV</button>
+          <button id="rfExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="rfFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 10 • Real‑World practice -->
+    <section class="slide" id="realSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Real‑World Practice</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="realList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="realNew" class="btn">New set</button>
+          <button id="realCheck" class="btn maroon">Check</button>
+          <button id="realExportCSV" class="btn">Export CSV</button>
+          <button id="realExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="realFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 11 • Challenge -->
+    <section class="slide" id="challengeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge Mode</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="chLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard</option>
+          </select>
+        <button id="chNew" class="btn">New question</button>
+        <span class="chip">Streak: <b id="streakOut">0</b></span>
+        <button id="chExportCSV" class="btn">Export CSV</button>
+        <button id="chExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div class="mt-3 text-2xl">Task: <span id="chText" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="chAns" class="border rounded px-3 py-2 w-60" placeholder="answer"/>
+          <button id="chCheck" class="btn maroon">Check</button>
+          <button id="chHint" class="btn">Hint</button>
+        </div>
+        <div id="chHintBox" class="mt-3 text-sm"></div>
+        <div id="chFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 12 • Exit -->
+    <section class="slide" id="exitSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket &amp; Next Steps</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 examples you can classify (N/W/Z/Q/I)</li>
+            <li>2 repeating decimals you can convert</li>
+            <li>1 question you still have</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p><b>Prime Factorization Toolkit</b> — Factors/Multiples • Prime/Composite • Factor Trees • HCF/LCM — foundation for operations with rational numbers.</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[100px] banner rounded-md" style="background-image:url('qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 13</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* ================= Core helpers, nav, math, export ================= */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G7_Unit1_Number_System_Overview_overline';
+  let i=0;
+
+  function id(x){return document.getElementById(x)}
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<18;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    renderMath(slides[i]);
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  /* ---------- Glossary popover ---------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    Nkey:'<strong>Natural numbers (N, \\(\\mathbb N\\))</strong>: 1,2,3, …',
+    Wkey:'<strong>Whole numbers (W, \\(\\mathbb W\\))</strong>: 0,1,2,3, …',
+    Zkey:'<strong>Integers (Z, \\(\\mathbb Z\\))</strong>: …, −2, −1, 0, 1, 2, …',
+    Qkey:'<strong>Rational numbers (Q, \\(\\mathbb Q\\))</strong>: any \\(\\tfrac ab\\) with integers a,b (b≠0); includes terminating & repeating decimals.',
+    Ikey:'<strong>Irrational numbers</strong>: non‑terminating, non‑repeating decimals (e.g., \\(\\pi,\\sqrt2,e\\)).',
+    term:'<strong>Terminating decimal</strong>: finite digits (e.g., 0.25).',
+    rep:'<strong>Repeating decimal</strong>: infinite digits with a repeating block, e.g., \\(0.\\overline{3}\\).'
+  };
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(!el) return;
+    const key=el.dataset.key; if(!GLOS[key]) return;
+    POP_BODY.innerHTML=GLOS[key]; POP.style.display='block'; const r=el.getBoundingClientRect();
+    POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px';
+    POP.style.bottom=(window.innerHeight-r.top+10)+'px'; renderMath(POP_BODY);
+  });
+
+  /* ---------- Clean Venn highlight ---------- */
+  document.querySelectorAll('.hlBtn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const k=btn.dataset.k;
+      document.querySelectorAll('#venn .ring').forEach(r=>{ r.classList.add('dim'); r.classList.remove('hl'); });
+      const t=document.querySelector(`#venn .ring.${k}`); if(t){ t.classList.add('hl'); t.classList.remove('dim'); }
+    });
+  });
+  id('hlClear').addEventListener('click',()=>document.querySelectorAll('#venn .ring').forEach(r=>r.classList.remove('hl','dim')));
+
+  /* ---------- Classification (levels) ---------- */
+  const clState={items:[]};
+  const bankEasy=[
+    {disp:'\\(5\\)', set:'N'}, {disp:'\\(0\\)', set:'W'}, {disp:'\\(-3\\)', set:'Z'},
+    {disp:'\\(\\tfrac34\\)', set:'Q'}, {disp:'\\(0.125\\)', set:'Q'}, {disp:'\\(\\sqrt2\\)', set:'I'}
+  ];
+  const bankMed=[
+    {disp:'\\(2.\\overline{3}\\)', set:'Q'}, {disp:'\\(-\\tfrac{5}{2}\\)', set:'Q'}, {disp:'\\(\\pi\\)', set:'I'},
+    {disp:'\\(\\sqrt{9}\\)', set:'N'}, {disp:'\\(-11\\)', set:'Z'}, {disp:'\\(\\sqrt{12}\\)', set:'I'}
+  ];
+  const bankHard=[
+    {disp:'\\(0.\\overline{27}\\)', set:'Q'}, {disp:'\\(e\\)', set:'I'}, {disp:'\\(-\\sqrt{5}\\)', set:'I'},
+    {disp:'\\(1.2020020002\\dots\\)', set:'I'}, {disp:'\\(\\tfrac{-14}{7}\\)', set:'Z'}, {disp:'\\(\\tfrac{22}{7}\\)', set:'Q'}
+  ];
+  function clNew(){
+    const lv=id('clLevel').value;
+    const pool = lv==='easy'?bankEasy : lv==='med'? bankMed : bankHard;
+    clState.items = pool.sort(()=>Math.random()-0.5).slice(0,6);
+    const box=id('clList'); box.innerHTML='';
+    clState.items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">${o.disp} is in 
+          <select class="clSel border rounded px-2 py-1">
+            <option value="">— choose smallest set —</option>
+            <option value="N">Natural numbers N (ℕ)</option>
+            <option value="W">Whole numbers W (𝕎)</option>
+            <option value="Z">Integers Z (ℤ)</option>
+            <option value="Q">Rational numbers Q (ℚ)</option>
+            <option value="I">Irrational numbers</option>
+          </select>
+        </div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('classSlide'));
+  }
+  id('clNew').addEventListener('click',clNew); clNew();
+  id('clCheck').addEventListener('click',()=>{
+    let ok=0; [...document.querySelectorAll('#clList .card')].forEach((row,idx)=>{
+      const want=clState.items[idx].set; const sel=row.querySelector('.clSel'); const val=sel.value;
+      sel.style.borderColor = (val===want)? '#22c55e':'#ef4444'; if(val===want) ok++;
+    });
+    id('clFb').textContent = ok===clState.items.length? '✅ All correct!' : `Score: ${ok}/${clState.items.length}`;
+    if(ok===clState.items.length) confetti();
+  });
+  id('clExportCSV').addEventListener('click',()=>{
+    const rows=[['item','correct','user']]; [...document.querySelectorAll('#clList .card')].forEach((row,idx)=>{
+      const item=clState.items[idx]; const u=row.querySelector('.clSel').value||''; rows.push([item.disp, item.set, u]);
+    }); downloadCSV(`${deckTitle}_classify.csv`, rows);
+  });
+  id('clExportJSON').addEventListener('click',()=>{
+    const data=[...document.querySelectorAll('#clList .card')].map((row,idx)=>({item:clState.items[idx], user:row.querySelector('.clSel').value||''}));
+    downloadJSON(`${deckTitle}_classify.json`, data);
+  });
+
+  /* ---------- TVR tester ---------- */
+  function dividesOnly2and5(b){
+    b=Math.abs(Math.trunc(b)); if(b===0) return false;
+    while(b%2===0) b/=2;
+    while(b%5===0) b/=5;
+    return b===1;
+  }
+  id('tvTest').addEventListener('click',()=>{
+    const b=Number(id('tvb').value);
+    if(!Number.isFinite(b)||b<=0){ id('tvOut').innerHTML='<span class="text-red-700">Enter a positive integer for \(b\).</span>'; return;}
+    const steps=[];
+    let t=b; while(t%2===0){steps.push(`${t}÷2=${t/2}`); t/=2}
+    while(t%5===0){steps.push(`${t}÷5=${t/5}`); t/=5}
+    const term = (t===1);
+    id('tvOut').innerHTML = term
+      ? `<div class="hint">Because \(b\) can be made from 2s & 5s only → decimal <b>terminates</b>.<br><small>steps: ${steps.join(', ')||'none'}</small></div>`
+      : `<div class="hint">There is still \( ${t} \) after dividing by 2s & 5s → decimal <b>repeats</b>.<br><small>steps: ${steps.join(', ')||'none'}</small></div>`;
+    renderMath(id('tvrexpSlide'));
+  });
+
+  /* ---------- TVR activity ---------- */
+  const trState={items:[]};
+  const gcd=(a,b)=>{a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));while(b){[a,b]=[b,a%b]}return a||1};
+  function trNew(){
+    const list=[];
+    for(let k=0;k<6;k++){
+      let a=Math.floor(Math.random()*30)-15; let b=[2,3,4,5,6,8,9,10,12,15,20][Math.floor(Math.random()*11)];
+      if(b===0) b=1; if(a===0) a=1;
+      const g=gcd(a,b); a/=g; b/=g; list.push({a,b});
+    }
+    trState.items=list;
+    const box=id('trList'); box.innerHTML='';
+    list.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl">\\( \\dfrac{${o.a}}{${o.b}} \\)</div>
+        <div class="mt-1">
+          <select class="trSel border rounded px-2 py-1">
+            <option value="">— choose —</option>
+            <option value="T">terminating</option>
+            <option value="R">repeating</option>
+          </select>
+        </div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('termRepSlide'));
+  }
+  id('trNew').addEventListener('click',trNew); trNew();
+  id('trCheck').addEventListener('click',()=>{
+    let ok=0; [...document.querySelectorAll('#trList .card')].forEach((row,idx)=>{
+      const {a,b}=trState.items[idx]; const want=dividesOnly2and5(b)?'T':'R'; const sel=row.querySelector('.trSel'); const val=sel.value;
+      sel.style.borderColor = (val===want)? '#22c55e':'#ef4444'; if(val===want) ok++;
+    });
+    id('trFb').textContent = ok===trState.items.length? '✅ Excellent!' : `Score: ${ok}/${trState.items.length}`;
+    if(ok===trState.items.length) confetti();
+  });
+  id('trExportCSV').addEventListener('click',()=>{
+    const rows=[['frac','correct','user']]; document.querySelectorAll('#trList .card').forEach((row,idx)=>{
+      const {a,b}=trState.items[idx]; const sel=row.querySelector('.trSel').value||''; rows.push([`${a}/${b}`, dividesOnly2and5(b)?'T':'R', sel]);
+    }); downloadCSV(`${deckTitle}_term_vs_repeat.csv`, rows);
+  });
+  id('trExportJSON').addEventListener('click',()=>{
+    const data=[...document.querySelectorAll('#trList .card')].map((row,idx)=>({frac:`${trState.items[idx].a}/${trState.items[idx].b}`, correct:dividesOnly2and5(trState.items[idx].b)?'T':'R', user:row.querySelector('.trSel').value||''}));
+    downloadJSON(`${deckTitle}_term_vs_repeat.json`, data);
+  });
+
+  /* ---------- Repeat → Fraction Explainers ---------- */
+  const rfGcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1};
+  function simplify(n,d){ const g=rfGcd(n,d); if(d<0) return [-n/g,-d/g]; return [n/g,d/g]; }
+
+  document.querySelectorAll('.fillPure').forEach(btn=>{
+    btn.addEventListener('click',()=>{ id('pureBlock').value = btn.dataset.block; });
+  });
+  id('pureSolve').addEventListener('click',()=>{
+    const block=(id('pureBlock').value||'').trim();
+    if(!/^\d{1,3}$/.test(block) || /^0+$/.test(block)){ id('pureOut').innerHTML='<span class="text-red-700">Enter 1–3 digits (not all zeros).</span>'; return;}
+    const r=block.length; const N=Number(block); const D=Number('9'.repeat(r));
+    const [n,d]=simplify(N,D);
+    id('pureOut').innerHTML=`\\( 0.\\overline{${block}} = \\dfrac{${n}}{${d}} \\)`;
+    renderMath(id('repExplSlide'));
+  });
+
+  document.querySelectorAll('.fillWhole').forEach(btn=>{
+    btn.addEventListener('click',()=>{ id('wholeI').value = btn.dataset.i; id('wholeBlock').value = btn.dataset.block; });
+  });
+  id('wholeSolve').addEventListener('click',()=>{
+    const I=Number(id('wholeI').value); const block=(id('wholeBlock').value||'').trim();
+    if(!Number.isFinite(I)){ id('wholeOut').innerHTML='<span class="text-red-700">Enter a whole number \(I\).</span>'; return;}
+    if(!/^\d{1,3}$/.test(block) || /^0+$/.test(block)){ id('wholeOut').innerHTML='<span class="text-red-700">Enter 1–3 digits for \(R\) (not all zeros).</span>'; return;}
+    const r=block.length; const R=Number(block); const D=Number('9'.repeat(r));
+    const [n,d]=simplify(I*D + R, D);
+    id('wholeOut').innerHTML=`\\( ${I}.\\overline{${block}} = \\dfrac{${n}}{${d}} \\)`;
+    renderMath(id('repExplSlide'));
+  });
+
+  /* ---------- Practice: Repeat → Fraction ---------- */
+  const rfState={items:[]};
+  function rfNew(){
+    const items=[];
+    for(let k=0;k<4;k++){
+      const mode=Math.random()<0.5?'pure':'whole';
+      const len=[1,2,3][Math.floor(Math.random()*3)];
+      const block=String(Math.floor(Math.random()*(10**len))).padStart(len,'7').slice(0,len);
+      if(mode==='pure'){
+        const N=Number(block), D=Number('9'.repeat(len)); const [n,d]=simplify(N,D);
+        items.push({disp:`0.\\overline{${block}}`, ans:[n,d]});
+      }else{
+        const I=Math.floor(Math.random()*3); const D=Number('9'.repeat(len));
+        const N=I*D + Number(block); const [n,d]=simplify(N,D);
+        items.push({disp:`${I}.\\overline{${block}}`, ans:[n,d]});
+      }
+    }
+    rfState.items=items;
+    const box=id('rfList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl">\\( ${o.disp} \\) = <input class="rfn border rounded px-2 py-1 w-20" placeholder="num"> / <input class="rfd border rounded px-2 py-1 w-20" placeholder="den"></div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('repFracSlide'));
+  }
+  id('rfNew').addEventListener('click',rfNew); rfNew();
+  id('rfCheck').addEventListener('click',()=>{
+    let ok=0; [...document.querySelectorAll('#rfList .card')].forEach((row,idx)=>{
+      const want=rfState.items[idx].ans; const n=Number(row.querySelector('.rfn').value), d=Number(row.querySelector('.rfd').value);
+      const got=simplify(n,d); const good=(got[0]===want[0] && got[1]===want[1]);
+      row.querySelector('.rfn').style.borderColor=good?'#22c55e':'#ef4444';
+      row.querySelector('.rfd').style.borderColor=good?'#22c55e':'#ef4444';
+      if(good) ok++;
+    });
+    id('rfFb').textContent = ok===rfState.items.length? '✅ Nicely done!' : `Score: ${ok}/${rfState.items.length}`;
+    if(ok===rfState.items.length) confetti();
+  });
+  id('rfExportCSV').addEventListener('click',()=>{
+    const rows=[['decimal','num','den']]; rfState.items.forEach(o=>rows.push([o.disp, o.ans[0], o.ans[1]])); downloadCSV(`${deckTitle}_repeat_to_fraction.csv`, rows);
+  });
+  id('rfExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_repeat_to_fraction.json`, rfState.items));
+
+  /* ---------- Real‑World ---------- */
+  const realState={items:[]};
+  function realNew(){
+    const items=[];
+    items.push({q:'The ratio of a circle\\\'s circumference to its diameter is \\(\\pi\\). Rational or irrational?', type:'choice', options:['rational','irrational'], ans:'irrational'});
+    items.push({q:'A bank balance shown as QAR \\(-175.50\\). Which set best describes it?', type:'choice', options:['Integers ℤ','Rational numbers ℚ','Irrational'], ans:'Rational numbers ℚ'});
+    items.push({q:'A square of side 7 cm has diagonal length \\(7\\sqrt{2}\\). Rational or irrational?', type:'choice', options:['rational','irrational'], ans:'irrational'});
+    items.push({q:'A probability of exactly \\(\\tfrac{3}{8}\\). Which set?', type:'choice', options:['Integers ℤ','Rational numbers ℚ','Irrational'], ans:'Rational numbers ℚ'});
+    realState.items=items;
+    const box=id('realList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl">${o.q}</div><div class="mt-1">${o.options.map(opt=>`<label class="mr-3"><input type="radio" name="rw${idx}" value="${opt}"> ${opt}</label>`).join(' ')}</div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('realSlide'));
+  }
+  id('realNew').addEventListener('click',realNew); realNew();
+  id('realCheck').addEventListener('click',()=>{
+    let ok=0; realState.items.forEach((o,idx)=>{
+      const sel=(document.querySelector(`input[name="rw${idx}"]:checked`)||{}).value||''; if(sel===o.ans) ok++;
+    });
+    id('realFb').textContent = ok===realState.items.length? '✅ Real‑world ready!' : `Score: ${ok}/${realState.items.length}`;
+    if(ok===realState.items.length) confetti();
+  });
+  id('realExportCSV').addEventListener('click',()=>{
+    const rows=[['question','answer','user']]; realState.items.forEach((o,idx)=>{
+      const sel=(document.querySelector(`input[name="rw${idx}"]:checked`)||{}).value||''; rows.push([o.q,o.ans,sel]);
+    }); downloadCSV(`${deckTitle}_realworld.csv`, rows);
+  });
+  id('realExportJSON').addEventListener('click',()=>{
+    const data=realState.items.map((o,idx)=>({q:o.q, ans:o.ans, user:(document.querySelector(`input[name="rw${idx}"]:checked`)||{}).value||''}));
+    downloadJSON(`${deckTitle}_realworld.json`, data);
+  });
+
+  /* ---------- Challenge ---------- */
+  const chState={cur:null, streak:0, history:[]};
+  function chNew(){
+    const lv=id('chLevel').value; let prompt='', ans=null;
+    if(lv==='easy'){
+      const it=[{d:'\\(6\\)',a:'N'},{d:'\\(0\\)',a:'W'},{d:'\\(-9\\)',a:'Z'},{d:'\\(\\tfrac12\\)',a:'Q'},{d:'\\(\\sqrt3\\)',a:'I'}][Math.floor(Math.random()*5)];
+      prompt=`Smallest set for ${it.d} (type N/W/Z/Q/I)`; ans=it.a;
+    } else if(lv==='med'){
+      const it=['\\(0.\\overline{6}\\)','\\(2.75\\)','\\(\\pi\\)','\\(\\sqrt{50}\\)'][Math.floor(Math.random()*4)];
+      const corr=(it.includes('\\overline')||it.includes('2.75'))?'Q':'I';
+      prompt=`Classify ${it}: Q (rational) or I (irrational)`; ans=corr;
+    } else {
+      const fracs=['\\(\\tfrac{7}{80}\\)','\\(\\tfrac{5}{12}\\)','\\(\\tfrac{9}{40}\\)']; const pick=fracs[Math.floor(Math.random()*fracs.length)];
+      const b=Number(pick.match(/\d+\/(\d+)/)[1]); const term=dividesOnly2and5(b)?'T':'R';
+      prompt=`For ${pick}: decimal is T (terminating) or R (repeating)`; ans=term;
+    }
+    chState.cur={prompt,ans}; id('chText').innerHTML=prompt; id('chAns').value=''; id('chFb').textContent=''; id('chHintBox').textContent=''; renderMath(id('challengeSlide'));
+  }
+  id('chNew').addEventListener('click',chNew); chNew();
+  id('chHint').addEventListener('click',()=>{ id('chHintBox').innerHTML=`<div class="hint">Remember: ℕ ⊂ 𝕎 ⊂ ℤ ⊂ ℚ ⊂ ℝ. If a reduced denominator can be built using only 2s and 5s, the decimal <b>terminates</b>.</div>`; });
+  id('chCheck').addEventListener('click',()=>{
+    const got=id('chAns').value.trim().toUpperCase(); const want=String(chState.cur.ans).toUpperCase(); const ok=(got===want);
+    if(ok){ chState.streak++; id('chFb').textContent='✅ Correct!'; id('chFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); chState.history.push({prompt:chState.cur.prompt, ans:want, correct:true}); chNew(); }
+    else { chState.streak=0; id('chFb').textContent='❌ Not quite.'; id('chFb').className='mt-2 h-6 font-semibold text-red-700'; chState.history.push({prompt:chState.cur.prompt, ans:want, correct:false}); }
+    id('streakOut').textContent=chState.streak;
+  });
+  id('chExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer','correct']]; chState.history.forEach(h=>rows.push([h.prompt,h.ans,h.correct])); downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('chExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_challenge.json`, chState.history));
+
+  /* ---------- Init ---------- */
+  show(0);
+})();
+</script>
+</body>
+</html>

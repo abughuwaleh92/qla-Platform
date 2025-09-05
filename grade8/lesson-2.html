@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G8 • Review: BEDMAS & Absolute Value (QLA)</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX: CSS + JS (robust auto-render bootstrap) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  // Boot KaTeX once DOM is parsed; expose global helper for re-typeset after dynamic updates
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root = document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t = setInterval(() => { if (window.renderMathInElement) { clearInterval(t); run(); } }, 25);
+      setTimeout(() => clearInterval(t), 6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  /* Stage */
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:110px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  /* Popover (glossary) */
+  #pop{position:fixed;inset:auto auto 20px 20px;max-width:min(560px,90vw);background:#fff;border:2px solid var(--gold);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding:14px 16px;z-index:40;display:none;text-align:left}
+  #pop strong{color:var(--maroon)} #pop .close{float:right;color:#666;cursor:pointer;font-weight:800}
+
+  /* Number line */
+  .nl-wrap{width:100%;max-width:920px}
+  canvas.nline{width:100%;height:160px;border-radius:12px;background:linear-gradient(180deg,#fff,#fafafa);border:2px solid #ececec}
+
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+  .op{padding:.12rem .35rem;border-radius:6px}
+  .op.next{outline:2px dashed var(--gold)}
+</style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white" id="titleSlide">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('../assets/qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-20 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Review: BEDMAS &amp; |Absolute Value|</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Grade 8 • Order of Operations &amp; Absolute Value</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Mathematics</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Aligned to AERO 8.NS. and 8.EE readiness.</div>
+    </section>
+
+    <!-- 1 • LOs + Keywords -->
+    <section class="slide" id="loSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Objectives &amp; Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Objectives</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Apply <strong>BEDMAS</strong>: Brackets → Exponents → Division/Multiplication (L→R) → Addition/Subtraction (L→R).</li>
+            <li>Treat \(|\;|\) as a <em>grouping symbol</em> (like brackets) representing distance from zero.</li>
+            <li>Evaluate expressions with integers, decimals, and exponents, including those involving \(|\;|\).</li>
+            <li>Explain each step and diagnose common errors (e.g., \(-3^2\) vs \((\!-3)^2\)).</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="bedmas">BEDMAS</span>
+            <span class="chip" data-key="group">grouping</span>
+            <span class="chip" data-key="exp">exponent</span>
+            <span class="chip" data-key="l2r">left‑to‑right</span>
+            <span class="chip" data-key="abs">absolute value</span>
+            <span class="chip" data-key="unary">unary minus</span>
+            <span class="chip" data-key="distance">distance</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">We use the BEDMAS mnemonic; D/M share priority (evaluate left‑to‑right), likewise A/S.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Warm‑up -->
+    <section class="slide" id="warmSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Warm‑Up: Decide Fast!</h2>
+      <div class="grid md:grid-cols-3 gap-4 w-full max-w-5xl">
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Which is correct?</div>
+          <div class="text-xl">\(8-3\times2+4\)</div>
+          <div class="mt-1">
+            <label class="mr-2"><input type="radio" name="w1" value="A"> \( (8-3)\times2+4 \)</label><br>
+            <label class="mr-2"><input type="radio" name="w1" value="B"> \( 8-(3\times2)+4 \)</label><br>
+            <label class="mr-2"><input type="radio" name="w1" value="C"> \( 8-3\times(2+4) \)</label>
+          </div>
+        </div>
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Evaluate</div>
+          <div class="text-xl">\( |{-7}|+3=\) <input id="w2" class="border rounded px-2 py-1 w-24"></div>
+        </div>
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Tricky Base</div>
+          <div class="text-xl">Which is larger?</div>
+          <div class="text-xl mt-1">\( -3^2 \quad \text{or} \quad (-3)^2 \)</div>
+          <div class="mt-1">
+            <label class="mr-2"><input type="radio" name="w3" value="-3^2"> \( -3^2 \)</label>
+            <label class="mr-2"><input type="radio" name="w3" value="(-3)^2"> \( (-3)^2 \)</label>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="warmCheck" class="btn maroon">Check</button>
+        <button id="warmReset" class="btn">Reset</button>
+      </div>
+      <div id="warmFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 3 • BEDMAS Map -->
+    <section class="slide" id="mapSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Order of Operations (BEDMAS)</h2>
+      <div class="grid lg:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <div class="text-lg">
+            <ol class="list-decimal list-inside space-y-1">
+              <li><strong>Brackets</strong> (and \(|\;|\)) — evaluate the innermost group first.</li>
+              <li><strong>Exponents</strong> — e.g., \(a^2\), \((\!-3)^3\).</li>
+              <li><strong>Division &amp; Multiplication</strong> — <em>same priority</em>, work <strong>left‑to‑right</strong>.</li>
+              <li><strong>Addition &amp; Subtraction</strong> — <em>same priority</em>, work <strong>left‑to‑right</strong>.</li>
+            </ol>
+            <div class="hint mt-3">
+              Caution: \( -3^2 = -(3^2)=-9 \) but \( (-3)^2=9 \). The exponent applies to the **base** right next to it.
+            </div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Examples</h3>
+          <div class="space-y-2 text-lg">
+            <div>\( 8-3\times2+4 = 8-6+4 = 6 \)</div>
+            <div>\( (8-3)\times(2+4) = 5\times6 = 30 \)</div>
+            <div>\( |2-5| + 4 = |{-3}|+4 = 3+4 = 7 \)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 • Step-by-Step Tracer -->
+    <section class="slide" id="tracerSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Step‑by‑Step Tracer (Click the next operation)</h2>
+      <div class="card p-5 w-full max-w-4xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Difficulty:</span>
+          <select id="trLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard (may include | |)</option>
+          </select>
+          <button id="trNew" class="btn">New expression</button>
+          <button id="trReset" class="btn">Reset</button>
+          <button id="trExportCSV" class="btn">Export CSV</button>
+          <button id="trExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div class="mt-3 text-2xl">Expression: <span id="trExpr" class="font-extrabold"></span></div>
+        <div class="mt-2 text-sm text-gray-600">Click the operator you must do <em>next</em> (or click a highlighted group first if present).</div>
+        <div id="trFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 5 • Evaluate Generator -->
+    <section class="slide" id="evalSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Evaluate (Generator)</h2>
+      <div class="card p-5 w-full max-w-4xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Difficulty:</span>
+          <select id="evLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard</option>
+            <option value="abs">mixed with | |</option>
+          </select>
+          <button id="evNew" class="btn">New question</button>
+        </div>
+        <div class="mt-3 text-2xl">Compute: <span id="evText" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="evAns" class="border rounded px-3 py-2 w-56" placeholder="numeric answer" />
+          <button id="evCheck" class="btn maroon">Check</button>
+          <button id="evHint" class="btn">Hint</button>
+          <button id="evExportCSV" class="btn">Export CSV</button>
+          <button id="evExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="evHintBox" class="mt-3 text-sm"></div>
+        <div id="evFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 6 • Absolute Value Explorer -->
+    <section class="slide" id="absLineSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Absolute Value Explorer</h2>
+      <p class="text-gray-600 mb-2">Drag the points. \(|a|\) is the distance of \(a\) from 0. Distance between \(a\) and \(b\) is \(|a-b|\).</p>
+      <div class="nl-wrap"><canvas id="absLine" class="nline" aria-label="Absolute value number line"></canvas></div>
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+        <span class="chip">a = <b id="aOut">-2</b></span>
+        <span class="chip">b = <b id="bOut">3</b></span>
+        <span class="chip">|a| = <b id="absA">2</b></span>
+        <span class="chip">|b| = <b id="absB">3</b></span>
+        <span class="chip">|a-b| = <b id="absAB">5</b></span>
+        <button id="absRand" class="btn">Randomize</button>
+        <button id="absSnap" class="btn">Snap to integers</button>
+        <button id="absExportCSV" class="btn">Export CSV</button>
+        <button id="absExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div class="hint mt-3 text-left text-sm">\(|x|\) never negative. If \(a\)&lt;\(b\), then \(|a-b|=b-a\); otherwise \(|a-b|=a-b\).</div>
+    </section>
+
+    <!-- 7 • Absolute Value Practice -->
+    <section class="slide" id="absPracSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Absolute Value Practice</h2>
+      <div id="absList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="absCheck" class="btn maroon">Check</button>
+        <button id="absNew" class="btn">New set</button>
+        <button id="absPExportCSV" class="btn">Export CSV</button>
+        <button id="absPExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="absFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 8 • Mixed BEDMAS + | | -->
+    <section class="slide" id="mixedSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Mixed: BEDMAS with | |</h2>
+      <div id="mixList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="mixCheck" class="btn maroon">Check</button>
+        <button id="mixNew" class="btn">New set</button>
+        <button id="mixExportCSV" class="btn">Export CSV</button>
+        <button id="mixExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="mixFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 9 • Parentheses Choice -->
+    <section class="slide" id="parenSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Which Parentheses Show the Intended Order?</h2>
+      <div id="parenList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="parenCheck" class="btn maroon">Check</button>
+        <button id="parenNew" class="btn">New set</button>
+        <button id="parenExportCSV" class="btn">Export CSV</button>
+        <button id="parenExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="parenFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 10 • Error Analysis -->
+    <section class="slide" id="errSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Error Analysis</h2>
+      <div class="card p-5 w-full max-w-4xl text-left">
+        <div id="errBox" class="text-lg"></div>
+        <div class="mt-2">
+          <label class="mr-2"><input type="radio" name="errChoice" value="A"> Treated D/M as different priorities</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="B"> Misused absolute value</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="C"> Exponent applied to wrong base</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="D"> Sign/left‑to‑right mistake</label>
+        </div>
+        <div class="mt-2 flex gap-2">
+          <button id="errCheck" class="btn maroon">Check</button>
+          <button id="errReveal" class="btn">Reveal correct work</button>
+          <button id="errNew" class="btn">New example</button>
+          <button id="errExportCSV" class="btn">Export CSV</button>
+          <button id="errExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="errFb" class="mt-2 h-6 font-semibold"></div>
+        <div id="errRevealBox" class="mt-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- 11 • Challenge Mode -->
+    <section class="slide" id="challengeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge Mode</h2>
+      <div class="card p-5 w-full max-w-4xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="chLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard</option>
+            <option value="abs">expert (with | |)</option>
+          </select>
+          <button id="chNew" class="btn">New question</button>
+          <span class="chip">Streak: <b id="streakOut">0</b></span>
+          <button id="chExportCSV" class="btn">Export CSV</button>
+          <button id="chExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div class="mt-3 text-2xl">Compute: <span id="chText" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="chAns" class="border rounded px-3 py-2 w-56" placeholder="numeric answer" />
+          <button id="chCheck" class="btn maroon">Check</button>
+          <button id="chHint" class="btn">Hint</button>
+        </div>
+        <div id="chHintBox" class="mt-3 text-sm"></div>
+        <div id="chFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 12 • Exit ticket -->
+    <section class="slide" id="exitSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 rules you used from BEDMAS</li>
+            <li>2 ways \(|\;|\) acts like brackets</li>
+            <li>1 mistake you will avoid next time</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p>Expressions with variables, distributing, and simple equation solving with \(|\;|\).</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[100px] banner rounded-md" style="background-image:url('../assets/qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 13</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* ---------- Helpers, Rendering, Navigation, Export ---------- */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G8_BEDMAS_AbsValue_QLA';
+  let i=0;
+
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    const sid=slides[i].id||'';
+    if(sid==='absLineSlide') drawAbsLine();
+    if(sid==='tracerSlide') tracerRender();
+    renderMath(slides[i]);
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  function id(x){return document.getElementById(x)}
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<18;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+
+  // Export helpers
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  /* ---------- Glossary ---------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    bedmas:'<strong>BEDMAS</strong>: Brackets, Exponents, Division/Multiplication (left‑to‑right), Addition/Subtraction (left‑to‑right).',
+    group:'<strong>Grouping</strong>: parentheses ( ), brackets [ ], braces { }, and absolute value | | tell you what to do first.',
+    exp:'<strong>Exponent</strong>: repeated multiplication; 3^2 = 3×3.',
+    l2r:'At the same level, evaluate left‑to‑right (e.g., 20 ÷ 5 × 2 = (20 ÷ 5) × 2 = 8).',
+    abs:'<strong>Absolute value</strong> |x| is the distance from 0, always non‑negative.',
+    unary:'<strong>Unary minus</strong>: the leading “−” that negates a quantity; not part of the exponent unless grouped.',
+    distance:'Distance between a and b is |a − b|.'
+  };
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(el){const key=el.dataset.key; if(GLOS[key]){POP_BODY.innerHTML=GLOS[key]; POP.style.display='block'; const r=el.getBoundingClientRect(); POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px'; POP.style.bottom=(window.innerHeight-r.top+10)+'px'; }}
+  });
+
+  /* ---------- Warm-up ---------- */
+  id('warmCheck').addEventListener('click',()=>{
+    const ok1 = (document.querySelector('input[name="w1"]:checked')||{}).value==='B';
+    const v2 = Number(id('w2').value); const ok2 = Math.abs(v2-10)<1e-10;
+    const ok3 = (document.querySelector('input[name="w3"]:checked')||{}).value==='(-3)^2';
+    const score = (ok1?1:0)+(ok2?1:0)+(ok3?1:0);
+    id('warmFb').textContent = score===3 ? '✅ Great start!' : `Score: ${score}/3`;
+    [ ['w1',ok1], ['w2',ok2], ['w3',ok3] ].forEach(([name,ok])=>{
+      if(name==='w2'){ id('w2').style.borderColor = ok? '#22c55e' : '#ef4444'; }
+    });
+    if(score===3) confetti();
+  });
+  id('warmReset').addEventListener('click',()=>{ 
+    (document.querySelector('input[name="w1"]:checked')||{}).checked=false;
+    (document.querySelector('input[name="w3"]:checked')||{}).checked=false;
+    id('w2').value=''; id('w2').style.borderColor='#e5e7eb'; id('warmFb').textContent='';
+  });
+
+  /* ---------- Expression generation utilities ---------- */
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  function jsEval(exprJS){ return Function('return ('+exprJS+')')(); } // only on our generated strings
+  function withAbsBars(inner){ return `|${inner}|`; }
+  function toJS(exprDisplay){
+    // Convert display to JS: replace |...| with Math.abs(...), ×, ÷, ^, fancy minus
+    let s=exprDisplay.replace(/\s+/g,'').replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+    // replace absolute value bars with Math.abs(...)
+    let out=''; let stack=0;
+    for(let i=0;i<s.length;i++){
+      if(s[i]==='|'){ if(stack===0){ out+='Math.abs('; stack=1; } else { out+=')'; stack=0; } }
+      else if(s[i]==='^'){ out+='**'; }
+      else out+=s[i];
+    }
+    return out;
+  }
+  function formatDisplay(n){ // show integers exactly; else up to 4 decimals
+    const v = Math.round(n*10000)/10000;
+    return (Math.abs(v-Math.round(v))<1e-10)? String(Math.round(v)) : String(v);
+  }
+
+  // Build random expressions (controlled to avoid ambiguous -3^2)
+  function genExpression(level='med', allowAbs=false){
+    const sgn = ()=> (Math.random()<0.5?1:-1);
+    const N = (lo,hi)=> sgn()*randInt(lo,hi);
+    const D = ()=> Math.round((sgn()* (randInt(5,20)/10))*10)/10; // one decimal
+    let disp='';
+    if(level==='easy'){
+      const a=N(1,9), b=N(1,9), c=randInt(2,5);
+      const forms=[
+        `${a}+${b}×${c}`, `(${a}+${b})×${c}`, `${a}−${b}×${c}+${randInt(1,9)}`, `(${a}−${b})^2`
+      ];
+      disp=pick(forms);
+    } else if(level==='med'){
+      const a=N(1,9), b=N(1,9), c=N(1,9), d=N(1,9);
+      const forms=[
+        `${a}−(${b}+${c})×${randInt(2,5)}`,
+        `(${a}+${b})^2−${c}`,
+        `${a}÷${randInt(2,5)}×(${b}+${c})`,
+        `${a}^2−(${b}×${c})+${d}`
+      ];
+      disp=pick(forms);
+    } else { // hard
+      const a=N(1,9), b=N(1,9), c=N(1,9), d=N(1,9);
+      const P = (x)=> x<0?`(${x})`:String(x);
+      const base = [
+        `(${a}+${b})^2−${c}×${d}`,
+        `${P(a)}^2+(${b}−${c})×${d}`,
+        `${a}÷(${b}+${c})+${d}^2`
+      ];
+      disp = pick(base);
+      if(allowAbs){
+        // wrap a part in | |
+        const variants=[
+          withAbsBars(`${a}−${b}×${c}`)+`+${d}`,
+          `${a}+`+withAbsBars(`${b}−(${c})`)+`×${randInt(2,5)}`,
+          withAbsBars(`(${a}+${b})`)+`×${c}−${d}`
+        ];
+        disp = pick(variants);
+      }
+    }
+    return {display:disp, js:toJS(disp)};
+  }
+
+  /* ---------- Step-by-Step Tracer ---------- */
+  const trState={orig:'', cur:'', steps:[], level:'med', history:[]};
+  function tracerNew(){
+    const lv=id('trLevel').value;
+    const allowAbs=(lv==='hard');
+    const g=genExpression(lv, allowAbs);
+    trState.orig=g.display; trState.cur=g.display; trState.steps=[]; trState.history=[];
+    tracerRender(true);
+  }
+  function tracerRender(reset=false){
+    const el=id('trExpr');
+    el.innerHTML = ''; id('trFb').textContent='';
+    // Build clickable display: highlight innermost group ( ( ) or | | ) if exists
+    const s=trState.cur;
+    // find groups
+    const groups=[]; const st=[];
+    for(let i=0;i<s.length;i++){
+      const ch=s[i];
+      if(ch==='(' || ch==='|'){ st.push({ch,idx:i}); }
+      if(ch===')' || ch==='|'){ // '|' acts both open/close
+        if(st.length){
+          const top=st.pop();
+          if( (top.ch==='('&&ch===')') || (top.ch==='|'&&ch==='|') ){
+            groups.push({l:top.idx, r:i, type:(ch===')'?'paren':'abs')});
+          }
+        }
+      }
+    }
+    groups.sort((a,b)=> (b.l - a.l)); // innermost last open has greatest l
+    let activeGroup = groups.length? groups.reduce((g1,g2)=> (g1.l>g2.l?g1:g2)) : null;
+
+    // build tokens with operator spans
+    const ops=['^','×','÷','+','−','*','/'];
+    for(let i=0;i<s.length;i++){
+      const ch=s[i];
+      const span=document.createElement('span');
+      span.textContent=ch;
+      // mark group
+      if(activeGroup && i===activeGroup.l){ span.className='op next'; }
+      if(activeGroup && i>activeGroup.l && i<activeGroup.r){ span.className='op'; }
+      if(ops.includes(ch)){
+        span.classList.add('op');
+        span.style.cursor='pointer';
+        span.addEventListener('click',()=> tracerClickOperator(i));
+      }
+      // group click
+      if(activeGroup && (i>=activeGroup.l && i<=activeGroup.r)){
+        span.addEventListener('click',()=> tracerClickGroup(activeGroup.l, activeGroup.r, activeGroup.type));
+      }
+      el.appendChild(span);
+    }
+    renderMath(id('tracerSlide'));
+  }
+  function tracerClickGroup(l,r,type){
+    // Only allow clicking group when it contains sub-ops or is | number |
+    // If inside reduces to a single number, for | | apply abs and collapse; for ( ) just remove
+    const inside = trState.cur.slice(l+1,r);
+    const hasOp = /[\^×÷+\-]/.test(inside.replace(/−/g,'-'));
+    if(hasOp){
+      id('trFb').textContent='Now click the next operation inside the highlighted group.';
+      return;
+    }
+    // single number inside
+    const num = Number(jsEval(toJS(inside)));
+    const rep = (type==='abs') ? formatDisplay(Math.abs(num)) : formatDisplay(num);
+    trState.cur = trState.cur.slice(0,l) + rep + trState.cur.slice(r+1);
+    trState.history.push({step:'collapse', group:type, from:inside, to:rep});
+    id('trFb').textContent = (type==='abs')? 'Collapsed |x| → value (distance from 0).' : 'Removed parentheses.';
+    if(!/[\(\)|]/.test(trState.cur) && !/[\^×÷+\-]/.test(trState.cur.replace(/−/g,'-'))){
+      id('trFb').textContent='✅ Finished: '+formatDisplay(jsEval(toJS(trState.cur))); confetti();
+    }
+    tracerRender();
+  }
+  function tracerClickOperator(idx){
+    // Determine if this is the correct next operation under BEDMAS for the innermost group
+    const s=trState.cur;
+    // Determine active group bounds
+    let l=0,r=s.length-1;
+    const groups=[]; const st=[];
+    for(let i=0;i<s.length;i++){
+      const ch=s[i];
+      if(ch==='(' || ch==='|') st.push({ch,idx:i});
+      if(ch===')' || ch==='|'){
+        const top=st.pop();
+        if((top.ch==='('&&ch===')')||(top.ch==='|'&&ch==='|')) groups.push({l:top.idx,r:i,type:(ch===')'?'paren':'abs')});
+      }
+    }
+    groups.sort((a,b)=> (b.l - a.l));
+    if(groups.length){ const g=groups.reduce((A,B)=>A.l>B.l?A:B); l=g.l; r=g.r; }
+    // find expected operator index inside [l,r]
+    const segment = s.slice(l+1, r); // inside group or whole expr
+    const segOps=[];
+    for(let j=l+1;j<r;j++){ const c=s[j]; if(['^','×','÷','+','−'].includes(c)){ segOps.push({idx:j,op:c}); } }
+    if(segOps.length===0){
+      // if it's |n| or (n) as group, clicking group is the next action
+      id('trFb').textContent='Collapse the group first (click the highlighted boundary).';
+      return;
+    }
+    const want = (()=>{ // choose required op by precedence and left-to-right
+      const prio = (o)=> (o==='^'?3 : (o==='×'||o==='÷'?2:1));
+      const maxP = Math.max(...segOps.map(o=>prio(o.op)));
+      return segOps.find(o=>prio(o.op)===maxP); // first occurrence = left-to-right
+    })();
+    if(idx!==want.idx){
+      id('trFb').textContent='Not yet. Follow BEDMAS: choose the highest priority inside the innermost group.';
+      return;
+    }
+    // Perform local computation a op b around idx
+    const {aStart,aEnd,bStart,bEnd,aval,bval,op} = extractAB(s, idx);
+    if(aStart==null || bEnd==null){ id('trFb').textContent='Edge case — try another expression.'; return; }
+    const res = computeOp(aval, bval, op);
+    trState.history.push({step:'op', op, a:aval, b:bval, result:res});
+    trState.cur = s.slice(0,aStart) + formatDisplay(res) + s.slice(bEnd+1);
+    id('trFb').textContent=`Did ${aval} ${op} ${bval} → ${formatDisplay(res)}`;
+    if(!/[\(\)|]/.test(trState.cur) && !/[\^×÷+\-]/.test(trState.cur.replace(/−/g,'-'))){
+      id('trFb').textContent='✅ Finished: '+formatDisplay(jsEval(toJS(trState.cur))); confetti();
+    }
+    tracerRender();
+  }
+  function extractAB(s, idx){
+    // read number to left and right (could be negative wrapped in parentheses already simplified)
+    // scan left for continuous number/decimal or a closing paren group already reduced; assume simplified within group
+    function readLeft(k){
+      let i=k-1, num=''; while(i>=0 && /[0-9.\-]/.test(s[i])){ num=s[i]+num; i--; if(s[i]==='−') break; }
+      // if ends with '-' and prior is a digit, we treat '-' as operator, not sign
+      // normalize unicode minus
+      num=num.replace(/−/g,'-');
+      const val= Number(num);
+      return {start:i+1, end:k-1, val};
+    }
+    function readRight(k){
+      let i=k+1, num=''; while(i<s.length && /[0-9.\-]/.test(s[i])){ num+=s[i]; i++; if(s[i-1]==='−') break; }
+      const val= Number(num.replace(/−/g,'-'));
+      return {start:k+1, end:i-1, val};
+    }
+    const L=readLeft(idx), R=readRight(idx), op=s[idx];
+    return {aStart:L.start,aEnd:L.end,bStart:R.start,bEnd:R.end, aval:L.val, bval:R.val, op};
+  }
+  function computeOp(a,b,op){
+    if(op==='^') return Math.pow(a,b);
+    if(op==='×') return a*b;
+    if(op==='÷') return a/b;
+    if(op==='+'||op==='−'){ return op==='+'? a+b : a-b; }
+    return NaN;
+  }
+  id('trNew').addEventListener('click',tracerNew);
+  id('trReset').addEventListener('click',()=>{ trState.cur=trState.orig; tracerRender(true); id('trFb').textContent=''; });
+  id('trExportCSV').addEventListener('click',()=>{
+    const rows=[['original','final','steps']];
+    const final=trState.cur;
+    rows.push([trState.orig, final, JSON.stringify(trState.history)]);
+    downloadCSV(`${deckTitle}_tracer.csv`, rows);
+  });
+  id('trExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_tracer.json`, {original:trState.orig, final:trState.cur, steps:trState.history});
+  });
+  tracerNew();
+
+  /* ---------- Evaluate Generator ---------- */
+  const evState={cur:null};
+  function evNew(){ 
+    const lv=id('evLevel').value;
+    const allowAbs=(lv==='abs');
+    const g=genExpression(lv==='hard'?'hard':lv, allowAbs);
+    evState.cur=g; id('evText').textContent=g.display; id('evAns').value=''; id('evFb').textContent=''; id('evHintBox').textContent=''; renderMath(id('evalSlide'));
+  }
+  id('evNew').addEventListener('click',evNew); evNew();
+  id('evHint').addEventListener('click',()=>{
+    const s=evState.cur.display;
+    const hint = 'Follow: brackets/| | → exponents → ÷/× (L→R) → +/− (L→R).';
+    id('evHintBox').innerHTML = `<div class="hint">${hint}</div>`;
+  });
+  id('evCheck').addEventListener('click',()=>{
+    const js=evState.cur.js; const want=jsEval(js); const got=Number(id('evAns').value);
+    if(Math.abs(got-want)<1e-10){ id('evFb').textContent='✅ Correct! '+formatDisplay(want); id('evFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); }
+    else { id('evFb').textContent='❌ Not quite. Expected '+formatDisplay(want); id('evFb').className='mt-2 h-6 font-semibold text-red-700';}
+  });
+  id('evExportCSV').addEventListener('click',()=>{
+    const js=evState.cur.js; const want=jsEval(js);
+    downloadCSV(`${deckTitle}_evaluate.csv`, [['expression','answer'], [evState.cur.display, formatDisplay(want)]]);
+  });
+  id('evExportJSON').addEventListener('click',()=>{
+    const js=evState.cur.js; const want=jsEval(js);
+    downloadJSON(`${deckTitle}_evaluate.json`, {expression:evState.cur.display, answer:want});
+  });
+
+  /* ---------- Absolute Value Number Line ---------- */
+  const cA=id('absLine'); const aOut=id('aOut'), bOut=id('bOut'), absA=id('absA'), absB=id('absB'), absAB=id('absAB');
+  const absState={min:-12,max:12,a:-2,b:3,snap:false,drag:null};
+  function map(x){const m=28,W=cA.clientWidth;return m+(x-absState.min)*(W-2*m)/(absState.max-absState.min)}
+  function unmap(px){const m=28,W=cA.clientWidth;return absState.min+(px-m)*(absState.max-absState.min)/(W-2*m)}
+  function drawAbsLine(){
+    if(!cA) return; const ctx=cA.getContext('2d');
+    cA.width=cA.clientWidth*devicePixelRatio; cA.height=cA.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+    const y=cA.clientHeight/2, m=28; ctx.clearRect(0,0,cA.clientWidth,cA.clientHeight);
+    ctx.lineWidth=2; ctx.strokeStyle='#6C1D45'; ctx.beginPath(); ctx.moveTo(m,y); ctx.lineTo(cA.clientWidth-m,y); ctx.stroke();
+    for(let t=absState.min;t<=absState.max;t++){const x=map(t); ctx.beginPath(); ctx.moveTo(x,y-8); ctx.lineTo(x,y+8); ctx.stroke(); if(t%2==0){ctx.fillStyle='#555'; ctx.font='12px Inter'; ctx.fillText(String(t),x-6,y+24);}}
+    // points a & b
+    const ax=map(absState.a), bx=map(absState.b);
+    ctx.fillStyle='#6C1D45'; ctx.beginPath(); ctx.arc(ax,y,9,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#C7A34F'; ctx.beginPath(); ctx.arc(bx,y,9,0,Math.PI*2); ctx.fill();
+    // distance |a-b|
+    ctx.strokeStyle='#C7A34F'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(ax,y); ctx.lineTo(bx,y); ctx.stroke();
+    aOut.textContent=absState.a.toFixed(2).replace(/\.00$/,''); bOut.textContent=absState.b.toFixed(2).replace(/\.00$/,'');
+    absA.textContent=Math.abs(absState.a).toFixed(2).replace(/\.00$/,''); absB.textContent=Math.abs(absState.b).toFixed(2).replace(/\.00$/,'');
+    absAB.textContent=Math.abs(absState.a-absState.b).toFixed(2).replace(/\.00$/,'');
+  }
+  cA.addEventListener('mousedown',e=>{absState.drag=nearest(e)}); window.addEventListener('mouseup',()=>absState.drag=null);
+  window.addEventListener('mousemove',e=>{ if(absState.drag){ movePoint(e,absState.drag); }});
+  function nearest(e){const r=cA.getBoundingClientRect(); const x=e.clientX-r.left; const ax=Math.abs(map(absState.a)-x), bx=Math.abs(map(absState.b)-x); return (ax<bx?'a':'b');}
+  function movePoint(e,which){const r=cA.getBoundingClientRect(); let val=unmap(e.clientX-r.left); if(absState.snap) val=Math.round(val); absState[which]=clamp(val,absState.min,absState.max); drawAbsLine();}
+  id('absRand').addEventListener('click',()=>{absState.a=+(Math.random()*12-6).toFixed(1); absState.b=+(Math.random()*12-6).toFixed(1); drawAbsLine();});
+  id('absSnap').addEventListener('click',()=>{absState.snap=!absState.snap; id('absSnap').classList.toggle('ring-2')});
+  id('absExportCSV').addEventListener('click',()=>{
+    downloadCSV(`${deckTitle}_absline.csv`, [['a','b','|a|','|b|','|a-b|'], [absState.a,absState.b,Math.abs(absState.a),Math.abs(absState.b),Math.abs(absState.a-absState.b)]]);
+  });
+  id('absExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_absline.json`, {a:absState.a,b:absState.b,absA:Math.abs(absState.a),absB:Math.abs(absState.b),absAB:Math.abs(absState.a-absState.b)});
+  });
+  drawAbsLine();
+  window.addEventListener('resize',()=>{ if(slides[i].id==='absLineSlide') drawAbsLine(); });
+
+  /* ---------- Absolute Value Practice ---------- */
+  const absPState={set:[]};
+  function newAbsSet(){
+    const items=[];
+    for(let k=0;k<4;k++){
+      const a=randInt(-12,12), b=randInt(-8,8);
+      const forms=[
+        `|${a}|+${b}`, `${b}−|${a}|`, `|${a}−${b}|`, `|(${a})|×${randInt(2,5)}`
+      ];
+      const expr=pick(forms);
+      items.push({expr, js:toJS(expr)});
+    }
+    absPState.set=items;
+    const box=id('absList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">\\( ${o.expr} \\) = <input class="abin border rounded px-2 py-1 w-32" placeholder="answer"></div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('absPracSlide'));
+  }
+  newAbsSet();
+  id('absNew').addEventListener('click',newAbsSet);
+  id('absCheck').addEventListener('click',()=>{
+    let total=0,ok=0; id('absList').querySelectorAll('.card').forEach((row,idx)=>{
+      total++;
+      const want=jsEval(absPState.set[idx].js);
+      const got=Number(row.querySelector('.abin').value);
+      if(Math.abs(got-want)<1e-10){row.querySelector('.abin').style.borderColor='#22c55e'; ok++;} else row.querySelector('.abin').style.borderColor='#ef4444';
+    });
+    id('absFb').textContent= ok===total?'✅ All correct!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('absPExportCSV').addEventListener('click',()=>{
+    const rows=[['expression','answer']]; absPState.set.forEach(o=>rows.push([o.expr, formatDisplay(jsEval(o.js))])); downloadCSV(`${deckTitle}_abspractice.csv`, rows);
+  });
+  id('absPExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_abspractice.json`, absPState.set.map(o=>({expression:o.expr, answer:jsEval(o.js)})));
+  });
+
+  /* ---------- Mixed BEDMAS + | | ---------- */
+  const mixState={set:[]};
+  function newMixSet(){
+    const items=[];
+    for(let k=0;k<4;k++){
+      const g=genExpression('hard', true);
+      items.push(g);
+    }
+    mixState.set=items;
+    const box=id('mixList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">\\( ${o.display} \\) = <input class="mxin border rounded px-2 py-1 w-32" placeholder="answer"></div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('mixedSlide'));
+  }
+  newMixSet();
+  id('mixNew').addEventListener('click',newMixSet);
+  id('mixCheck').addEventListener('click',()=>{
+    let total=0,ok=0; id('mixList').querySelectorAll('.card').forEach((row,idx)=>{
+      total++;
+      const want=jsEval(mixState.set[idx].js);
+      const got=Number(row.querySelector('.mxin').value);
+      if(Math.abs(got-want)<1e-10){row.querySelector('.mxin').style.borderColor='#22c55e'; ok++;} else row.querySelector('.mxin').style.borderColor='#ef4444';
+    });
+    id('mixFb').textContent= ok===total?'✅ Excellent!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('mixExportCSV').addEventListener('click',()=>{
+    const rows=[['expression','answer']]; mixState.set.forEach(o=>rows.push([o.display, formatDisplay(jsEval(o.js))])); downloadCSV(`${deckTitle}_mixed.csv`, rows);
+  });
+  id('mixExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_mixed.json`, mixState.set.map(o=>({expression:o.display, answer:jsEval(o.js)})));
+  });
+
+  /* ---------- Parentheses Choice ---------- */
+  const parenState={set:[]};
+  function newParenSet(){
+    const items=[];
+    for(let k=0;k<4;k++){
+      const a=randInt(4,12), b=randInt(2,8), c=randInt(2,6), d=randInt(1,9);
+      const base=`${a}−${b}×${c}+${d}`;
+      const A=`(${a}−${b})×${c}+${d}`;
+      const B=`${a}−(${b}×${c})+${d}`; // correct
+      const C=`${a}−${b}×(${c}+${d})`;
+      const opts=[A,B,C].sort(()=>Math.random()-0.5);
+      items.push({base, A, B, C, opts, key:opts.indexOf(B)});
+    }
+    parenState.set=items;
+    const box=id('parenList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4 text-left';
+      row.innerHTML=`<div class="font-semibold text-maroon">Item ${idx+1}: \\( ${o.base} \\)</div>
+        <div class="mt-1">
+        ${o.opts.map((s,j)=>`<label class="mr-3"><input type="radio" name="p${idx}" value="${j}"> \\( ${s} \\)</label>`).join('<br>')}
+        </div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('parenSlide'));
+  }
+  newParenSet();
+  id('parenNew').addEventListener('click',newParenSet);
+  id('parenCheck').addEventListener('click',()=>{
+    let total=0,ok=0; parenState.set.forEach((o,idx)=>{
+      total++;
+      const val=(document.querySelector(`input[name="p${idx}"]:checked`)||{}).value;
+      if(Number(val)===o.key) ok++;
+    });
+    id('parenFb').textContent = ok===total ? '✅ All correct!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('parenExportCSV').addEventListener('click',()=>{
+    const rows=[['base','correct_option']]; parenState.set.forEach(o=>rows.push([o.base, o.opts[o.key]])); downloadCSV(`${deckTitle}_parentheses.csv`, rows);
+  });
+  id('parenExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_parentheses.json`, parenState.set.map(o=>({base:o.base, correct:o.opts[o.key]})));
+  });
+
+  /* ---------- Error Analysis ---------- */
+  function errBank(){
+    return [
+      {work:'\\( 20\\div 5\\times 2 = 20 \\div (5\\times 2) = 2 \\)', fix:'D/M are same priority. Left→right: (20 ÷ 5) × 2 = 4 × 2 = 8.', key:'A'},
+      {work:'\\( |-3^2| = |(-3)^2| = 9 \\)', fix:'Exponent binds to 3, not “−”. So −3^2 = −9, then |−9|=9 (final 9). The equivalence written is misleading; the step must be: first 3^2, then unary minus, then | |.', key:'C'},
+      {work:'\\( |2-5| = 2-5 = -3 \\)', fix:'Absolute value is distance: |2−5|=3, not −3.', key:'B'},
+      {work:'\\( 12-4+3 = 12-(4+3) = 5 \\)', fix:'A/S are same priority: left→right → 12−4+3 = 8+3 = 11.', key:'D'}
+    ];
+  }
+  const errState={item:null};
+  function errNew(){
+    const bank=errBank(); errState.item=bank[Math.floor(Math.random()*bank.length)];
+    id('errBox').innerHTML=`Incorrect work:<br/> <div class="mt-1 text-maroon">${errState.item.work}</div>`; 
+    id('errFb').textContent=''; id('errRevealBox').textContent='';
+    renderMath(id('errSlide'));
+  }
+  errNew();
+  id('errNew').addEventListener('click',errNew);
+  id('errCheck').addEventListener('click',()=>{
+    const sel=(document.querySelector('input[name="errChoice"]:checked')||{}).value;
+    if(!sel){ id('errFb').textContent='Choose an option.'; return;}
+    if(sel===errState.item.key){ id('errFb').textContent='✅ Correct diagnosis.'; confetti(); } else { id('errFb').textContent='❌ Not quite. Reveal and study the fix.'; }
+  });
+  id('errReveal').addEventListener('click',()=>{ id('errRevealBox').innerHTML=`<div class="hint">${errState.item.fix}</div>`; renderMath(id('errSlide')); });
+  id('errExportCSV').addEventListener('click',()=>{
+    const sel=(document.querySelector('input[name="errChoice"]:checked')||{}).value||'';
+    downloadCSV(`${deckTitle}_error.csv`, [['incorrect_work','explanation','answer_key','user_choice'], [errState.item.work, errState.item.fix, errState.item.key, sel]]);
+  });
+  id('errExportJSON').addEventListener('click',()=>{
+    const sel=(document.querySelector('input[name="errChoice"]:checked')||{}).value||'';
+    downloadJSON(`${deckTitle}_error.json`, {incorrect:errState.item.work, explanation:errState.item.fix, key:errState.item.key, user:sel});
+  });
+
+  /* ---------- Challenge Mode ---------- */
+  const chState={cur:null, streak:0, history:[]};
+  function chNew(){ const lv=id('chLevel').value; const allowAbs=(lv==='abs'); const g=genExpression(lv==='hard'?'hard':lv, allowAbs); chState.cur=g; id('chText').textContent=g.display; id('chAns').value=''; id('chFb').textContent=''; id('chHintBox').textContent=''; renderMath(id('challengeSlide')); }
+  id('chNew').addEventListener('click',chNew); chNew();
+  id('chHint').addEventListener('click',()=>{ id('chHintBox').innerHTML=`<div class="hint">Brackets/| | → exponents → ÷/× (L→R) → +/− (L→R).</div>`; });
+  id('chCheck').addEventListener('click',()=>{
+    const want=jsEval(chState.cur.js), got=Number(id('chAns').value);
+    const ok=Math.abs(got-want)<1e-10;
+    if(ok){ chState.streak++; id('chFb').textContent='✅ Correct! '+formatDisplay(want); id('chFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); chState.history.push({expr:chState.cur.display, ans:want, correct:true}); chNew(); }
+    else { chState.streak=0; id('chFb').textContent='❌ Not quite. Expected '+formatDisplay(want); id('chFb').className='mt-2 h-6 font-semibold text-red-700'; chState.history.push({expr:chState.cur.display, ans:want, correct:false}); }
+    id('streakOut').textContent=chState.streak;
+  });
+  id('chExportCSV').addEventListener('click',()=>{
+    const rows=[['expr','answer','correct']]; chState.history.forEach(h=>rows.push([h.expr, formatDisplay(h.ans), h.correct])); downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('chExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_challenge.json`, chState.history);
+  });
+
+  /* ---------- Finish init ---------- */
+  window.addEventListener('resize',()=>{ if(slides[i].id==='absLineSlide') drawAbsLine(); });
+  show(0);
+})();
+</script>
+</body>
+</html>
