@@ -3,12 +3,9 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>QLA Mathematics Portal | Qatar Leadership Academy</title>
+  <title>QLA Mathematics LMS | Qatar Leadership Academy</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@600;800&display=swap" rel="stylesheet"/>
@@ -19,40 +16,34 @@
       --maroon:#6C1D45; --maroon2:#8B2450; --gold:#C7A34F; --gold2:#E4D4A8;
       --ink:#0F172A; --slate:#5b6572; --line:#e9eef2; --bg:#F7FAFC;
       --ok:#136f3a; --soon:#8a3d00; --purple:#7C3AED; --blue:#1D4ED8;
+      --danger:#dc2626; --warning:#f59e0b;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5}
 
-    /* HERO */
     .hero{
       position:relative; color:#fff;
       background: linear-gradient(135deg, rgba(108,29,69,.88) 0%, rgba(139,36,80,.84) 45%, rgba(108,29,69,.88) 100%);
       overflow:hidden;
     }
     .hero::before{
-      content:""; position:absolute; inset:-40% -40% auto auto;
-      width:200%; height:200%;
+      content:""; position:absolute; inset:-40% -40% auto auto; width:200%; height:200%;
       background:radial-gradient(circle, rgba(199,163,79,.22) 0%, transparent 70%);
       animation:float 22s ease-in-out infinite; pointer-events:none;
     }
     @keyframes float{0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(30px,-30px) rotate(120deg)} 66%{transform:translate(-20px,20px) rotate(240deg)}}
-    @media (prefers-reduced-motion: reduce){ .hero::before{animation:none} }
 
     .logo-tile{
       background:#fff; border:1px solid var(--line); border-radius:16px;
       padding:8px 10px; display:inline-flex; align-items:center; justify-content:center;
       box-shadow:0 10px 24px rgba(0,0,0,.08)
     }
-    .logo-crisp{height:60px;width:auto;image-rendering:auto}
-    @media (min-width:1024px){ .logo-crisp{height:68px} }
 
-    /* Navigation */
     .nav-tabs{ display:flex; gap:8px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.35); border-radius:14px; padding:6px; flex-wrap:wrap }
     .nav-tab{ flex:1; min-width:120px; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); color:#fff; background:transparent; cursor:pointer; font-weight:600; text-align:center; transition:all .3s ease }
     .nav-tab.active{ background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--maroon); transform:scale(1.02) }
     .nav-tab:hover:not(.active){ background:rgba(255,255,255,.1) }
 
-    /* Cards & Interactive Elements */
     .card{ background:#fff; border:1px solid var(--line); border-radius:18px; transition:all .3s ease }
     .card:hover{ transform:translateY(-2px); box-shadow:0 20px 40px rgba(0,0,0,.1) }
     
@@ -73,315 +64,483 @@
     .open{ background:rgba(19,111,58,.1); color:var(--ok); border-color:rgba(19,111,58,.25) }
     .soon{ background:rgba(186,91,8,.08); color:var(--soon); border-color:rgba(186,91,8,.25) }
     .completed{ background:rgba(124,58,237,.1); color:var(--purple); border-color:rgba(124,58,237,.25) }
+    .locked{ background:rgba(220,38,38,.1); color:var(--danger); border-color:rgba(220,38,38,.25) }
 
-    .kbd{ font-variant-numeric:tabular-nums; font-weight:700; padding:.1rem .35rem; border-radius:.4rem; border:1px solid #d1d5db; background:#fff }
-
-    /* Modal Styles */
-    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(8px); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:all .3s ease }
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:all .3s ease }
     .modal.show{ opacity:1; pointer-events:auto }
-    .modal-content{ background:#fff; border-radius:20px; max-width:90vw; max-height:90vh; overflow:auto; box-shadow:0 25px 50px rgba(0,0,0,.25) }
+    .modal-content{ background:#fff; border-radius:20px; max-width:95vw; max-height:95vh; overflow:auto; box-shadow:0 25px 50px rgba(0,0,0,.25) }
 
-    /* Interactive Elements */
-    .progress-bar{ height:6px; background:#e5e7eb; border-radius:3px; overflow:hidden }
+    .progress-bar{ height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden }
     .progress-fill{ height:100%; background:linear-gradient(90deg,var(--gold),var(--maroon)); transition:width .5s ease }
 
-    .quiz-option{ padding:12px 16px; border:2px solid var(--line); border-radius:12px; cursor:pointer; transition:all .3s ease; margin:8px 0 }
-    .quiz-option:hover{ border-color:var(--gold); background:rgba(199,163,79,.05) }
+    .quiz-option{ padding:16px 20px; border:2px solid var(--line); border-radius:12px; cursor:pointer; transition:all .3s ease; margin:8px 0; background:#fff }
+    .quiz-option:hover{ border-color:var(--gold); background:rgba(199,163,79,.05); transform:translateY(-2px) }
     .quiz-option.selected{ border-color:var(--maroon); background:rgba(108,29,69,.05) }
-    .quiz-option.correct{ border-color:var(--ok); background:rgba(19,111,58,.05) }
-    .quiz-option.incorrect{ border-color:#dc2626; background:rgba(220,38,38,.05) }
+    .quiz-option.correct{ border-color:var(--ok); background:rgba(19,111,58,.05); color:var(--ok) }
+    .quiz-option.incorrect{ border-color:var(--danger); background:rgba(220,38,38,.05); color:var(--danger) }
 
-    /* Animations */
+    .video-player{
+      position:relative; width:100%; height:400px; background:#000; border-radius:12px; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .video-controls{
+      position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,.8));
+      padding:20px; display:flex; align-items:center; gap:15px; color:#fff;
+    }
+
+    .skill-badge{ 
+      display:inline-flex; align-items:center; gap:8px; padding:8px 16px; 
+      border-radius:20px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
+    }
+    .skill-assigned{ background:rgba(29,78,216,.1); color:var(--blue); border:1px solid rgba(29,78,216,.3) }
+    .skill-completed{ background:rgba(19,111,58,.1); color:var(--ok); border:1px solid rgba(19,111,58,.3) }
+    .skill-pending{ background:rgba(249,115,22,.1); color:#f97316; border:1px solid rgba(249,115,22,.3) }
+
+    .form-group{ margin-bottom:20px }
+    .form-label{ display:block; margin-bottom:8px; font-weight:600; color:var(--ink) }
+    .form-input{ 
+      width:100%; padding:12px 16px; border:2px solid var(--line); border-radius:12px; 
+      font-size:14px; transition:all .3s ease; background:#fff;
+    }
+    .form-input:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(199,163,79,.1) }
+    .form-textarea{ min-height:120px; resize:vertical }
+
+    .btn{ 
+      display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:12px; 
+      font-weight:600; text-decoration:none; transition:all .3s ease; cursor:pointer; border:none;
+    }
+    .btn-primary{ background:var(--maroon); color:#fff }
+    .btn-primary:hover{ background:var(--maroon2); transform:translateY(-2px) }
+    .btn-secondary{ background:var(--gold); color:var(--maroon) }
+    .btn-secondary:hover{ background:var(--gold2); transform:translateY(-2px) }
+    .btn-success{ background:var(--ok); color:#fff }
+    .btn-danger{ background:var(--danger); color:#fff }
+
+    .lesson-content{ max-height:60vh; overflow-y:auto; padding:20px }
+    .lesson-section{ margin-bottom:30px; padding:20px; border:1px solid var(--line); border-radius:12px }
+
     @keyframes slideIn{ from{transform:translateY(20px); opacity:0} to{transform:translateY(0); opacity:1} }
-    @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
     .animate-slide-in{ animation:slideIn .5s ease-out }
-    .animate-fade-in{ animation:fadeIn .3s ease-out }
 
-    /* Video Player */
-    .video-container{ position:relative; width:100%; height:300px; background:#000; border-radius:12px; overflow:hidden }
-    .video-placeholder{ display:flex; align-items:center; justify-content:center; height:100%; color:#fff; background:linear-gradient(135deg,var(--maroon),var(--maroon2)) }
+    .notification{ 
+      position:fixed; top:20px; right:20px; z-index:2000; padding:16px 24px; 
+      border-radius:12px; color:#fff; font-weight:600; transform:translateX(400px); 
+      transition:transform .3s ease; box-shadow:0 10px 30px rgba(0,0,0,.2);
+    }
+    .notification.show{ transform:translateX(0) }
+    .notification.success{ background:var(--ok) }
+    .notification.error{ background:var(--danger) }
+    .notification.info{ background:var(--blue) }
+    .notification.warning{ background:var(--warning) }
 
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-      :root{ --bg:#0F172A; --ink:#F1F5F9; --line:#334155; }
-      .card{ background:#1E293B; border-color:var(--line) }
-      .interactive-row{ background:#1E293B }
-      .modal-content{ background:#1E293B }
+    .role-selector{ 
+      min-height:100vh; display:flex; align-items:center; justify-content:center; 
+      background:linear-gradient(135deg, var(--maroon) 0%, var(--maroon2) 100%);
+    }
+
+    .editor-toolbar{
+      display:flex; gap:8px; padding:12px; background:#f8f9fa; border-bottom:1px solid var(--line);
+      border-radius:12px 12px 0 0;
+    }
+    .editor-btn{
+      padding:8px 12px; border:1px solid var(--line); background:#fff; border-radius:6px;
+      cursor:pointer; transition:all .2s ease;
+    }
+    .editor-btn:hover{ background:var(--gold); color:var(--maroon) }
+
+    @media (max-width: 768px) {
+      .nav-tabs{ flex-direction:column }
+      .nav-tab{ min-width:auto }
+      .modal-content{ margin:10px; max-width:calc(100vw - 20px) }
     }
   </style>
 </head>
 <body>
 
-  <!-- HERO -->
-  <header class="hero shadow-2xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <!-- Header with logo and title -->
-      <div class="flex items-center justify-between py-6">
-        <div class="flex items-center gap-4">
-          <span class="logo-tile">
-            <div class="logo-crisp w-16 h-16 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-xl">QLA</div>
-          </span>
-          <div>
-            <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins,Inter,sans-serif">Mathematics Portal</h1>
-            <p class="text-sm opacity-90 mt-1">Qatar Leadership Academy • Qatar Foundation</p>
+  <!-- Role Selection Screen -->
+  <div id="roleSelector" class="role-selector">
+    <div class="text-center text-white">
+      <div class="logo-tile mb-8">
+        <div class="w-20 h-20 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-2xl">QLA</div>
+      </div>
+      <h1 class="text-4xl font-bold mb-4" style="font-family:Poppins">Mathematics Learning Platform</h1>
+      <p class="text-lg opacity-90 mb-12">Qatar Leadership Academy • Qatar Foundation</p>
+      
+      <div class="grid gap-8 md:grid-cols-2 max-w-2xl mx-auto px-4">
+        <div class="card p-8 text-center cursor-pointer hover:scale-105 transition-transform" onclick="selectRole('student')">
+          <div class="w-24 h-24 bg-gradient-to-r from-[var(--blue)] to-[var(--purple)] rounded-full mx-auto mb-6 flex items-center justify-center text-white text-4xl">
+            <i class="fas fa-user-graduate"></i>
           </div>
+          <h3 class="text-2xl font-bold text-[var(--maroon)] mb-3">Student Portal</h3>
+          <p class="text-gray-600">Access lessons, practice problems, and track your progress</p>
         </div>
         
-        <!-- User Profile -->
-        <div class="hidden lg:flex items-center gap-4">
-          <div class="bg-white/10 backdrop-blur rounded-full p-2">
-            <i class="fas fa-user-circle text-2xl"></i>
+        <div class="card p-8 text-center cursor-pointer hover:scale-105 transition-transform" onclick="selectRole('teacher')">
+          <div class="w-24 h-24 bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] rounded-full mx-auto mb-6 flex items-center justify-center text-white text-4xl">
+            <i class="fas fa-chalkboard-teacher"></i>
           </div>
-          <div class="text-right">
-            <div class="font-semibold">Student Portal</div>
-            <div class="text-xs opacity-80">Welcome back!</div>
-          </div>
+          <h3 class="text-2xl font-bold text-[var(--maroon)] mb-3">Teacher Portal</h3>
+          <p class="text-gray-600">Manage lessons, assign skills, and monitor student progress</p>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Navigation -->
-      <div class="pb-6 flex flex-col gap-4">
-        <div class="nav-tabs" role="tablist" aria-label="Main navigation">
-          <button class="nav-tab active" data-tab="dashboard"><i class="fas fa-home mr-2"></i>Dashboard</button>
-          <button class="nav-tab" data-tab="lessons"><i class="fas fa-book mr-2"></i>Lessons</button>
-          <button class="nav-tab" data-tab="practice"><i class="fas fa-dumbbell mr-2"></i>Practice</button>
-          <button class="nav-tab" data-tab="assessments"><i class="fas fa-clipboard-check mr-2"></i>Assessments</button>
-          <button class="nav-tab" data-tab="progress"><i class="fas fa-chart-line mr-2"></i>Progress</button>
-        </div>
-        
-        <!-- Quick actions -->
-        <div class="flex items-center justify-between">
+  <!-- Student Portal -->
+  <div id="studentPortal" class="portal hidden">
+    <header class="hero shadow-2xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="flex items-center justify-between py-6">
           <div class="flex items-center gap-4">
+            <span class="logo-tile">
+              <div class="w-16 h-16 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-xl">QLA</div>
+            </span>
+            <div>
+              <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins">Student Portal</h1>
+              <p class="text-sm opacity-90 mt-1">Mathematics Learning Platform</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <div class="font-semibold" id="studentName">Student Name</div>
+              <div class="text-xs opacity-80">Grade <span id="studentGrade">7</span></div>
+            </div>
+            <button onclick="logout()" class="bg-white/10 backdrop-blur rounded-full p-2 hover:bg-white/20 transition-colors">
+              <i class="fas fa-sign-out-alt text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="pb-6 flex flex-col gap-4">
+          <div class="nav-tabs" role="tablist">
+            <button class="nav-tab active" data-tab="dashboard"><i class="fas fa-home mr-2"></i>Dashboard</button>
+            <button class="nav-tab" data-tab="lessons"><i class="fas fa-book mr-2"></i>Lessons</button>
+            <button class="nav-tab" data-tab="practice"><i class="fas fa-dumbbell mr-2"></i>Practice</button>
+            <button class="nav-tab" data-tab="skills"><i class="fas fa-star mr-2"></i>Skills</button>
+            <button class="nav-tab" data-tab="progress"><i class="fas fa-chart-line mr-2"></i>Progress</button>
+          </div>
+          
+          <div class="flex items-center justify-between">
             <select id="gradeSelect" class="bg-white/10 backdrop-blur border border-white/20 text-white rounded-lg px-3 py-2 font-semibold">
               <option value="7">Grade 7</option>
               <option value="8">Grade 8</option>
             </select>
-          </div>
-          <div class="hidden sm:flex items-center gap-4 bg-white/10 backdrop-blur rounded-2xl px-4 py-2">
-            <div class="flex items-center gap-2"><span class="kbd">/</span><span class="text-xs">Search</span></div>
-            <div class="flex items-center gap-2"><span class="kbd">G</span><span class="text-xs">Switch Grade</span></div>
+            <div class="text-sm bg-white/10 backdrop-blur rounded-lg px-4 py-2">
+              <i class="fas fa-clock mr-2"></i>Study Time: <span id="totalStudyTime">0h 0m</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- MAIN CONTENT -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-    <!-- Dashboard Tab -->
-    <section id="dashboard-tab" class="tab-content">
-      <!-- Progress Overview -->
-      <div class="grid gap-6 md:grid-cols-3 mb-8">
-        <div class="card p-6 text-center">
-          <div class="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-            <span id="overallProgress">0%</span>
-          </div>
-          <h3 class="font-bold text-lg mb-2">Overall Progress</h3>
-          <div class="progress-bar">
-            <div class="progress-fill" id="overallProgressBar" style="width:0%"></div>
-          </div>
-        </div>
-        
-        <div class="card p-6 text-center">
-          <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
-            <i class="fas fa-trophy text-2xl"></i>
-          </div>
-          <h3 class="font-bold text-lg mb-2">Completed Lessons</h3>
-          <div class="text-3xl font-bold text-[var(--ok)]" id="completedCount">0</div>
-        </div>
-        
-        <div class="card p-6 text-center">
-          <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
-            <i class="fas fa-clock text-2xl"></i>
-          </div>
-          <h3 class="font-bold text-lg mb-2">Study Time</h3>
-          <div class="text-3xl font-bold text-[var(--blue)]" id="studyTime">0h</div>
-        </div>
-      </div>
-
-      <!-- Teachers Section -->
-      <section class="grid gap-6 md:grid-cols-2 mb-8">
-        <div class="card p-5">
-          <div class="flex items-start gap-4">
-            <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-[var(--maroon)] to-[var(--maroon2)] flex items-center justify-center text-white font-bold text-xl">
-              MA
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Student Dashboard -->
+      <section id="student-dashboard" class="tab-content">
+        <div class="grid gap-6 md:grid-cols-4 mb-8">
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold">
+              <span id="overallProgress">0%</span>
             </div>
-            <div>
-              <div class="font-extrabold">Mr. Mohammad Abu Ghuwaleh</div>
-              <div class="text-sm text-white bg-[var(--maroon)] inline-block px-2 py-0.5 rounded mt-1">Room 02</div>
-              <div class="text-sm mt-2">
-                <a class="underline decoration-dotted hover:text-[var(--maroon)]" href="mailto:2ed944@qla.qfschools.qa">2ed944@qla.qfschools.qa</a>
+            <h3 class="font-bold text-lg mb-2">Progress</h3>
+            <div class="progress-bar">
+              <div class="progress-fill" id="overallProgressBar" style="width:0%"></div>
+            </div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-trophy text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Completed</h3>
+            <div class="text-3xl font-bold text-[var(--ok)]" id="completedCount">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-star text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Skills</h3>
+            <div class="text-3xl font-bold text-[var(--blue)]" id="skillsCount">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-fire text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Streak</h3>
+            <div class="text-3xl font-bold text-[var(--purple)]" id="streakCount">0</div>
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-3 mb-8">
+          <div class="lg:col-span-2">
+            <div class="card p-6">
+              <h3 class="font-bold text-xl mb-4"><i class="fas fa-rocket mr-2 text-[var(--gold)]"></i>Continue Learning</h3>
+              <div id="continueLesson" class="space-y-4">
+                <!-- Continue lesson content -->
               </div>
             </div>
           </div>
-          <div class="mt-4 space-y-2">
-            <div class="interactive-row" onclick="openVirtualClassroom('mohammad')">
-              <span><i class="fas fa-chalkboard-teacher mr-2"></i>Virtual Classroom</span>
-              <span class="status open">Join</span>
-            </div>
-            <div class="interactive-row" onclick="openOfficeHours('mohammad')">
-              <span><i class="fas fa-calendar-alt mr-2"></i>Office Hours</span>
-              <span class="status open">Book</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card p-5">
-          <div class="flex items-start gap-4">
-            <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-[var(--blue)] to-[var(--purple)] flex items-center justify-center text-white font-bold text-xl">
-              NO
-            </div>
-            <div>
-              <div class="font-extrabold">Mr. Nizar Bani Omar</div>
-              <div class="text-sm text-white bg-[var(--maroon)] inline-block px-2 py-0.5 rounded mt-1">Room 09</div>
-              <div class="text-sm mt-2">
-                <a class="underline decoration-dotted hover:text-[var(--maroon)]" href="mailto:2hg662@qla.qfschools.qa">2hg662@qla.qfschools.qa</a>
-              </div>
-            </div>
-          </div>
-          <div class="mt-4 space-y-2">
-            <div class="interactive-row" onclick="openVirtualClassroom('nizar')">
-              <span><i class="fas fa-chalkboard-teacher mr-2"></i>Virtual Classroom</span>
-              <span class="status open">Join</span>
-            </div>
-            <div class="interactive-row" onclick="openOfficeHours('nizar')">
-              <span><i class="fas fa-calendar-alt mr-2"></i>Office Hours</span>
-              <span class="status open">Book</span>
+          
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-target mr-2 text-[var(--maroon)]"></i>Assigned Skills</h3>
+            <div id="assignedSkills" class="space-y-3">
+              <!-- Assigned skills content -->
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Quick Actions -->
-      <section class="card p-6 mb-8">
-        <h3 class="font-bold text-xl mb-4"><i class="fas fa-bolt mr-2 text-[var(--gold)]"></i>Quick Actions</h3>
-        <div class="grid gap-4 md:grid-cols-4">
-          <button class="interactive-row justify-center" onclick="continueLastLesson()">
-            <i class="fas fa-play mr-2"></i>Continue Learning
-          </button>
-          <button class="interactive-row justify-center" onclick="startPractice()">
-            <i class="fas fa-dumbbell mr-2"></i>Practice Problems
-          </button>
-          <button class="interactive-row justify-center" onclick="takeAssessment()">
-            <i class="fas fa-clipboard-check mr-2"></i>Take Assessment
-          </button>
-          <button class="interactive-row justify-center" onclick="viewProgress()">
-            <i class="fas fa-chart-line mr-2"></i>View Progress
-          </button>
+      <!-- Student Lessons -->
+      <section id="student-lessons" class="tab-content hidden">
+        <div class="card p-5 mb-6">
+          <input id="lessonSearch" type="search" placeholder="Search lessons..." 
+                 class="w-full form-input"/>
+        </div>
+        <div id="lessonsContent"></div>
+      </section>
+
+      <!-- Student Practice -->
+      <section id="student-practice" class="tab-content hidden">
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div class="card p-6 text-center cursor-pointer" onclick="startPracticeMode('arithmetic')">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-3xl">
+              <i class="fas fa-calculator"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Arithmetic</h3>
+            <p class="text-sm text-gray-600 mb-4">Basic operations and calculations</p>
+            <button class="btn btn-primary">Start Practice</button>
+          </div>
+
+          <div class="card p-6 text-center cursor-pointer" onclick="startPracticeMode('algebra')">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--blue)] to-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white text-3xl">
+              <i class="fas fa-function"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Algebra</h3>
+            <p class="text-sm text-gray-600 mb-4">Equations and expressions</p>
+            <button class="btn btn-primary">Start Practice</button>
+          </div>
+
+          <div class="card p-6 text-center cursor-pointer" onclick="startPracticeMode('geometry')">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--ok)] to-emerald-400 mx-auto mb-4 flex items-center justify-center text-white text-3xl">
+              <i class="fas fa-shapes"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Geometry</h3>
+            <p class="text-sm text-gray-600 mb-4">Shapes, angles, and measurements</p>
+            <button class="btn btn-primary">Start Practice</button>
+          </div>
         </div>
       </section>
-    </section>
 
-    <!-- Lessons Tab -->
-    <section id="lessons-tab" class="tab-content hidden">
-      <div class="card p-5 mb-6">
-        <label class="block text-sm font-semibold text-slate-700 mb-2">
-          <i class="fas fa-search mr-2"></i>Search lessons
-        </label>
-        <div class="relative">
-          <input id="lessonSearch" type="search" placeholder="e.g., Fractions, BIDMAS, Pythagoras, Geometry"
-                 class="w-full rounded-xl border border-[var(--line)] pl-10 pr-3 py-3 focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/20"/>
-          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        </div>
-      </div>
-
-      <div id="lessonsContent">
-        <!-- Lessons will be dynamically loaded here -->
-      </div>
-    </section>
-
-    <!-- Practice Tab -->
-    <section id="practice-tab" class="tab-content hidden">
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div class="card p-6 text-center" onclick="startMathTraining('arithmetic')">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-3xl">
-            <i class="fas fa-calculator"></i>
-          </div>
-          <h3 class="font-bold text-lg mb-2">Arithmetic Drill</h3>
-          <p class="text-sm text-gray-600">Practice basic operations</p>
-          <button class="mt-4 bg-[var(--maroon)] text-white px-6 py-2 rounded-lg hover:bg-[var(--maroon2)] transition-colors">
-            Start Practice
-          </button>
-        </div>
-
-        <div class="card p-6 text-center" onclick="startMathTraining('algebra')">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--blue)] to-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white text-3xl">
-            <i class="fas fa-function"></i>
-          </div>
-          <h3 class="font-bold text-lg mb-2">Algebra Practice</h3>
-          <p class="text-sm text-gray-600">Solve equations and expressions</p>
-          <button class="mt-4 bg-[var(--blue)] text-white px-6 py-2 rounded-lg hover:opacity-80 transition-opacity">
-            Start Practice
-          </button>
-        </div>
-
-        <div class="card p-6 text-center" onclick="startMathTraining('geometry')">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--ok)] to-emerald-400 mx-auto mb-4 flex items-center justify-center text-white text-3xl">
-            <i class="fas fa-shapes"></i>
-          </div>
-          <h3 class="font-bold text-lg mb-2">Geometry Puzzles</h3>
-          <p class="text-sm text-gray-600">Angles, areas, and shapes</p>
-          <button class="mt-4 bg-[var(--ok)] text-white px-6 py-2 rounded-lg hover:opacity-80 transition-opacity">
-            Start Practice
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Assessments Tab -->
-    <section id="assessments-tab" class="tab-content hidden">
-      <div class="grid gap-6">
+      <!-- Student Skills -->
+      <section id="student-skills" class="tab-content hidden">
         <div class="card p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-xl"><i class="fas fa-clipboard-check mr-2 text-[var(--maroon)]"></i>Available Assessments</h3>
-            <button class="bg-[var(--maroon)] text-white px-4 py-2 rounded-lg hover:bg-[var(--maroon2)] transition-colors">
-              Create Custom Quiz
+          <h3 class="font-bold text-xl mb-6"><i class="fas fa-star mr-2 text-[var(--gold)]"></i>Your Skills Progress</h3>
+          <div id="skillsProgress" class="space-y-4"></div>
+        </div>
+      </section>
+
+      <!-- Student Progress -->
+      <section id="student-progress" class="tab-content hidden">
+        <div class="grid gap-6">
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-chart-line mr-2 text-[var(--gold)]"></i>Learning Analytics</h3>
+            <div id="progressChart" class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+              <p class="text-gray-500">Progress visualization</p>
+            </div>
+          </div>
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Achievements</h4>
+              <div id="achievementsList"></div>
+            </div>
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Statistics</h4>
+              <div id="studyStats"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Teacher Portal -->
+  <div id="teacherPortal" class="portal hidden">
+    <header class="hero shadow-2xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="flex items-center justify-between py-6">
+          <div class="flex items-center gap-4">
+            <span class="logo-tile">
+              <div class="w-16 h-16 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-xl">QLA</div>
+            </span>
+            <div>
+              <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins">Teacher Portal</h1>
+              <p class="text-sm opacity-90 mt-1">Mathematics Learning Management</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <div class="font-semibold" id="teacherName">Mr. Mohammad Abu Ghuwaleh</div>
+              <div class="text-xs opacity-80">Mathematics Teacher</div>
+            </div>
+            <button onclick="logout()" class="bg-white/10 backdrop-blur rounded-full p-2 hover:bg-white/20 transition-colors">
+              <i class="fas fa-sign-out-alt text-xl"></i>
             </button>
           </div>
-          <div id="assessmentsList" class="space-y-3">
-            <!-- Assessments will be loaded here -->
+        </div>
+
+        <div class="pb-6">
+          <div class="nav-tabs" role="tablist">
+            <button class="nav-tab active" data-tab="teacher-dashboard"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</button>
+            <button class="nav-tab" data-tab="lesson-management"><i class="fas fa-book-open mr-2"></i>Lessons</button>
+            <button class="nav-tab" data-tab="skill-assignment"><i class="fas fa-tasks mr-2"></i>Skills</button>
+            <button class="nav-tab" data-tab="student-management"><i class="fas fa-users mr-2"></i>Students</button>
+            <button class="nav-tab" data-tab="analytics"><i class="fas fa-chart-bar mr-2"></i>Analytics</button>
           </div>
         </div>
       </div>
-    </section>
+    </header>
 
-    <!-- Progress Tab -->
-    <section id="progress-tab" class="tab-content hidden">
-      <div class="grid gap-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Teacher Dashboard -->
+      <section id="teacher-dashboard" class="tab-content">
+        <div class="grid gap-6 md:grid-cols-4 mb-8">
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-users text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Total Students</h3>
+            <div class="text-3xl font-bold text-[var(--blue)]" id="totalStudents">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-book text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Active Lessons</h3>
+            <div class="text-3xl font-bold text-[var(--ok)]" id="activeLessons">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--warning)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-tasks text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Assigned Skills</h3>
+            <div class="text-3xl font-bold text-[var(--warning)]" id="assignedSkillsCount">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-chart-line text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Avg Progress</h3>
+            <div class="text-3xl font-bold text-[var(--purple)]" id="avgProgress">0%</div>
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2 mb-8">
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-clock mr-2 text-[var(--maroon)]"></i>Recent Activity</h3>
+            <div id="recentActivity" class="space-y-3"></div>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-exclamation-triangle mr-2 text-[var(--warning)]"></i>Attention Needed</h3>
+            <div id="attentionNeeded" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lesson Management -->
+      <section id="lesson-management" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Lesson Management</h2>
+          <button onclick="createNewLesson()" class="btn btn-primary">
+            <i class="fas fa-plus"></i>Create New Lesson
+          </button>
+        </div>
+        
+        <div class="grid gap-6">
+          <div class="card p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-lg">Existing Lessons</h3>
+              <select id="filterGrade" class="form-input w-auto">
+                <option value="">All Grades</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+              </select>
+            </div>
+            <div id="lessonsList" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Skill Assignment -->
+      <section id="skill-assignment" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Skill Assignment</h2>
+          <button onclick="createNewSkill()" class="btn btn-primary">
+            <i class="fas fa-plus"></i>Create New Skill
+          </button>
+        </div>
+        
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="card p-6">
+            <h3 class="font-bold text-lg mb-4">Available Skills</h3>
+            <div id="availableSkills" class="space-y-3"></div>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="font-bold text-lg mb-4">Assign to Students</h3>
+            <div id="skillAssignment" class="space-y-4"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Student Management -->
+      <section id="student-management" class="tab-content hidden">
         <div class="card p-6">
-          <h3 class="font-bold text-xl mb-4"><i class="fas fa-chart-line mr-2 text-[var(--gold)]"></i>Your Learning Journey</h3>
-          <div id="progressChart" class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p class="text-gray-500">Progress visualization will appear here</p>
-          </div>
+          <h3 class="font-bold text-xl mb-4">Student Overview</h3>
+          <div id="studentsTable" class="overflow-x-auto"></div>
         </div>
+      </section>
 
-        <div class="grid gap-6 md:grid-cols-2">
+      <!-- Analytics -->
+      <section id="analytics" class="tab-content hidden">
+        <div class="grid gap-6">
           <div class="card p-6">
-            <h4 class="font-bold text-lg mb-4">Recent Achievements</h4>
-            <div id="achievementsList" class="space-y-3">
-              <!-- Achievements will be loaded here -->
+            <h3 class="font-bold text-xl mb-4">Class Performance Analytics</h3>
+            <div id="analyticsChart" class="h-80 bg-gray-50 rounded-lg flex items-center justify-center">
+              <p class="text-gray-500">Analytics visualization</p>
             </div>
           </div>
-
-          <div class="card p-6">
-            <h4 class="font-bold text-lg mb-4">Study Statistics</h4>
-            <div id="studyStats" class="space-y-4">
-              <!-- Statistics will be loaded here -->
+          
+          <div class="grid gap-6 md:grid-cols-3">
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Top Performers</h4>
+              <div id="topPerformers" class="space-y-3"></div>
+            </div>
+            
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Struggling Students</h4>
+              <div id="strugglingStudents" class="space-y-3"></div>
+            </div>
+            
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Popular Lessons</h4>
+              <div id="popularLessons" class="space-y-3"></div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
+  </div>
 
-    <footer class="mt-12 mb-8 text-center text-sm text-slate-500">
-      © <span id="year"></span> Qatar Leadership Academy — Member of Qatar Foundation • <strong>Created by Mohammad Abu Ghuwaleh</strong>
-    </footer>
-  </main>
-
-  <!-- Modals -->
+  <!-- Enhanced Lesson Modal -->
   <div id="lessonModal" class="modal">
-    <div class="modal-content w-full max-w-4xl mx-4">
+    <div class="modal-content w-full max-w-6xl mx-4">
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
           <h2 id="lessonTitle" class="text-2xl font-bold"></h2>
@@ -390,18 +549,97 @@
           </button>
         </div>
         
-        <div id="lessonContent" class="space-y-6">
-          <!-- Lesson content will be loaded here -->
+        <div class="grid gap-6 lg:grid-cols-3">
+          <!-- Video Section -->
+          <div class="lg:col-span-2">
+            <div class="video-player mb-6">
+              <div id="videoContent" class="w-full h-full flex items-center justify-center text-white">
+                <div class="text-center">
+                  <i class="fas fa-play-circle text-6xl mb-4"></i>
+                  <p class="text-lg">Click to start lesson video</p>
+                </div>
+              </div>
+              <div class="video-controls">
+                <button id="playBtn" class="btn btn-secondary text-sm">
+                  <i class="fas fa-play"></i>
+                </button>
+                <div class="progress-bar flex-1">
+                  <div class="progress-fill" id="videoProgress" style="width:0%"></div>
+                </div>
+                <span id="videoTime" class="text-sm">0:00 / 0:00</span>
+              </div>
+            </div>
+            
+            <!-- Lesson Content -->
+            <div class="lesson-content">
+              <div id="lessonSections"></div>
+            </div>
+          </div>
+          
+          <!-- Progress Sidebar -->
+          <div class="space-y-6">
+            <div class="card p-4">
+              <h4 class="font-bold mb-3">Lesson Progress</h4>
+              <div class="space-y-3">
+                <div class="flex justify-between text-sm">
+                  <span>Video Watched</span>
+                  <span id="videoProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="videoProgressBar" style="width:0%"></div>
+                </div>
+                
+                <div class="flex justify-between text-sm">
+                  <span>Content Read</span>
+                  <span id="contentProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="contentProgressBar" style="width:0%"></div>
+                </div>
+                
+                <div class="flex justify-between text-sm">
+                  <span>Practice Complete</span>
+                  <span id="practiceProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="practiceProgressBar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card p-4">
+              <h4 class="font-bold mb-3">Quick Actions</h4>
+              <div class="space-y-2">
+                <button onclick="startPracticeInLesson()" class="btn btn-secondary w-full text-sm">
+                  <i class="fas fa-dumbbell"></i>Practice Problems
+                </button>
+                <button onclick="takeAssessment()" class="btn btn-primary w-full text-sm">
+                  <i class="fas fa-clipboard-check"></i>Take Assessment
+                </button>
+                <button onclick="askQuestion()" class="btn w-full text-sm" style="background:var(--purple); color:white">
+                  <i class="fas fa-question"></i>Ask Question
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div class="flex justify-between mt-6">
-          <button id="prevLessonBtn" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
-            <i class="fas fa-arrow-left mr-2"></i>Previous
+        <!-- Navigation -->
+        <div class="flex justify-between mt-6 pt-6 border-t border-gray-200">
+          <button id="prevLessonBtn" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>Previous
           </button>
-          <button id="markCompleteBtn" class="bg-[var(--ok)] text-white px-6 py-2 rounded-lg hover:opacity-80 transition-opacity">
-            <i class="fas fa-check mr-2"></i>Mark Complete
-          </button>
-          <button id="nextLessonBtn" class="bg-[var(--maroon)] text-white px-6 py-2 rounded-lg hover:bg-[var(--maroon2)] transition-colors">
+          
+          <div class="flex gap-3">
+            <button id="saveProgressBtn" class="btn" style="background:var(--warning); color:white">
+              <i class="fas fa-save"></i>Save Progress
+            </button>
+            <button id="completeAssessmentBtn" class="btn btn-primary">
+              <i class="fas fa-clipboard-check"></i>Complete Assessment
+            </button>
+          </div>
+          
+          <button id="nextLessonBtn" class="btn btn-primary">
             Next<i class="fas fa-arrow-right ml-2"></i>
           </button>
         </div>
@@ -409,36 +647,264 @@
     </div>
   </div>
 
-  <div id="practiceModal" class="modal">
-    <div class="modal-content w-full max-w-2xl mx-4">
+  <!-- Assessment Modal -->
+  <div id="assessmentModal" class="modal">
+    <div class="modal-content w-full max-w-4xl mx-4">
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
-          <h2 id="practiceTitle" class="text-2xl font-bold"></h2>
-          <button onclick="closePracticeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
-            <i class="fas fa-times"></i>
+          <h2 id="assessmentTitle" class="text-2xl font-bold">Lesson Assessment</h2>
+          <div class="text-sm text-gray-600">
+            Question <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span>
+          </div>
+        </div>
+        
+        <div id="assessmentContent" class="space-y-6">
+          <!-- Assessment questions will be loaded here -->
+        </div>
+        
+        <div class="flex justify-between mt-6 pt-6 border-t border-gray-200">
+          <button id="prevQuestionBtn" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>Previous
+          </button>
+          
+          <div class="text-center">
+            <div class="text-sm text-gray-600 mb-2">Time Remaining</div>
+            <div class="text-lg font-bold" id="assessmentTimer">15:00</div>
+          </div>
+          
+          <button id="nextQuestionBtn" class="btn btn-primary">
+            Next<i class="fas fa-arrow-right ml-2"></i>
           </button>
         </div>
         
-        <div id="practiceContent">
-          <!-- Practice content will be loaded here -->
+        <div class="mt-4 text-center">
+          <button id="submitAssessmentBtn" class="btn btn-success hidden">
+            <i class="fas fa-check"></i>Submit Assessment
+          </button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Lesson Editor Modal (Teacher) -->
+  <div id="lessonEditorModal" class="modal">
+    <div class="modal-content w-full max-w-6xl mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 id="editorTitle" class="text-2xl font-bold">Lesson Editor</h2>
+          <button onclick="closeLessonEditor()" class="text-gray-500 hover:text-gray-700 text-2xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <form id="lessonForm" class="space-y-6">
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="form-group">
+              <label class="form-label">Lesson Title</label>
+              <input type="text" id="lessonTitleInput" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Grade Level</label>
+              <select id="lessonGrade" class="form-input" required>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Video URL</label>
+            <input type="url" id="lessonVideoURL" class="form-input" placeholder="https://...">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Lesson Content</label>
+            <div class="editor-toolbar">
+              <button type="button" class="editor-btn" onclick="formatText('bold')"><i class="fas fa-bold"></i></button>
+              <button type="button" class="editor-btn" onclick="formatText('italic')"><i class="fas fa-italic"></i></button>
+              <button type="button" class="editor-btn" onclick="formatText('underline')"><i class="fas fa-underline"></i></button>
+              <button type="button" class="editor-btn" onclick="insertList()"><i class="fas fa-list"></i></button>
+              <button type="button" class="editor-btn" onclick="insertLink()"><i class="fas fa-link"></i></button>
+            </div>
+            <textarea id="lessonContent" class="form-input form-textarea" style="border-radius:0 0 12px 12px; border-top:none"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Practice Problems (JSON format)</label>
+            <textarea id="practiceProblems" class="form-input form-textarea" placeholder='[{"question":"...", "options":["a","b","c","d"], "correct":0, "explanation":"..."}]'></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Assessment Questions (JSON format)</label>
+            <textarea id="assessmentQuestions" class="form-input form-textarea" placeholder='[{"question":"...", "options":["a","b","c","d"], "correct":0, "points":10}]'></textarea>
+          </div>
+          
+          <div class="flex justify-between">
+            <button type="button" onclick="previewLesson()" class="btn btn-secondary">
+              <i class="fas fa-eye"></i>Preview
+            </button>
+            
+            <div class="flex gap-3">
+              <button type="button" onclick="saveLessonDraft()" class="btn" style="background:var(--warning); color:white">
+                <i class="fas fa-save"></i>Save Draft
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check"></i>Publish Lesson
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skill Assignment Modal (Teacher) -->
+  <div id="skillModal" class="modal">
+    <div class="modal-content w-full max-w-2xl mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 id="skillModalTitle" class="text-2xl font-bold">Assign Skill</h2>
+          <button onclick="closeSkillModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <form id="skillForm" class="space-y-6">
+          <div class="form-group">
+            <label class="form-label">Skill Name</label>
+            <input type="text" id="skillName" class="form-input" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="skillDescription" class="form-input form-textarea"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Target Grade</label>
+            <select id="skillGrade" class="form-input">
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+              <option value="both">Both Grades</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Difficulty Level</label>
+            <select id="skillDifficulty" class="form-input">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Assign to Students</label>
+            <div id="studentsList" class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+              <!-- Students checkboxes will be loaded here -->
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" id="skillDueDate" class="form-input">
+          </div>
+          
+          <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeSkillModal()" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-tasks"></i>Assign Skill
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Data structures
-    const userData = {
-      currentGrade: 7,
-      completedLessons: [],
-      studyTime: 0,
-      achievements: [],
-      practiceScores: {}
+    // Global application state
+    let currentUser = null;
+    let currentRole = null;
+    let appData = {
+      students: [
+        { id: 1, name: "Ahmad Al-Rashid", grade: 7, progress: 65, studyTime: 240, completedLessons: 12, skills: [] },
+        { id: 2, name: "Fatima Al-Zahra", grade: 7, progress: 82, studyTime: 320, completedLessons: 18, skills: [] },
+        { id: 3, name: "Omar Al-Mansouri", grade: 8, progress: 71, studyTime: 280, completedLessons: 15, skills: [] },
+        { id: 4, name: "Aisha Al-Thani", grade: 8, progress: 89, studyTime: 380, completedLessons: 22, skills: [] }
+      ],
+      lessons: {},
+      skills: [],
+      assessments: {},
+      settings: {}
     };
 
+    // Lesson content database
+    const lessonDatabase = {
+      "7-1-0": {
+        title: "Number System Overview",
+        grade: 7,
+        unit: 1,
+        videoUrl: "https://example.com/video1",
+        content: `
+          <div class="lesson-section">
+            <h3>Understanding Number Systems</h3>
+            <p>Numbers are the foundation of mathematics. Let's explore different types of numbers:</p>
+            <ul>
+              <li><strong>Natural Numbers:</strong> 1, 2, 3, 4, ... (counting numbers)</li>
+              <li><strong>Whole Numbers:</strong> 0, 1, 2, 3, 4, ... (natural numbers + zero)</li>
+              <li><strong>Integers:</strong> ..., -2, -1, 0, 1, 2, ... (positive and negative whole numbers)</li>
+              <li><strong>Rational Numbers:</strong> Numbers that can be expressed as a/b where b ≠ 0</li>
+              <li><strong>Irrational Numbers:</strong> Numbers that cannot be expressed as fractions (like π, √2)</li>
+            </ul>
+          </div>
+          
+          <div class="lesson-section">
+            <h3>Examples and Practice</h3>
+            <p>Let's look at some examples:</p>
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p><strong>Example 1:</strong> Is 0.5 a rational number?</p>
+              <p><strong>Solution:</strong> Yes! 0.5 = 1/2, so it can be expressed as a fraction.</p>
+            </div>
+          </div>
+        `,
+        practiceProblems: [
+          {
+            question: "Which of the following is an irrational number?",
+            options: ["1/3", "0.25", "√2", "2/5"],
+            correct: 2,
+            explanation: "√2 cannot be expressed as a fraction, making it irrational."
+          },
+          {
+            question: "What type of number is -7?",
+            options: ["Natural", "Whole", "Integer", "Irrational"],
+            correct: 2,
+            explanation: "-7 is an integer (negative whole number)."
+          }
+        ],
+        assessment: [
+          {
+            question: "Classify the number 3.14159...",
+            options: ["Rational", "Irrational", "Integer", "Whole"],
+            correct: 1,
+            points: 10,
+            explanation: "π (pi) is an irrational number as it cannot be expressed as a fraction."
+          },
+          {
+            question: "Which set contains only rational numbers?",
+            options: ["1/2, √3, 0.5", "2, 1/3, 0.75", "π, √2, 1.5", "√4, √9, √16"],
+            correct: 1,
+            points: 15,
+            explanation: "2, 1/3, and 0.75 can all be expressed as fractions."
+          }
+        ]
+      }
+    };
+
+    // Grade content structure
     const grade7Units = [
       {
-        num: 1, when: "Sep–Nov 2025 (9 wks)", name: "Unit 1 — Numbers; Properties of Numbers & Fractions",
+        num: 1, name: "Unit 1 — Numbers; Properties of Numbers & Fractions", when: "Sep–Nov 2025 (9 wks)",
         lessons: [
           "Number System Overview (Rational & Irrational Numbers)",
           "Prime Factorization Toolkit (Factors/Multiples • Prime/Composite • Factor Trees • HCF/LCM)",
@@ -451,7 +917,7 @@
         ]
       },
       {
-        num: 2, when: "Nov–Dec 2025 (3 wks)", name: "Unit 2 — Expressions (Linear Expressions)",
+        num: 2, name: "Unit 2 — Expressions (Linear Expressions)", when: "Nov–Dec 2025 (3 wks)",
         lessons: [
           "Rules for Writing Algebraic Expressions",
           "Simplify by Collecting Like Terms",
@@ -460,300 +926,192 @@
           "Expanding Brackets",
           "Factorizing Expressions"
         ]
-      },
-      {
-        num: 3, when: "Dec 2025 (2 wks)", name: "Unit 3 — Equations (Solving Linear Equations)",
-        lessons: [
-          "Solving One‑step Equations",
-          "Solving Two‑step Equations",
-          "Multi‑step Equations"
-        ]
-      },
-      {
-        num: 4, when: "Jan–Feb 2026 (2 wks)", name: "Unit 4 — Ratios & Proportional Relationships",
-        lessons: [
-          "Expressing Ratios & Writing Ratios as Fractions",
-          "Simplifying & Equivalent Ratios",
-          "Problem Solving Using Ratios",
-          "Using Ratios to Divide Quantities"
-        ]
-      },
-      {
-        num: 5, when: "Feb–Mar 2026 (3 wks)", name: "Unit 5 — Coordinates (Coordinate Plane)",
-        lessons: [
-          "Plotting Positive & Negative Coordinates",
-          "Plotting Points from a Table of Values",
-          "Graphing Straight Lines",
-          "Drawing Linear Graphs",
-          "Horizontal & Vertical Lines",
-          "Drawing Using X, Y Intercepts"
-        ]
-      },
-      {
-        num: 6, when: "Apr 2026 (3 wks)", name: "Unit 6 — Statistics & Probability — Statistics",
-        lessons: [
-          "Tally & Frequency Tables",
-          "Grouping Data (Worksheet)",
-          "Reading Bar Charts",
-          "Drawing Bar Charts — Q1, Q2, Q4",
-          "Stem & Leaf Plots",
-          "Mode, Median, Mean & Range",
-          "Mean from a Frequency Table"
-        ]
-      },
-      {
-        num: 7, when: "May–Jun 2026 (4 wks)", name: "Unit 7 — Statistics & Probability — Simple Probability",
-        lessons: [
-          "Describing Probability",
-          "Assigning Numbers to Probability",
-          "Sample Space",
-          "Compound Events",
-          "Probability Trees",
-          "Theoretical Probability",
-          "Complementary Events"
-        ]
       }
     ];
 
     const grade8Units = [
-      { name:"Unit 1 — The Number System", lessons:[
-        "Review of BEDMAS & absolute value","Converting recurring decimals",
-        "Rounding numbers","Squares & roots","Operations on fractions"
-      ]},
-      { name:"Unit 2 — Geometry of Polygons", lessons:[
-        "Angle facts (supplementary, complementary, vertical, adjacent)","Angles in triangles","Isosceles triangle",
-        "Angles of quadrilaterals","Algebraic equations in geometry","Parallel lines",
-        "Angles in polygons (sum, interior & exterior)"
-      ]},
-      { name:"Unit 3 — Transformations & Congruence", lessons:[
-        "Translations","Rotations","Reflections","Enlargements"
-      ]},
-      { name:"Unit 4 — Statistics", lessons:["Pie charts","Histograms"]},
-      { name:"Unit 5 — Pythagorean Theorem", lessons:[
-        "Find hypotenuse","Find missing sides","Converse of Pythagoras","Problem solving"
-      ]},
-      { name:"Unit 6 — Expressions & Equations (Systems)", lessons:[
-        "Two- & three-step equations","Solution by elimination","Solution by equating","Solution by substitution"
-      ]},
-      { name:"Unit 7 — Geometry Measurement", lessons:[
-        "Converting metric units","Parts of a circle","Circumference & area of a circle",
-        "Perimeter of polygons","Area of polygons","Composite shapes (area)",
-        "Volume of cuboids","Volume of prisms","Volume of a cylinder"
-      ]},
-      { name:"Unit 8 — Statistics & Probability (Compound)", lessons:["Simple events with & without replacement"]},
-      { name:"Unit 9 — Constructions (Congruence & Similarity)", lessons:[
-        "Construct ASA triangle","Construct SAS triangle","Construct SSS triangle"
-      ]},
-      { name:"Unit 10 — Percentages", lessons:[
-        "Interchanging number forms","Decimals ⇄ percentages","One quantity as % of another","% increase & decrease","% change"
-      ]}
-    ];
-
-    // Practice problems database
-    const practiceProblems = {
-      arithmetic: [
-        {
-          question: "Calculate: 24 ÷ 6 + 3 × 2",
-          options: ["10", "12", "14", "16"],
-          correct: 0,
-          explanation: "Following BEDMAS: 24 ÷ 6 = 4, then 3 × 2 = 6, finally 4 + 6 = 10"
-        },
-        {
-          question: "What is 3/4 + 1/6?",
-          options: ["4/10", "11/12", "4/6", "5/8"],
-          correct: 1,
-          explanation: "Find common denominator: 9/12 + 2/12 = 11/12"
-        },
-        {
-          question: "Simplify: (-8) × 3 + 16 ÷ (-2)",
-          options: ["-32", "-16", "-40", "-24"],
-          correct: 0,
-          explanation: "(-8) × 3 = -24, then 16 ÷ (-2) = -8, so -24 + (-8) = -32"
-        }
-      ],
-      algebra: [
-        {
-          question: "Solve for x: 2x + 5 = 13",
-          options: ["x = 4", "x = 6", "x = 8", "x = 9"],
-          correct: 0,
-          explanation: "2x + 5 = 13, so 2x = 8, therefore x = 4"
-        },
-        {
-          question: "Expand: 3(x + 4)",
-          options: ["3x + 4", "3x + 12", "x + 12", "3x + 7"],
-          correct: 1,
-          explanation: "Distribute: 3 × x + 3 × 4 = 3x + 12"
-        },
-        {
-          question: "Factorize: x² + 5x + 6",
-          options: ["(x + 2)(x + 3)", "(x + 1)(x + 6)", "(x - 2)(x - 3)", "(x + 4)(x + 1)"],
-          correct: 0,
-          explanation: "Find two numbers that multiply to 6 and add to 5: 2 and 3"
-        }
-      ],
-      geometry: [
-        {
-          question: "What is the sum of interior angles in a triangle?",
-          options: ["90°", "180°", "270°", "360°"],
-          correct: 1,
-          explanation: "The sum of interior angles in any triangle is always 180°"
-        },
-        {
-          question: "If two angles in a triangle are 60° and 70°, what is the third angle?",
-          options: ["40°", "50°", "60°", "70°"],
-          correct: 1,
-          explanation: "180° - 60° - 70° = 50°"
-        },
-        {
-          question: "What is the area of a rectangle with length 8cm and width 5cm?",
-          options: ["13 cm²", "26 cm²", "40 cm²", "20 cm²"],
-          correct: 2,
-          explanation: "Area = length × width = 8 × 5 = 40 cm²"
-        }
-      ]
-    };
-
-    // Lesson content templates
-    const lessonContent = {
-      "Number System Overview": {
-        video: "Introduction to rational and irrational numbers",
-        theory: `
-          <h3>Understanding Number Systems</h3>
-          <p>Numbers can be classified into different categories:</p>
-          <ul>
-            <li><strong>Natural Numbers:</strong> 1, 2, 3, 4, ...</li>
-            <li><strong>Whole Numbers:</strong> 0, 1, 2, 3, 4, ...</li>
-            <li><strong>Integers:</strong> ..., -2, -1, 0, 1, 2, ...</li>
-            <li><strong>Rational Numbers:</strong> Numbers that can be expressed as a/b where b ≠ 0</li>
-            <li><strong>Irrational Numbers:</strong> Numbers that cannot be expressed as fractions</li>
-          </ul>
-        `,
-        examples: [
-          "π (pi) is irrational: 3.14159...",
-          "√2 is irrational: 1.41421...",
-          "1/3 is rational: 0.333..."
-        ],
-        quiz: {
-          question: "Which of the following is a rational number?",
-          options: ["π", "√2", "1/4", "√3"],
-          correct: 2
-        }
+      {
+        num: 1, name: "Unit 1 — The Number System",
+        lessons: [
+          "Review of BEDMAS & absolute value",
+          "Converting recurring decimals",
+          "Rounding numbers",
+          "Squares & roots",
+          "Operations on fractions"
+        ]
       }
-    };
+    ];
 
     // Initialize application
     function init() {
-      setupEventListeners();
-      loadUserData();
-      updateDashboard();
-      renderLessons();
-      document.getElementById('year').textContent = new Date().getFullYear();
+      loadAppData();
+      showRoleSelector();
     }
 
-    function setupEventListeners() {
-      // Tab navigation
-      document.querySelectorAll('.nav-tab').forEach(tab => {
-        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-      });
-
-      // Grade selector
-      document.getElementById('gradeSelect').addEventListener('change', (e) => {
-        userData.currentGrade = parseInt(e.target.value);
-        saveUserData();
-        updateDashboard();
-        renderLessons();
-      });
-
-      // Search functionality
-      document.getElementById('lessonSearch').addEventListener('input', (e) => {
-        filterLessons(e.target.value);
-      });
-
-      // Keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        if (e.key === '/' && !e.target.matches('input')) {
-          e.preventDefault();
-          document.getElementById('lessonSearch').focus();
-        }
-        if (e.key.toLowerCase() === 'g' && !e.target.matches('input')) {
-          const currentGrade = userData.currentGrade;
-          userData.currentGrade = currentGrade === 7 ? 8 : 7;
-          document.getElementById('gradeSelect').value = userData.currentGrade;
-          saveUserData();
-          updateDashboard();
-          renderLessons();
-        }
-      });
-    }
-
-    function loadUserData() {
-      const saved = localStorage.getItem('qla_user_data');
+    function loadAppData() {
+      const saved = localStorage.getItem('qla_app_data');
       if (saved) {
-        Object.assign(userData, JSON.parse(saved));
+        Object.assign(appData, JSON.parse(saved));
       }
-      document.getElementById('gradeSelect').value = userData.currentGrade;
     }
 
-    function saveUserData() {
-      localStorage.setItem('qla_user_data', JSON.stringify(userData));
+    function saveAppData() {
+      localStorage.setItem('qla_app_data', JSON.stringify(appData));
     }
 
-    function switchTab(tabName) {
-      // Update tab buttons
-      document.querySelectorAll('.nav-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === tabName);
+    function showRoleSelector() {
+      document.getElementById('roleSelector').classList.remove('hidden');
+      document.getElementById('studentPortal').classList.add('hidden');
+      document.getElementById('teacherPortal').classList.add('hidden');
+    }
+
+    function selectRole(role) {
+      currentRole = role;
+      document.getElementById('roleSelector').classList.add('hidden');
+      
+      if (role === 'student') {
+        initStudentPortal();
+      } else {
+        initTeacherPortal();
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      currentRole = null;
+      showRoleSelector();
+    }
+
+    // Student Portal Functions
+    function initStudentPortal() {
+      document.getElementById('studentPortal').classList.remove('hidden');
+      currentUser = appData.students[0]; // For demo, use first student
+      
+      setupStudentEventListeners();
+      updateStudentDashboard();
+      renderStudentLessons();
+      showStudentTab('dashboard');
+    }
+
+    function setupStudentEventListeners() {
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab.replace('student-', '');
+          showStudentTab(tabName);
+        });
       });
 
-      // Update content sections
-      document.querySelectorAll('.tab-content').forEach(content => {
+      document.getElementById('gradeSelect').addEventListener('change', (e) => {
+        currentUser.grade = parseInt(e.target.value);
+        updateStudentDashboard();
+        renderStudentLessons();
+      });
+
+      document.getElementById('lessonSearch').addEventListener('input', (e) => {
+        filterStudentLessons(e.target.value);
+      });
+    }
+
+    function showStudentTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === `student-${tabName}` || tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#studentPortal .tab-content').forEach(content => {
         content.classList.toggle('hidden', !content.id.includes(tabName));
       });
 
-      // Load specific tab content
+      // Load specific content
       switch(tabName) {
-        case 'practice':
-          loadPracticeContent();
-          break;
-        case 'assessments':
-          loadAssessments();
+        case 'skills':
+          loadStudentSkills();
           break;
         case 'progress':
-          loadProgress();
+          loadStudentProgress();
           break;
       }
     }
 
-    function updateDashboard() {
-      const totalLessons = getCurrentGradeLessons().length;
-      const completed = userData.completedLessons.filter(l => l.grade === userData.currentGrade).length;
-      const progress = totalLessons > 0 ? Math.round((completed / totalLessons) * 100) : 0;
-
+    function updateStudentDashboard() {
+      const progress = Math.round(currentUser.progress);
       document.getElementById('overallProgress').textContent = `${progress}%`;
       document.getElementById('overallProgressBar').style.width = `${progress}%`;
-      document.getElementById('completedCount').textContent = completed;
-      document.getElementById('studyTime').textContent = `${Math.floor(userData.studyTime / 60)}h`;
+      document.getElementById('completedCount').textContent = currentUser.completedLessons;
+      document.getElementById('skillsCount').textContent = currentUser.skills.length;
+      document.getElementById('streakCount').textContent = '5'; // Mock data
+      
+      const hours = Math.floor(currentUser.studyTime / 60);
+      const minutes = currentUser.studyTime % 60;
+      document.getElementById('totalStudyTime').textContent = `${hours}h ${minutes}m`;
+
+      // Update student info
+      document.getElementById('studentName').textContent = currentUser.name;
+      document.getElementById('studentGrade').textContent = currentUser.grade;
+      document.getElementById('gradeSelect').value = currentUser.grade;
+
+      // Load continue lesson
+      loadContinueLesson();
+      loadAssignedSkills();
     }
 
-    function getCurrentGradeLessons() {
-      const units = userData.currentGrade === 7 ? grade7Units : grade8Units;
-      return units.flatMap(unit => unit.lessons.map((lesson, index) => ({
-        id: `${userData.currentGrade}-${unit.num || units.indexOf(unit) + 1}-${index}`,
-        title: lesson,
-        unit: unit.name,
-        grade: userData.currentGrade
-      })));
+    function loadContinueLesson() {
+      const container = document.getElementById('continueLesson');
+      const nextLessonId = getNextLessonForStudent();
+      
+      if (nextLessonId) {
+        const lesson = getLessonById(nextLessonId);
+        container.innerHTML = `
+          <div class="interactive-row" onclick="openStudentLesson('${nextLessonId}')">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-lg bg-[var(--maroon)] text-white flex items-center justify-center">
+                <i class="fas fa-play"></i>
+              </div>
+              <div>
+                <div class="font-semibold">${lesson ? lesson.title : 'Next Lesson'}</div>
+                <div class="text-sm text-gray-600">Continue your learning journey</div>
+              </div>
+            </div>
+            <button class="btn btn-primary">Continue</button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-trophy text-6xl text-[var(--gold)] mb-4"></i>
+            <h3 class="font-bold text-xl mb-2">All lessons completed!</h3>
+            <p class="text-gray-600">Congratulations on completing all available lessons.</p>
+          </div>
+        `;
+      }
     }
 
-    function renderLessons() {
+    function loadAssignedSkills() {
+      const container = document.getElementById('assignedSkills');
+      const assignedSkills = currentUser.skills.filter(s => s.status !== 'completed');
+      
+      if (assignedSkills.length > 0) {
+        container.innerHTML = assignedSkills.map(skill => `
+          <div class="skill-badge skill-${skill.status}">
+            <i class="fas fa-star"></i>
+            <span>${skill.name}</span>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No skills assigned yet.</p>';
+      }
+    }
+
+    function renderStudentLessons() {
       const container = document.getElementById('lessonsContent');
-      const units = userData.currentGrade === 7 ? grade7Units : grade8Units;
+      const units = currentUser.grade === 7 ? grade7Units : grade8Units;
       
       container.innerHTML = '';
 
       units.forEach((unit, unitIndex) => {
         const unitDiv = document.createElement('div');
         unitDiv.className = 'card p-5 mb-5 animate-slide-in';
-        unitDiv.style.animationDelay = `${unitIndex * 0.1}s`;
         
         unitDiv.innerHTML = `
           <div class="flex items-center gap-3 mb-4">
@@ -772,12 +1130,12 @@
         
         const lessonsContainer = unitDiv.querySelector(`#unit-${unitIndex}-lessons`);
         unit.lessons.forEach((lesson, lessonIndex) => {
-          const lessonId = `${userData.currentGrade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
-          const isCompleted = userData.completedLessons.some(l => l.id === lessonId);
+          const lessonId = `${currentUser.grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          const isCompleted = isLessonCompleted(lessonId);
           
           const lessonDiv = document.createElement('div');
           lessonDiv.className = `interactive-row ${isCompleted ? 'completed' : ''}`;
-          lessonDiv.onclick = () => openLesson(lessonId, lesson);
+          lessonDiv.onclick = () => openStudentLesson(lessonId, lesson);
           
           lessonDiv.innerHTML = `
             <div class="flex-1">
@@ -792,7 +1150,443 @@
       });
     }
 
-    function filterLessons(query) {
+    function openStudentLesson(lessonId, lessonTitle) {
+      const lesson = getLessonById(lessonId) || createDefaultLesson(lessonId, lessonTitle);
+      
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      setupLessonModal(lesson);
+      document.getElementById('lessonModal').classList.add('show');
+    }
+
+    function setupLessonModal(lesson) {
+      // Setup video
+      const videoContent = document.getElementById('videoContent');
+      if (lesson.videoUrl) {
+        videoContent.innerHTML = `
+          <video id="lessonVideo" class="w-full h-full" controls>
+            <source src="${lesson.videoUrl}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      } else {
+        videoContent.innerHTML = `
+          <div class="text-center">
+            <i class="fas fa-video text-6xl mb-4"></i>
+            <p class="text-lg">${lesson.title} - Video Lesson</p>
+            <p class="text-sm opacity-80">Video content will be available soon</p>
+          </div>
+        `;
+      }
+
+      // Setup lesson content
+      document.getElementById('lessonSections').innerHTML = lesson.content || '<p>Lesson content is being prepared.</p>';
+
+      // Setup progress tracking
+      updateLessonProgress(lesson);
+
+      // Setup navigation
+      setupLessonNavigation(lesson);
+    }
+
+    function updateLessonProgress(lesson) {
+      // Mock progress for demo
+      document.getElementById('videoProgress').textContent = '0%';
+      document.getElementById('videoProgressBar').style.width = '0%';
+      document.getElementById('contentProgress').textContent = '0%';
+      document.getElementById('contentProgressBar').style.width = '0%';
+      document.getElementById('practiceProgress').textContent = '0%';
+      document.getElementById('practiceProgressBar').style.width = '0%';
+    }
+
+    function setupLessonNavigation(lesson) {
+      document.getElementById('completeAssessmentBtn').onclick = () => {
+        closeLessonModal();
+        openAssessment(lesson);
+      };
+    }
+
+    function openAssessment(lesson) {
+      if (!lesson.assessment || lesson.assessment.length === 0) {
+        showNotification('No assessment available for this lesson', 'info');
+        return;
+      }
+
+      document.getElementById('assessmentTitle').textContent = `${lesson.title} - Assessment`;
+      document.getElementById('totalQuestions').textContent = lesson.assessment.length;
+      
+      currentAssessment = {
+        lesson: lesson,
+        questions: lesson.assessment,
+        currentQuestion: 0,
+        answers: [],
+        timeRemaining: 15 * 60 // 15 minutes
+      };
+
+      loadAssessmentQuestion();
+      startAssessmentTimer();
+      document.getElementById('assessmentModal').classList.add('show');
+    }
+
+    let currentAssessment = null;
+    let assessmentTimer = null;
+
+    function loadAssessmentQuestion() {
+      const question = currentAssessment.questions[currentAssessment.currentQuestion];
+      document.getElementById('currentQuestion').textContent = currentAssessment.currentQuestion + 1;
+      
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="card p-6">
+          <h4 class="font-bold text-lg mb-4">Question ${currentAssessment.currentQuestion + 1}</h4>
+          <p class="text-lg mb-6">${question.question}</p>
+          <div class="space-y-3">
+            ${question.options.map((option, index) => `
+              <div class="quiz-option" onclick="selectAssessmentAnswer(${index})" data-index="${index}">
+                ${String.fromCharCode(65 + index)}. ${option}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Show/hide navigation buttons
+      document.getElementById('prevQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === 0 ? 'none' : 'block';
+      
+      document.getElementById('nextQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === currentAssessment.questions.length - 1 ? 'none' : 'block';
+      
+      document.getElementById('submitAssessmentBtn').style.display = 
+        currentAssessment.currentQuestion === currentAssessment.questions.length - 1 ? 'block' : 'none';
+    }
+
+    function selectAssessmentAnswer(index) {
+      // Remove previous selections
+      document.querySelectorAll('#assessmentContent .quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selection
+      document.querySelector(`#assessmentContent .quiz-option[data-index="${index}"]`).classList.add('selected');
+      
+      // Store answer
+      currentAssessment.answers[currentAssessment.currentQuestion] = index;
+    }
+
+    function startAssessmentTimer() {
+      assessmentTimer = setInterval(() => {
+        currentAssessment.timeRemaining--;
+        const minutes = Math.floor(currentAssessment.timeRemaining / 60);
+        const seconds = currentAssessment.timeRemaining % 60;
+        document.getElementById('assessmentTimer').textContent = 
+          `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (currentAssessment.timeRemaining <= 0) {
+          submitAssessment();
+        }
+      }, 1000);
+    }
+
+    function submitAssessment() {
+      clearInterval(assessmentTimer);
+      
+      // Calculate score
+      let correct = 0;
+      let totalPoints = 0;
+      let earnedPoints = 0;
+
+      currentAssessment.questions.forEach((question, index) => {
+        totalPoints += question.points || 10;
+        if (currentAssessment.answers[index] === question.correct) {
+          correct++;
+          earnedPoints += question.points || 10;
+        }
+      });
+
+      const percentage = Math.round((earnedPoints / totalPoints) * 100);
+      const passed = percentage >= 70; // 70% passing grade
+
+      // Show results
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="text-center py-8">
+          <div class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold ${passed ? 'bg-[var(--ok)] text-white' : 'bg-[var(--danger)] text-white'}">
+            ${percentage}%
+          </div>
+          <h3 class="text-2xl font-bold mb-2">${passed ? 'Congratulations!' : 'Keep Practicing!'}</h3>
+          <p class="text-lg mb-4">${passed ? 'You passed the assessment!' : 'You need 70% to pass.'}</p>
+          <div class="grid gap-4 md:grid-cols-3 max-w-md mx-auto mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${correct}</div>
+              <div class="text-sm text-gray-600">Correct</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${currentAssessment.questions.length - correct}</div>
+              <div class="text-sm text-gray-600">Incorrect</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${earnedPoints}</div>
+              <div class="text-sm text-gray-600">Points</div>
+            </div>
+          </div>
+          <div class="flex gap-4 justify-center">
+            <button onclick="reviewAssessment()" class="btn btn-secondary">
+              <i class="fas fa-eye"></i>Review Answers
+            </button>
+            ${passed ? `
+              <button onclick="completeLesson()" class="btn btn-success">
+                <i class="fas fa-check"></i>Complete Lesson
+              </button>
+            ` : `
+              <button onclick="retakeAssessment()" class="btn btn-primary">
+                <i class="fas fa-redo"></i>Retake Assessment
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+
+      // Hide navigation
+      document.getElementById('prevQuestionBtn').style.display = 'none';
+      document.getElementById('nextQuestionBtn').style.display = 'none';
+      document.getElementById('submitAssessmentBtn').style.display = 'none';
+
+      if (passed) {
+        // Mark lesson as completed
+        markLessonCompleted(currentAssessment.lesson.id);
+      }
+    }
+
+    function completeLesson() {
+      document.getElementById('assessmentModal').classList.remove('show');
+      showNotification('Lesson completed successfully! 🎉', 'success');
+      updateStudentDashboard();
+      renderStudentLessons();
+    }
+
+    function retakeAssessment() {
+      currentAssessment.currentQuestion = 0;
+      currentAssessment.answers = [];
+      currentAssessment.timeRemaining = 15 * 60;
+      loadAssessmentQuestion();
+      startAssessmentTimer();
+    }
+
+    function closeLessonModal() {
+      document.getElementById('lessonModal').classList.remove('show');
+    }
+
+    // Teacher Portal Functions
+    function initTeacherPortal() {
+      document.getElementById('teacherPortal').classList.remove('hidden');
+      
+      setupTeacherEventListeners();
+      updateTeacherDashboard();
+      showTeacherTab('teacher-dashboard');
+    }
+
+    function setupTeacherEventListeners() {
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          showTeacherTab(tab.dataset.tab);
+        });
+      });
+    }
+
+    function showTeacherTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#teacherPortal .tab-content').forEach(content => {
+        content.classList.toggle('hidden', !content.id.includes(tabName.replace('teacher-', '')));
+      });
+
+      // Load specific content
+      switch(tabName) {
+        case 'lesson-management':
+          loadLessonManagement();
+          break;
+        case 'skill-assignment':
+          loadSkillAssignment();
+          break;
+        case 'student-management':
+          loadStudentManagement();
+          break;
+        case 'analytics':
+          loadTeacherAnalytics();
+          break;
+      }
+    }
+
+    function updateTeacherDashboard() {
+      document.getElementById('totalStudents').textContent = appData.students.length;
+      document.getElementById('activeLessons').textContent = Object.keys(lessonDatabase).length;
+      document.getElementById('assignedSkillsCount').textContent = appData.skills.length;
+      
+      const avgProgress = appData.students.reduce((sum, s) => sum + s.progress, 0) / appData.students.length;
+      document.getElementById('avgProgress').textContent = `${Math.round(avgProgress)}%`;
+
+      loadRecentActivity();
+      loadAttentionNeeded();
+    }
+
+    function loadRecentActivity() {
+      const container = document.getElementById('recentActivity');
+      const activities = [
+        { text: "Ahmad Al-Rashid completed 'Number System Overview'", time: "2 hours ago", type: "completion" },
+        { text: "Fatima Al-Zahra started 'Prime Factorization'", time: "4 hours ago", type: "start" },
+        { text: "New assessment submitted by Omar Al-Mansouri", time: "6 hours ago", type: "assessment" }
+      ];
+
+      container.innerHTML = activities.map(activity => `
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-8 h-8 rounded-full ${getActivityColor(activity.type)} flex items-center justify-center text-white text-sm">
+            <i class="fas ${getActivityIcon(activity.type)}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-medium">${activity.text}</div>
+            <div class="text-xs text-gray-500">${activity.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadAttentionNeeded() {
+      const container = document.getElementById('attentionNeeded');
+      const alerts = [
+        { text: "3 students haven't submitted this week's assignment", type: "warning" },
+        { text: "Quiz completion rate below 80% for Unit 2", type: "danger" },
+        { text: "2 students need additional practice in fractions", type: "info" }
+      ];
+
+      container.innerHTML = alerts.map(alert => `
+        <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+          <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white text-sm">
+            <i class="fas fa-exclamation"></i>
+          </div>
+          <div class="text-sm font-medium text-red-800">${alert.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function createNewLesson() {
+      document.getElementById('editorTitle').textContent = 'Create New Lesson';
+      document.getElementById('lessonForm').reset();
+      document.getElementById('lessonEditorModal').classList.add('show');
+    }
+
+    function closeLessonEditor() {
+      document.getElementById('lessonEditorModal').classList.remove('show');
+    }
+
+    function createNewSkill() {
+      document.getElementById('skillModalTitle').textContent = 'Create New Skill';
+      document.getElementById('skillForm').reset();
+      loadStudentsForSkillAssignment();
+      document.getElementById('skillModal').classList.add('show');
+    }
+
+    function closeSkillModal() {
+      document.getElementById('skillModal').classList.remove('show');
+    }
+
+    function loadStudentsForSkillAssignment() {
+      const container = document.getElementById('studentsList');
+      container.innerHTML = appData.students.map(student => `
+        <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+          <input type="checkbox" name="students" value="${student.id}" class="rounded">
+          <span class="flex-1">${student.name} (Grade ${student.grade})</span>
+          <span class="text-sm text-gray-500">${student.progress}% progress</span>
+        </label>
+      `).join('');
+    }
+
+    // Utility Functions
+    function getLessonById(lessonId) {
+      return lessonDatabase[lessonId] || null;
+    }
+
+    function createDefaultLesson(lessonId, title) {
+      return {
+        id: lessonId,
+        title: title,
+        content: `<div class="lesson-section"><h3>${title}</h3><p>This lesson content is being prepared by your teacher.</p></div>`,
+        practiceProblems: [],
+        assessment: []
+      };
+    }
+
+    function getNextLessonForStudent() {
+      // Simple logic to get next incomplete lesson
+      const grade = currentUser.grade;
+      const units = grade === 7 ? grade7Units : grade8Units;
+      
+      for (let unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        const unit = units[unitIndex];
+        for (let lessonIndex = 0; lessonIndex < unit.lessons.length; lessonIndex++) {
+          const lessonId = `${grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          if (!isLessonCompleted(lessonId)) {
+            return lessonId;
+          }
+        }
+      }
+      return null;
+    }
+
+    function isLessonCompleted(lessonId) {
+      return currentUser && currentUser.completedLessons && 
+             currentUser.completedLessons.includes(lessonId);
+    }
+
+    function markLessonCompleted(lessonId) {
+      if (currentUser) {
+        if (!currentUser.completedLessons) {
+          currentUser.completedLessons = [];
+        }
+        if (!currentUser.completedLessons.includes(lessonId)) {
+          currentUser.completedLessons.push(lessonId);
+          currentUser.progress = Math.min(100, currentUser.progress + 5);
+          currentUser.studyTime += 30;
+          saveAppData();
+        }
+      }
+    }
+
+    function getActivityColor(type) {
+      const colors = {
+        completion: 'bg-[var(--ok)]',
+        start: 'bg-[var(--blue)]',
+        assessment: 'bg-[var(--purple)]'
+      };
+      return colors[type] || 'bg-gray-500';
+    }
+
+    function getActivityIcon(type) {
+      const icons = {
+        completion: 'fa-check',
+        start: 'fa-play',
+        assessment: 'fa-clipboard-check'
+      };
+      return icons[type] || 'fa-info';
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => document.body.removeChild(notification), 300);
+      }, 3000);
+    }
+
+    function filterStudentLessons(query) {
       const lessons = document.querySelectorAll('#lessonsContent .interactive-row');
       const units = document.querySelectorAll('#lessonsContent .card');
       
@@ -808,197 +1602,44 @@
       });
     }
 
-    function openLesson(lessonId, lessonTitle) {
-      document.getElementById('lessonTitle').textContent = lessonTitle;
-      
-      // Generate lesson content
-      const content = generateLessonContent(lessonTitle);
-      document.getElementById('lessonContent').innerHTML = content;
-      
-      // Setup navigation buttons
-      document.getElementById('markCompleteBtn').onclick = () => markLessonComplete(lessonId);
-      
-      // Show modal
-      document.getElementById('lessonModal').classList.add('show');
+    function startPracticeMode(type) {
+      showNotification(`Starting ${type} practice mode...`, 'info');
     }
 
-    function generateLessonContent(title) {
-      const template = lessonContent[title] || {
-        video: `Video lesson: ${title}`,
-        theory: `<h3>${title}</h3><p>This lesson covers the fundamental concepts of ${title.toLowerCase()}.</p>`,
-        examples: [`Example problems for ${title}`],
-        quiz: {
-          question: `What did you learn about ${title}?`,
-          options: ["A lot", "Some things", "Need more practice", "Ready to move on"],
-          correct: 0
-        }
-      };
-
-      return `
-        <div class="space-y-6">
-          <div class="video-container">
-            <div class="video-placeholder">
-              <div class="text-center">
-                <i class="fas fa-play-circle text-6xl mb-4"></i>
-                <p class="text-lg">${template.video}</p>
-                <button class="mt-4 bg-white text-[var(--maroon)] px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                  <i class="fas fa-play mr-2"></i>Play Video
-                </button>
-              </div>
+    function loadStudentSkills() {
+      const container = document.getElementById('skillsProgress');
+      if (currentUser.skills.length > 0) {
+        container.innerHTML = currentUser.skills.map(skill => `
+          <div class="card p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold">${skill.name}</h4>
+              <span class="skill-badge skill-${skill.status}">
+                ${skill.status.charAt(0).toUpperCase() + skill.status.slice(1)}
+              </span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">${skill.description}</p>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${skill.progress || 0}%"></div>
             </div>
           </div>
-
-          <div class="card p-6">
-            <h4 class="font-bold text-lg mb-3"><i class="fas fa-book mr-2"></i>Theory</h4>
-            <div class="prose">${template.theory}</div>
-          </div>
-
-          <div class="card p-6">
-            <h4 class="font-bold text-lg mb-3"><i class="fas fa-lightbulb mr-2"></i>Examples</h4>
-            <ul class="space-y-2">
-              ${template.examples.map(ex => `<li class="p-3 bg-gray-50 rounded-lg">${ex}</li>`).join('')}
-            </ul>
-          </div>
-
-          <div class="card p-6">
-            <h4 class="font-bold text-lg mb-4"><i class="fas fa-question-circle mr-2"></i>Quick Check</h4>
-            <div class="quiz-question">
-              <p class="mb-4 font-medium">${template.quiz.question}</p>
-              <div class="space-y-2">
-                ${template.quiz.options.map((option, index) => 
-                  `<div class="quiz-option" data-index="${index}">${option}</div>`
-                ).join('')}
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function markLessonComplete(lessonId) {
-      if (!userData.completedLessons.some(l => l.id === lessonId)) {
-        userData.completedLessons.push({
-          id: lessonId,
-          grade: userData.currentGrade,
-          completedAt: new Date().toISOString()
-        });
-        userData.studyTime += 30; // Add 30 minutes
-        saveUserData();
-        updateDashboard();
-        renderLessons();
-        
-        // Show success animation
-        showNotification('Lesson completed! 🎉', 'success');
-      }
-      closeLessonModal();
-    }
-
-    function closeLessonModal() {
-      document.getElementById('lessonModal').classList.remove('show');
-    }
-
-    function startMathTraining(type) {
-      const problems = practiceProblems[type] || [];
-      if (problems.length === 0) return;
-
-      const randomProblem = problems[Math.floor(Math.random() * problems.length)];
-      
-      document.getElementById('practiceTitle').textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Practice`;
-      document.getElementById('practiceContent').innerHTML = generatePracticeContent(randomProblem, type);
-      document.getElementById('practiceModal').classList.add('show');
-    }
-
-    function generatePracticeContent(problem, type) {
-      return `
-        <div class="space-y-6">
-          <div class="card p-6 text-center">
-            <h4 class="text-xl font-bold mb-4">${problem.question}</h4>
-            <div class="grid gap-3 max-w-md mx-auto">
-              ${problem.options.map((option, index) => 
-                `<button class="quiz-option text-left" onclick="checkAnswer(${index}, ${problem.correct}, '${problem.explanation}')">${option}</button>`
-              ).join('')}
-            </div>
-          </div>
-          
-          <div id="practiceResult" class="hidden card p-6">
-            <div id="resultMessage" class="text-center mb-4"></div>
-            <div id="explanation" class="text-sm text-gray-600 text-center"></div>
-            <div class="text-center mt-4">
-              <button onclick="startMathTraining('${type}')" class="bg-[var(--maroon)] text-white px-6 py-2 rounded-lg hover:bg-[var(--maroon2)] transition-colors">
-                Next Problem
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function checkAnswer(selected, correct, explanation) {
-      const options = document.querySelectorAll('#practiceContent .quiz-option');
-      const resultDiv = document.getElementById('practiceResult');
-      const messageDiv = document.getElementById('resultMessage');
-      const explanationDiv = document.getElementById('explanation');
-
-      options.forEach((opt, index) => {
-        opt.classList.remove('selected');
-        if (index === correct) {
-          opt.classList.add('correct');
-        } else if (index === selected && selected !== correct) {
-          opt.classList.add('incorrect');
-        }
-        opt.onclick = null; // Disable further clicks
-      });
-
-      if (selected === correct) {
-        messageDiv.innerHTML = '<div class="text-[var(--ok)] text-xl font-bold"><i class="fas fa-check-circle mr-2"></i>Correct!</div>';
-        userData.studyTime += 5; // Add 5 minutes for practice
+        `).join('');
       } else {
-        messageDiv.innerHTML = '<div class="text-red-600 text-xl font-bold"><i class="fas fa-times-circle mr-2"></i>Try again!</div>';
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No skills assigned yet.</p>';
       }
-
-      explanationDiv.textContent = explanation;
-      resultDiv.classList.remove('hidden');
-      saveUserData();
     }
 
-    function closePracticeModal() {
-      document.getElementById('practiceModal').classList.remove('show');
+    function loadStudentProgress() {
+      loadStudentAchievements();
+      loadStudentStats();
     }
 
-    function loadAssessments() {
-      const container = document.getElementById('assessmentsList');
-      const assessments = [
-        { name: 'Unit 1 Assessment - Numbers', status: 'available', score: null },
-        { name: 'Unit 2 Assessment - Expressions', status: 'locked', score: null },
-        { name: 'Midterm Assessment', status: 'upcoming', score: null },
-        { name: 'Practice Quiz - Fractions', status: 'completed', score: 85 }
-      ];
-
-      container.innerHTML = assessments.map(assessment => `
-        <div class="interactive-row">
-          <div class="flex-1">
-            <div class="font-semibold">${assessment.name}</div>
-            ${assessment.score ? `<div class="text-sm text-[var(--ok)]">Score: ${assessment.score}%</div>` : ''}
-          </div>
-          <span class="status ${assessment.status === 'available' ? 'open' : assessment.status === 'completed' ? 'completed' : 'soon'}">
-            ${assessment.status === 'available' ? 'Take' : assessment.status === 'completed' ? 'Review' : 'Locked'}
-          </span>
-        </div>
-      `).join('');
-    }
-
-    function loadProgress() {
-      loadAchievements();
-      loadStudyStats();
-    }
-
-    function loadAchievements() {
+    function loadStudentAchievements() {
       const container = document.getElementById('achievementsList');
       const achievements = [
         { title: 'First Lesson', description: 'Completed your first lesson', icon: 'graduation-cap', earned: true },
-        { title: 'Practice Master', description: 'Solved 10 practice problems', icon: 'trophy', earned: userData.studyTime > 60 },
+        { title: 'Practice Master', description: 'Solved 10 practice problems', icon: 'trophy', earned: currentUser.studyTime > 60 },
         { title: 'Week Streak', description: 'Studied for 7 days in a row', icon: 'fire', earned: false },
-        { title: 'Unit Complete', description: 'Finished an entire unit', icon: 'medal', earned: false }
+        { title: 'Unit Master', description: 'Completed an entire unit', icon: 'medal', earned: false }
       ];
 
       container.innerHTML = achievements.map(achievement => `
@@ -1014,14 +1655,17 @@
       `).join('');
     }
 
-    function loadStudyStats() {
+    function loadStudentStats() {
       const container = document.getElementById('studyStats');
+      const hours = Math.floor(currentUser.studyTime / 60);
+      const minutes = currentUser.studyTime % 60;
+      
       const stats = [
-        { label: 'Total Study Time', value: `${Math.floor(userData.studyTime / 60)}h ${userData.studyTime % 60}m` },
-        { label: 'Lessons Completed', value: userData.completedLessons.length },
-        { label: 'Average Session', value: '25 min' },
-        { label: 'Current Streak', value: '3 days' },
-        { label: 'Best Subject', value: 'Algebra' }
+        { label: 'Total Study Time', value: `${hours}h ${minutes}m` },
+        { label: 'Lessons Completed', value: currentUser.completedLessons || 0 },
+        { label: 'Current Progress', value: `${currentUser.progress}%` },
+        { label: 'Average Score', value: '85%' },
+        { label: 'Current Streak', value: '5 days' }
       ];
 
       container.innerHTML = stats.map(stat => `
@@ -1032,68 +1676,27 @@
       `).join('');
     }
 
-    // Interactive functions for dashboard
-    function openVirtualClassroom(teacher) {
-      showNotification(`Joining ${teacher}'s virtual classroom...`, 'info');
+    // Teacher management functions (stubs for demo)
+    function loadLessonManagement() {
+      const container = document.getElementById('lessonsList');
+      container.innerHTML = '<p class="text-gray-500">Lesson management interface will be loaded here.</p>';
     }
 
-    function openOfficeHours(teacher) {
-      showNotification(`Booking office hours with ${teacher}...`, 'info');
+    function loadSkillAssignment() {
+      const container = document.getElementById('availableSkills');
+      container.innerHTML = '<p class="text-gray-500">Skill management interface will be loaded here.</p>';
     }
 
-    function continueLastLesson() {
-      const lessons = getCurrentGradeLessons();
-      const incomplete = lessons.find(l => !userData.completedLessons.some(c => c.id === l.id));
-      if (incomplete) {
-        openLesson(incomplete.id, incomplete.title);
-      } else {
-        showNotification('All lessons completed! 🎉', 'success');
-      }
+    function loadStudentManagement() {
+      const container = document.getElementById('studentsTable');
+      container.innerHTML = '<p class="text-gray-500">Student management interface will be loaded here.</p>';
     }
 
-    function startPractice() {
-      switchTab('practice');
+    function loadTeacherAnalytics() {
+      // Load analytics content
     }
 
-    function takeAssessment() {
-      switchTab('assessments');
-    }
-
-    function viewProgress() {
-      switchTab('progress');
-    }
-
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white font-semibold transition-all duration-300 transform translate-x-full`;
-      
-      const colors = {
-        success: 'bg-[var(--ok)]',
-        error: 'bg-red-600',
-        info: 'bg-[var(--blue)]',
-        warning: 'bg-[var(--soon)]'
-      };
-      
-      notification.classList.add(colors[type] || colors.info);
-      notification.textContent = message;
-      
-      document.body.appendChild(notification);
-      
-      // Slide in
-      setTimeout(() => {
-        notification.classList.remove('translate-x-full');
-      }, 100);
-      
-      // Slide out and remove
-      setTimeout(() => {
-        notification.classList.add('translate-x-full');
-        setTimeout(() => {
-          document.body.removeChild(notification);
-        }, 300);
-      }, 3000);
-    }
-
-    // Initialize when page loads
+    // Initialize application when page loads
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
