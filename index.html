@@ -985,13 +985,1276 @@
     // Student Portal Functions
     function initStudentPortal() {
       document.getElementById('studentPortal').classList.remove('hidden');
-      currentUser = appData.students[0]; // For demo, use first student
+      // For demo, use current user or create default
+      if (!currentUser || currentUser.role !== 'student') {
+        // Create a demo student if none exists
+        currentUser = createDemoStudent();
+      }
       
       setupStudentEventListeners();
       updateStudentDashboard();
       renderStudentLessons();
       showStudentTab('dashboard');
     }
+
+    function createDemoStudent() {
+      return {
+        id: 'STU001',
+        name: 'Demo Student',
+        email: googleUser ? googleUser.email : 'demo@qla.qfschools.qa',
+        role: 'student',
+        grade: 7,
+        progress: 25,
+        studyTime: 120,
+        completedLessons: ['7-1-0'],
+        skills: []
+      };
+    }
+
+    function setupStudentEventListeners() {
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab.replace('student-', '');
+          showStudentTab(tabName);
+        });
+      });
+
+      document.getElementById('gradeSelect').addEventListener('change', (e) => {
+        currentUser.grade = parseInt(e.target.value);
+        updateStudentDashboard();
+        renderStudentLessons();
+        saveUserProgress();
+      });
+
+      document.getElementById('lessonSearch').addEventListener('input', (e) => {
+        filterStudentLessons(e.target.value);
+      });
+    }
+
+    function saveUserProgress() {
+      if (currentUser && currentUser.role === 'student') {
+        if (!appData.users.students[currentUser.id]) {
+          appData.users.students[currentUser.id] = {};
+        }
+        appData.users.students[currentUser.id] = { ...currentUser };
+        saveAppData();
+      }
+    }
+
+    function showStudentTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === `student-${tabName}` || tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#studentPortal .tab-content').forEach(content => {
+        content.classList.toggle('hidden', !content.id.includes(tabName));
+      });
+
+      // Load specific content
+      switch(tabName) {
+        case 'skills':
+          loadStudentSkills();
+          break;
+        case 'progress':
+          loadStudentProgress();
+          break;
+      }
+    }
+
+    function updateStudentDashboard() {
+      const progress = Math.round(currentUser.progress || 0);
+      document.getElementById('overallProgress').textContent = `${progress}%`;
+      document.getElementById('overallProgressBar').style.width = `${progress}%`;
+      document.getElementById('completedCount').textContent = (currentUser.completedLessons || []).length;
+      document.getElementById('skillsCount').textContent = (currentUser.skills || []).length;
+      document.getElementById('streakCount').textContent = '5'; // Mock data
+      
+      const hours = Math.floor((currentUser.studyTime || 0) / 60);
+      const minutes = (currentUser.studyTime || 0) % 60;
+      document.getElementById('totalStudyTime').textContent = `${hours}h ${minutes}m`;
+
+      // Update student info
+      document.getElementById('studentName').textContent = currentUser.name;
+      document.getElementById('studentGrade').textContent = currentUser.grade;
+      document.getElementById('gradeSelect').value = currentUser.grade;
+
+      // Load continue lesson
+      loadContinueLesson();
+      loadAssignedSkills();
+    }
+
+    function loadContinueLesson() {
+      const container = document.getElementById('continueLesson');
+      const nextLessonId = getNextLessonForStudent();
+      
+      if (nextLessonId) {
+        const lesson = getLessonById(nextLessonId);
+        const lessonTitle = lesson ? lesson.title : getDefaultLessonTitle(nextLessonId);
+        
+        container.innerHTML = `
+          <div class="interactive-row" onclick="openStudentLesson('${nextLessonId}', '${lessonTitle}')">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-lg bg-[var(--maroon)] text-white flex items-center justify-center">
+                <i class="fas fa-play"></i>
+              </div>
+              <div>
+                <div class="font-semibold">${lessonTitle}</div>
+                <div class="text-sm text-gray-600">Continue your learning journey</div>
+              </div>
+            </div>
+            <button class="btn btn-primary">Continue</button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-trophy text-6xl text-[var(--gold)] mb-4"></i>
+            <h3 class="font-bold text-xl mb-2">All lessons completed!</h3>
+            <p class="text-gray-600">Congratulations on completing all available lessons.</p>
+          </div>
+        `;
+      }
+    }
+
+    function getDefaultLessonTitle(lessonId) {
+      const parts = lessonId.split('-');
+      const grade = parts[0];
+      const unit = parts[1];
+      const lesson = parts[2];
+      
+      const units = grade === '7' ? grade7Units : grade8Units;
+      const unitData = units.find(u => (u.num || units.indexOf(u) + 1) == unit);
+      
+      if (unitData && unitData.lessons[lesson]) {
+        return unitData.lessons[lesson];
+      }
+      
+      return `Grade ${grade} - Unit ${unit} - Lesson ${parseInt(lesson) + 1}`;
+    }
+
+    function loadAssignedSkills() {
+      const container = document.getElementById('assignedSkills');
+      const assignedSkills = (currentUser.skills || []).filter(s => s.status !== 'completed');
+      
+      if (assignedSkills.length > 0) {
+        container.innerHTML = assignedSkills.map(skill => `
+          <div class="skill-badge skill-${skill.status}">
+            <i class="fas fa-star"></i>
+            <span>${skill.name}</span>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No skills assigned yet.</p>';
+      }
+    }
+
+    function renderStudentLessons() {
+      const container = document.getElementById('lessonsContent');
+      const units = currentUser.grade === 7 ? grade7Units : grade8Units;
+      
+      container.innerHTML = '';
+
+      units.forEach((unit, unitIndex) => {
+        const unitDiv = document.createElement('div');
+        unitDiv.className = 'card p-5 mb-5 animate-slide-in';
+        
+        unitDiv.innerHTML = `
+          <div class="flex items-center gap-3 mb-4">
+            <div class="rounded-xl bg-[var(--maroon)] text-white w-12 h-12 flex items-center justify-center text-xl font-bold">
+              ${unit.num || unitIndex + 1}
+            </div>
+            <div>
+              <h3 class="font-bold text-lg">${unit.name}</h3>
+              <div class="text-sm text-gray-600">${unit.when || ''} • ${unit.lessons.length} lesson(s)</div>
+            </div>
+          </div>
+          <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3" id="unit-${unitIndex}-lessons"></div>
+        `;
+        
+        container.appendChild(unitDiv);
+        
+        const lessonsContainer = unitDiv.querySelector(`#unit-${unitIndex}-lessons`);
+        unit.lessons.forEach((lesson, lessonIndex) => {
+          const lessonId = `${currentUser.grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          const isCompleted = isLessonCompleted(lessonId);
+          
+          const lessonDiv = document.createElement('div');
+          lessonDiv.className = `interactive-row ${isCompleted ? 'completed' : ''}`;
+          lessonDiv.onclick = () => openStudentLesson(lessonId, lesson);
+          
+          lessonDiv.innerHTML = `
+            <div class="flex-1">
+              <div class="font-semibold text-sm">${lesson}</div>
+              ${isCompleted ? '<div class="text-xs text-[var(--ok)] mt-1"><i class="fas fa-check-circle mr-1"></i>Completed</div>' : ''}
+            </div>
+            <span class="status ${isCompleted ? 'completed' : 'open'}">${isCompleted ? 'Review' : 'Start'}</span>
+          `;
+          
+          lessonsContainer.appendChild(lessonDiv);
+        });
+      });
+    }
+
+    function openStudentLesson(lessonId, lessonTitle) {
+      const lesson = getLessonById(lessonId) || createDefaultLesson(lessonId, lessonTitle);
+      
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      setupLessonModal(lesson);
+      document.getElementById('lessonModal').classList.add('show');
+    }
+
+    function setupLessonModal(lesson) {
+      // Setup video
+      const videoContent = document.getElementById('videoContent');
+      if (lesson.videoUrl) {
+        videoContent.innerHTML = `
+          <video id="lessonVideo" class="w-full h-full" controls>
+            <source src="${lesson.videoUrl}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      } else {
+        videoContent.innerHTML = `
+          <div class="text-center">
+            <i class="fas fa-video text-6xl mb-4"></i>
+            <p class="text-lg">${lesson.title} - Video Lesson</p>
+            <p class="text-sm opacity-80">Video content will be available soon</p>
+          </div>
+        `;
+      }
+
+      // Setup lesson content
+      document.getElementById('lessonSections').innerHTML = lesson.content || `
+        <div class="lesson-section">
+          <h3>${lesson.title}</h3>
+          <p>This lesson content is being prepared by your teacher.</p>
+          <p>Please check back later for the complete lesson materials.</p>
+        </div>
+      `;
+
+      // Setup progress tracking
+      updateLessonProgress(lesson);
+
+      // Setup navigation
+      setupLessonNavigation(lesson);
+    }
+
+    function updateLessonProgress(lesson) {
+      // Mock progress for demo
+      document.getElementById('videoProgress').textContent = '0%';
+      document.getElementById('videoProgressBar').style.width = '0%';
+      document.getElementById('contentProgress').textContent = '0%';
+      document.getElementById('contentProgressBar').style.width = '0%';
+      document.getElementById('practiceProgress').textContent = '0%';
+      document.getElementById('practiceProgressBar').style.width = '0%';
+    }
+
+    function setupLessonNavigation(lesson) {
+      document.getElementById('completeAssessmentBtn').onclick = () => {
+        closeLessonModal();
+        openAssessment(lesson);
+      };
+    }
+
+    function getLessonById(lessonId) {
+      return appData.lessons[lessonId] || lessonDatabase[lessonId] || null;
+    }
+
+    function createDefaultLesson(lessonId, title) {
+      return {
+        id: lessonId,
+        title: title,
+        content: `
+          <div class="lesson-section">
+            <h3>${title}</h3>
+            <p>This lesson content is being prepared by your teacher.</p>
+            <p>Key topics to be covered:</p>
+            <ul>
+              <li>Core concepts and definitions</li>
+              <li>Step-by-step examples</li>
+              <li>Practice problems</li>
+              <li>Real-world applications</li>
+            </ul>
+          </div>
+        `,
+        practiceProblems: [
+          {
+            question: `Practice problem for ${title}`,
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            correct: 0,
+            explanation: "This is a sample practice problem. Your teacher will add more specific content."
+          }
+        ],
+        assessment: [
+          {
+            question: `Assessment question for ${title}`,
+            options: ["Answer A", "Answer B", "Answer C", "Answer D"],
+            correct: 0,
+            points: 10,
+            explanation: "This is a sample assessment question."
+          }
+        ]
+      };
+    }
+
+    function getNextLessonForStudent() {
+      // Simple logic to get next incomplete lesson
+      const grade = currentUser.grade;
+      const units = grade === 7 ? grade7Units : grade8Units;
+      
+      for (let unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        const unit = units[unitIndex];
+        for (let lessonIndex = 0; lessonIndex < unit.lessons.length; lessonIndex++) {
+          const lessonId = `${grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          if (!isLessonCompleted(lessonId)) {
+            return lessonId;
+          }
+        }
+      }
+      return null;
+    }
+
+    function isLessonCompleted(lessonId) {
+      return currentUser && currentUser.completedLessons && 
+             currentUser.completedLessons.includes(lessonId);
+    }
+
+    function markLessonCompleted(lessonId) {
+      if (currentUser) {
+        if (!currentUser.completedLessons) {
+          currentUser.completedLessons = [];
+        }
+        if (!currentUser.completedLessons.includes(lessonId)) {
+          currentUser.completedLessons.push(lessonId);
+          currentUser.progress = Math.min(100, (currentUser.progress || 0) + 5);
+          currentUser.studyTime = (currentUser.studyTime || 0) + 30;
+          saveUserProgress();
+        }
+      }
+    }
+
+    function startPracticeMode(type) {
+      showNotification(`Starting ${type} practice mode...`, 'info');
+    }
+
+    function loadStudentSkills() {
+      const container = document.getElementById('skillsProgress');
+      const skills = currentUser.skills || [];
+      
+      if (skills.length > 0) {
+        container.innerHTML = skills.map(skill => `
+          <div class="card p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold">${skill.name}</h4>
+              <span class="skill-badge skill-${skill.status}">
+                ${skill.status.charAt(0).toUpperCase() + skill.status.slice(1)}
+              </span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">${skill.description || 'No description provided'}</p>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${skill.progress || 0}%"></div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No skills assigned yet.</p>';
+      }
+    }
+
+    function loadStudentProgress() {
+      loadStudentAchievements();
+      loadStudentStats();
+    }
+
+    function loadStudentAchievements() {
+      const container = document.getElementById('achievementsList');
+      const achievements = [
+        { title: 'First Lesson', description: 'Completed your first lesson', icon: 'graduation-cap', earned: (currentUser.completedLessons || []).length > 0 },
+        { title: 'Practice Master', description: 'Solved 10 practice problems', icon: 'trophy', earned: (currentUser.studyTime || 0) > 60 },
+        { title: 'Week Streak', description: 'Studied for 7 days in a row', icon: 'fire', earned: false },
+        { title: 'Unit Master', description: 'Completed an entire unit', icon: 'medal', earned: (currentUser.completedLessons || []).length >= 8 }
+      ];
+
+      container.innerHTML = achievements.map(achievement => `
+        <div class="flex items-center gap-3 p-3 rounded-lg ${achievement.earned ? 'bg-[var(--ok)]/10' : 'bg-gray-50'}">
+          <div class="w-10 h-10 rounded-full ${achievement.earned ? 'bg-[var(--ok)]' : 'bg-gray-400'} flex items-center justify-center text-white">
+            <i class="fas fa-${achievement.icon}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold ${achievement.earned ? 'text-[var(--ok)]' : 'text-gray-600'}">${achievement.title}</div>
+            <div class="text-sm text-gray-600">${achievement.description}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadStudentStats() {
+      const container = document.getElementById('studyStats');
+      const hours = Math.floor((currentUser.studyTime || 0) / 60);
+      const minutes = (currentUser.studyTime || 0) % 60;
+      
+      const stats = [
+        { label: 'Total Study Time', value: `${hours}h ${minutes}m` },
+        { label: 'Lessons Completed', value: (currentUser.completedLessons || []).length },
+        { label: 'Current Progress', value: `${currentUser.progress || 0}%` },
+        { label: 'Average Score', value: '85%' },
+        { label: 'Current Streak', value: '5 days' }
+      ];
+
+      container.innerHTML = stats.map(stat => `
+        <div class="flex justify-between">
+          <span class="text-gray-600">${stat.label}</span>
+          <span class="font-semibold">${stat.value}</span>
+        </div>
+      `).join('');
+    }
+
+    // Teacher Portal Functions
+    function initTeacherPortal() {
+      document.getElementById('teacherPortal').classList.remove('hidden');
+      
+      // For demo, use current user or create default teacher
+      if (!currentUser || currentUser.role !== 'teacher') {
+        currentUser = createDemoTeacher();
+      }
+      
+      setupTeacherEventListeners();
+      updateTeacherDashboard();
+      showTeacherTab('teacher-dashboard');
+    }
+
+    function createDemoTeacher() {
+      return {
+        id: 'TCH001',
+        name: googleUser ? googleUser.name : 'Demo Teacher',
+        email: googleUser ? googleUser.email : 'teacher@qla.qfschools.qa',
+        role: 'teacher',
+        subject: 'Mathematics',
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    function setupTeacherEventListeners() {
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          showTeacherTab(tab.dataset.tab);
+        });
+      });
+    }
+
+    function showTeacherTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#teacherPortal .tab-content').forEach(content => {
+        content.classList.toggle('hidden', !content.id.includes(tabName.replace('teacher-', '')));
+      });
+
+      // Load specific content
+      switch(tabName) {
+        case 'lesson-management':
+          loadTeacherLessonManagement();
+          break;
+        case 'skill-assignment':
+          loadTeacherSkillAssignment();
+          break;
+        case 'student-management':
+          loadTeacherStudentManagement();
+          break;
+        case 'analytics':
+          loadTeacherAnalytics();
+          break;
+      }
+    }
+
+    function updateTeacherDashboard() {
+      const students = Object.values(appData.users.students || {});
+      const lessons = Object.values(appData.lessons || {});
+      const skills = appData.skills || [];
+
+      document.getElementById('totalStudents').textContent = students.length;
+      document.getElementById('activeLessons').textContent = lessons.filter(l => l.status === 'published').length;
+      document.getElementById('assignedSkillsCount').textContent = skills.length;
+      
+      const avgProgress = students.length > 0 ? 
+        students.reduce((sum, s) => sum + (s.progress || 0), 0) / students.length : 0;
+      document.getElementById('avgProgress').textContent = `${Math.round(avgProgress)}%`;
+
+      loadTeacherRecentActivity();
+      loadTeacherAttentionNeeded();
+    }
+
+    function loadTeacherRecentActivity() {
+      const container = document.getElementById('recentActivity');
+      const activities = [
+        { text: "New lesson created: Number Systems", time: "2 hours ago", type: "lesson" },
+        { text: "Student completed assessment: Fractions", time: "4 hours ago", type: "completion" },
+        { text: "Skill assigned to Grade 7 students", time: "6 hours ago", type: "skill" }
+      ];
+
+      container.innerHTML = activities.map(activity => `
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-8 h-8 rounded-full ${getActivityColor(activity.type)} flex items-center justify-center text-white text-sm">
+            <i class="fas ${getActivityIcon(activity.type)}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-medium">${activity.text}</div>
+            <div class="text-xs text-gray-500">${activity.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadTeacherAttentionNeeded() {
+      const container = document.getElementById('attentionNeeded');
+      const alerts = [
+        { text: "3 students need help with Unit 2", type: "warning" },
+        { text: "Assessment deadline approaching", type: "info" },
+        { text: "Low engagement in Grade 8", type: "danger" }
+      ];
+
+      container.innerHTML = alerts.map(alert => `
+        <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+          <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white text-sm">
+            <i class="fas fa-exclamation"></i>
+          </div>
+          <div class="text-sm font-medium text-red-800">${alert.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function loadTeacherLessonManagement() {
+      const container = document.getElementById('lessonsList');
+      const lessons = Object.entries(appData.lessons || {});
+      
+      if (lessons.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No lessons created yet. Click "Create New Lesson" to get started.</p>';
+        return;
+      }
+
+      container.innerHTML = lessons.map(([lessonId, lesson]) => `
+        <div class="interactive-row">
+          <div class="flex-1">
+            <div class="font-semibold">${lesson.title}</div>
+            <div class="text-sm text-gray-600">Grade ${lesson.grade} • ${lesson.status} • Created ${new Date(lesson.createdAt).toLocaleDateString()}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editTeacherLesson('${lessonId}')" class="text-blue-600 hover:text-blue-800" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="duplicateTeacherLesson('${lessonId}')" class="text-green-600 hover:text-green-800" title="Duplicate">
+              <i class="fas fa-copy"></i>
+            </button>
+            <button onclick="toggleLessonStatus('${lessonId}')" class="text-yellow-600 hover:text-yellow-800" title="Toggle Status">
+              <i class="fas fa-toggle-on"></i>
+            </button>
+            <button onclick="deleteTeacherLesson('${lessonId}')" class="text-red-600 hover:text-red-800" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadTeacherSkillAssignment() {
+      loadAvailableSkills();
+      loadSkillAssignmentInterface();
+    }
+
+    function loadAvailableSkills() {
+      const container = document.getElementById('availableSkills');
+      const skills = appData.skills || [];
+
+      if (skills.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No skills created yet.</p>';
+        return;
+      }
+
+      container.innerHTML = skills.map((skill, index) => `
+        <div class="interactive-row">
+          <div class="flex-1">
+            <div class="font-semibold">${skill.name}</div>
+            <div class="text-sm text-gray-600">${skill.description}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editSkill(${index})" class="text-blue-600 hover:text-blue-800">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="assignSkillToStudents(${index})" class="text-green-600 hover:text-green-800">
+              <i class="fas fa-user-plus"></i>
+            </button>
+            <button onclick="deleteSkill(${index})" class="text-red-600 hover:text-red-800">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadSkillAssignmentInterface() {
+      const container = document.getElementById('skillAssignment');
+      container.innerHTML = `
+        <div class="card p-4">
+          <h4 class="font-bold mb-3">Quick Assign</h4>
+          <div class="space-y-3">
+            <select id="quickSkillSelect" class="form-input">
+              <option value="">Select a skill...</option>
+              ${(appData.skills || []).map((skill, index) => 
+                `<option value="${index}">${skill.name}</option>`
+              ).join('')}
+            </select>
+            <select id="quickGradeSelect" class="form-input">
+              <option value="">Select grade...</option>
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+            </select>
+            <button onclick="quickAssignSkill()" class="btn btn-primary w-full">
+              <i class="fas fa-bolt"></i>Quick Assign
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function loadTeacherStudentManagement() {
+      const container = document.getElementById('studentsTable');
+      const students = Object.values(appData.users.students || {});
+
+      if (students.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No students registered yet.</p>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-semibold">Name</th>
+              <th class="text-left py-3 px-4 font-semibold">Grade</th>
+              <th class="text-left py-3 px-4 font-semibold">Progress</th>
+              <th class="text-left py-3 px-4 font-semibold">Study Time</th>
+              <th class="text-left py-3 px-4 font-semibold">Last Active</th>
+              <th class="text-left py-3 px-4 font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${students.map(student => `
+              <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="py-3 px-4">${student.name}</td>
+                <td class="py-3 px-4">${student.grade}</td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-2">
+                    <div class="progress-bar flex-1 h-2">
+                      <div class="progress-fill h-full" style="width:${student.progress || 0}%"></div>
+                    </div>
+                    <span class="text-sm">${student.progress || 0}%</span>
+                  </div>
+                </td>
+                <td class="py-3 px-4">${Math.floor((student.studyTime || 0) / 60)}h ${(student.studyTime || 0) % 60}m</td>
+                <td class="py-3 px-4">${student.updatedAt ? new Date(student.updatedAt).toLocaleDateString() : 'Never'}</td>
+                <td class="py-3 px-4">
+                  <button onclick="viewStudentDetails('${student.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button onclick="messageStudent('${student.id}')" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-envelope"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function loadTeacherAnalytics() {
+      const container = document.getElementById('analyticsChart');
+      container.innerHTML = `
+        <div class="text-center py-16">
+          <i class="fas fa-chart-line text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-xl font-bold text-gray-600 mb-2">Analytics Dashboard</h3>
+          <p class="text-gray-500">Detailed analytics and reporting features will be available here</p>
+        </div>
+      `;
+
+      loadTopPerformers();
+      loadStrugglingStudents();
+      loadPopularLessons();
+    }
+
+    function loadTopPerformers() {
+      const container = document.getElementById('topPerformers');
+      const students = Object.values(appData.users.students || {})
+        .sort((a, b) => (b.progress || 0) - (a.progress || 0))
+        .slice(0, 5);
+
+      container.innerHTML = students.map(student => `
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-8 h-8 rounded-full bg-[var(--ok)] text-white flex items-center justify-center text-sm font-bold">
+            ${student.name.charAt(0)}
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${student.name}</div>
+            <div class="text-xs text-gray-600">${student.progress || 0}% progress</div>
+          </div>
+        </div>
+      `).join('') || '<p class="text-gray-500 text-sm">No student data available</p>';
+    }
+
+    function loadStrugglingStudents() {
+      const container = document.getElementById('strugglingStudents');
+      const students = Object.values(appData.users.students || {})
+        .filter(s => (s.progress || 0) < 30)
+        .slice(0, 5);
+
+      container.innerHTML = students.map(student => `
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-8 h-8 rounded-full bg-[var(--warning)] text-white flex items-center justify-center text-sm font-bold">
+            ${student.name.charAt(0)}
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${student.name}</div>
+            <div class="text-xs text-gray-600">${student.progress || 0}% progress</div>
+          </div>
+        </div>
+      `).join('') || '<p class="text-gray-500 text-sm">All students are doing well!</p>';
+    }
+
+    function loadPopularLessons() {
+      const container = document.getElementById('popularLessons');
+      const lessons = Object.entries(appData.lessons || {}).slice(0, 5);
+
+      container.innerHTML = lessons.map(([id, lesson]) => `
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-8 h-8 rounded-full bg-[var(--blue)] text-white flex items-center justify-center text-sm">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${lesson.title}</div>
+            <div class="text-xs text-gray-600">Grade ${lesson.grade}</div>
+          </div>
+        </div>
+      `).join('') || '<p class="text-gray-500 text-sm">No lessons available</p>';
+    }
+
+    // Assessment Functions
+    function openAssessment(lesson) {
+      if (!lesson.assessment || lesson.assessment.length === 0) {
+        showNotification('No assessment available for this lesson', 'info');
+        return;
+      }
+
+      document.getElementById('assessmentTitle').textContent = `${lesson.title} - Assessment`;
+      document.getElementById('totalQuestions').textContent = lesson.assessment.length;
+      
+      currentAssessment = {
+        lesson: lesson,
+        questions: lesson.assessment,
+        currentQuestion: 0,
+        answers: [],
+        timeRemaining: (appData.settings.assessmentTimeLimit || 15) * 60
+      };
+
+      loadAssessmentQuestion();
+      startAssessmentTimer();
+      document.getElementById('assessmentModal').classList.add('show');
+    }
+
+    let currentAssessment = null;
+    let assessmentTimer = null;
+
+    function loadAssessmentQuestion() {
+      const question = currentAssessment.questions[currentAssessment.currentQuestion];
+      document.getElementById('currentQuestion').textContent = currentAssessment.currentQuestion + 1;
+      
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="card p-6">
+          <h4 class="font-bold text-lg mb-4">Question ${currentAssessment.currentQuestion + 1}</h4>
+          <p class="text-lg mb-6">${question.question}</p>
+          <div class="space-y-3">
+            ${question.options.map((option, index) => `
+              <div class="quiz-option" onclick="selectAssessmentAnswer(${index})" data-index="${index}">
+                ${String.fromCharCode(65 + index)}. ${option}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Show/hide navigation buttons
+      document.getElementById('prevQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === 0 ? 'none' : 'block';
+      
+      document.getElementById('nextQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === currentAssessment.questions.length - 1 ? 'none' : 'block';
+      
+      document.getElementById('submitAssessmentBtn').classList.toggle('hidden', 
+        currentAssessment.currentQuestion !== currentAssessment.questions.length - 1);
+
+      // Setup navigation
+      document.getElementById('prevQuestionBtn').onclick = () => {
+        if (currentAssessment.currentQuestion > 0) {
+          currentAssessment.currentQuestion--;
+          loadAssessmentQuestion();
+        }
+      };
+
+      document.getElementById('nextQuestionBtn').onclick = () => {
+        if (currentAssessment.currentQuestion < currentAssessment.questions.length - 1) {
+          currentAssessment.currentQuestion++;
+          loadAssessmentQuestion();
+        }
+      };
+
+      document.getElementById('submitAssessmentBtn').onclick = submitAssessment;
+    }
+
+    function selectAssessmentAnswer(index) {
+      // Remove previous selections
+      document.querySelectorAll('#assessmentContent .quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selection
+      document.querySelector(`#assessmentContent .quiz-option[data-index="${index}"]`).classList.add('selected');
+      
+      // Store answer
+      currentAssessment.answers[currentAssessment.currentQuestion] = index;
+    }
+
+    function startAssessmentTimer() {
+      assessmentTimer = setInterval(() => {
+        currentAssessment.timeRemaining--;
+        const minutes = Math.floor(currentAssessment.timeRemaining / 60);
+        const seconds = currentAssessment.timeRemaining % 60;
+        document.getElementById('assessmentTimer').textContent = 
+          `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (currentAssessment.timeRemaining <= 0) {
+          submitAssessment();
+        }
+      }, 1000);
+    }
+
+    function submitAssessment() {
+      clearInterval(assessmentTimer);
+      
+      // Calculate score
+      let correct = 0;
+      let totalPoints = 0;
+      let earnedPoints = 0;
+
+      currentAssessment.questions.forEach((question, index) => {
+        totalPoints += question.points || 10;
+        if (currentAssessment.answers[index] === question.correct) {
+          correct++;
+          earnedPoints += question.points || 10;
+        }
+      });
+
+      const percentage = Math.round((earnedPoints / totalPoints) * 100);
+      const passPercentage = appData.settings.passPercentage || 70;
+      const passed = percentage >= passPercentage;
+
+      // Show results
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="text-center py-8">
+          <div class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold ${passed ? 'bg-[var(--ok)] text-white' : 'bg-[var(--danger)] text-white'}">
+            ${percentage}%
+          </div>
+          <h3 class="text-2xl font-bold mb-2">${passed ? 'Congratulations!' : 'Keep Practicing!'}</h3>
+          <p class="text-lg mb-4">${passed ? 'You passed the assessment!' : `You need ${passPercentage}% to pass.`}</p>
+          <div class="grid gap-4 md:grid-cols-3 max-w-md mx-auto mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${correct}</div>
+              <div class="text-sm text-gray-600">Correct</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${currentAssessment.questions.length - correct}</div>
+              <div class="text-sm text-gray-600">Incorrect</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${earnedPoints}</div>
+              <div class="text-sm text-gray-600">Points</div>
+            </div>
+          </div>
+          <div class="flex gap-4 justify-center">
+            <button onclick="reviewAssessment()" class="btn btn-secondary">
+              <i class="fas fa-eye"></i>Review Answers
+            </button>
+            ${passed ? `
+              <button onclick="completeLesson()" class="btn btn-success">
+                <i class="fas fa-check"></i>Complete Lesson
+              </button>
+            ` : `
+              <button onclick="retakeAssessment()" class="btn btn-primary">
+                <i class="fas fa-redo"></i>Retake Assessment
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+
+      // Hide navigation
+      document.getElementById('prevQuestionBtn').style.display = 'none';
+      document.getElementById('nextQuestionBtn').style.display = 'none';
+      document.getElementById('submitAssessmentBtn').classList.add('hidden');
+
+      if (passed) {
+        // Mark lesson as completed
+        markLessonCompleted(currentAssessment.lesson.id);
+      }
+    }
+
+    function reviewAssessment() {
+      // Show detailed review of answers
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="space-y-6">
+          ${currentAssessment.questions.map((question, index) => {
+            const userAnswer = currentAssessment.answers[index];
+            const isCorrect = userAnswer === question.correct;
+            return `
+              <div class="card p-4 ${isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+                <h4 class="font-bold mb-2">Question ${index + 1}</h4>
+                <p class="mb-3">${question.question}</p>
+                <div class="space-y-2">
+                  ${question.options.map((option, optIndex) => `
+                    <div class="p-2 rounded ${
+                      optIndex === question.correct ? 'bg-green-100 border border-green-300' :
+                      optIndex === userAnswer && !isCorrect ? 'bg-red-100 border border-red-300' :
+                      'bg-gray-50'
+                    }">
+                      ${String.fromCharCode(65 + optIndex)}. ${option}
+                      ${optIndex === question.correct ? ' ✓' : ''}
+                      ${optIndex === userAnswer && !isCorrect ? ' ✗' : ''}
+                    </div>
+                  `).join('')}
+                </div>
+                ${question.explanation ? `<p class="text-sm text-gray-600 mt-2"><strong>Explanation:</strong> ${question.explanation}</p>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function completeLesson() {
+      document.getElementById('assessmentModal').classList.remove('show');
+      showNotification('Lesson completed successfully! 🎉', 'success');
+      updateStudentDashboard();
+      renderStudentLessons();
+    }
+
+    function retakeAssessment() {
+      currentAssessment.currentQuestion = 0;
+      currentAssessment.answers = [];
+      currentAssessment.timeRemaining = (appData.settings.assessmentTimeLimit || 15) * 60;
+      loadAssessmentQuestion();
+      startAssessmentTimer();
+    }
+
+    function closeLessonModal() {
+      document.getElementById('lessonModal').classList.remove('show');
+    }
+
+    // Utility Functions
+    function getActivityColor(type) {
+      const colors = {
+        completion: 'bg-[var(--ok)]',
+        start: 'bg-[var(--blue)]',
+        assessment: 'bg-[var(--purple)]',
+        lesson: 'bg-[var(--maroon)]',
+        skill: 'bg-[var(--gold)]',
+        user: 'bg-[var(--blue)]',
+        system: 'bg-[var(--slate)]'
+      };
+      return colors[type] || 'bg-gray-500';
+    }
+
+    function getActivityIcon(type) {
+      const icons = {
+        completion: 'fa-check',
+        start: 'fa-play',
+        assessment: 'fa-clipboard-check',
+        lesson: 'fa-book',
+        skill: 'fa-star',
+        user: 'fa-user',
+        system: 'fa-cog'
+      };
+      return icons[type] || 'fa-info';
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    // Teacher-specific functions
+    function createNewLesson() {
+      openAdvancedLessonCreator();
+    }
+
+    function editTeacherLesson(lessonId) {
+      editLesson(lessonId);
+    }
+
+    function duplicateTeacherLesson(lessonId) {
+      duplicateLesson(lessonId);
+    }
+
+    function toggleLessonStatus(lessonId) {
+      const lesson = appData.lessons[lessonId];
+      if (!lesson) return;
+
+      lesson.status = lesson.status === 'published' ? 'draft' : 'published';
+      if (lesson.status === 'published') {
+        lesson.publishedAt = new Date().toISOString();
+      }
+      
+      saveAppData();
+      loadTeacherLessonManagement();
+      showNotification(`Lesson ${lesson.status === 'published' ? 'published' : 'unpublished'} successfully!`, 'info');
+    }
+
+    function deleteTeacherLesson(lessonId) {
+      deleteLesson(lessonId);
+    }
+
+    function createNewSkill() {
+      document.getElementById('skillModalTitle').textContent = 'Create New Skill';
+      document.getElementById('skillForm').reset();
+      loadStudentsForSkillAssignment();
+      document.getElementById('skillModal').classList.add('show');
+    }
+
+    function closeSkillModal() {
+      document.getElementById('skillModal').classList.remove('show');
+    }
+
+    function loadStudentsForSkillAssignment() {
+      const container = document.getElementById('studentsList');
+      const students = Object.values(appData.users.students || {});
+      
+      container.innerHTML = students.map(student => `
+        <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+          <input type="checkbox" name="students" value="${student.id}" class="rounded">
+          <span class="flex-1">${student.name} (Grade ${student.grade})</span>
+          <span class="text-sm text-gray-500">${student.progress || 0}% progress</span>
+        </label>
+      `).join('') || '<p class="text-gray-500 text-sm">No students available</p>';
+    }
+
+    function quickAssignSkill() {
+      const skillIndex = document.getElementById('quickSkillSelect').value;
+      const grade = document.getElementById('quickGradeSelect').value;
+      
+      if (!skillIndex || !grade) {
+        showNotification('Please select both skill and grade', 'warning');
+        return;
+      }
+
+      const skill = appData.skills[skillIndex];
+      const students = Object.values(appData.users.students || {}).filter(s => s.grade == grade);
+      
+      students.forEach(student => {
+        if (!student.skills) student.skills = [];
+        if (!student.skills.find(s => s.name === skill.name)) {
+          student.skills.push({
+            ...skill,
+            status: 'assigned',
+            assignedAt: new Date().toISOString(),
+            progress: 0
+          });
+        }
+      });
+
+      saveAppData();
+      showNotification(`Skill "${skill.name}" assigned to ${students.length} Grade ${grade} students`, 'success');
+    }
+
+    function viewStudentDetails(studentId) {
+      const student = appData.users.students[studentId];
+      if (!student) return;
+
+      showNotification(`Viewing details for ${student.name} - Feature coming soon!`, 'info');
+    }
+
+    function messageStudent(studentId) {
+      const student = appData.users.students[studentId];
+      if (!student) return;
+
+      showNotification(`Messaging ${student.name} - Feature coming soon!`, 'info');
+    }
+
+    // Event Listeners Setup
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up form submissions
+      const forms = [
+        'userCreationForm',
+        'authSettingsForm', 
+        'systemConfigForm',
+        'skillForm'
+      ];
+
+      forms.forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form && !form.onsubmit) {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            switch(formId) {
+              case 'userCreationForm':
+                createNewUser();
+                break;
+              case 'authSettingsForm':
+                saveAuthSettings();
+                break;
+              case 'systemConfigForm':
+                saveSystemConfig();
+                break;
+              case 'skillForm':
+                createSkill();
+                break;
+            }
+          });
+        }
+      });
+
+      // Grade change listener for lesson creator
+      const gradeSelect = document.getElementById('advancedLessonGrade');
+      if (gradeSelect) {
+        gradeSelect.addEventListener('change', populateUnitDropdown);
+      }
+    });
+
+    function createSkill() {
+      const skillData = {
+        name: document.getElementById('skillName').value,
+        description: document.getElementById('skillDescription').value,
+        grade: document.getElementById('skillGrade').value,
+        difficulty: document.getElementById('skillDifficulty').value,
+        dueDate: document.getElementById('skillDueDate').value,
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser.email
+      };
+
+      if (!appData.skills) appData.skills = [];
+      appData.skills.push(skillData);
+
+      // Assign to selected students
+      const selectedStudents = Array.from(document.querySelectorAll('input[name="students"]:checked'))
+        .map(cb => cb.value);
+
+      selectedStudents.forEach(studentId => {
+        const student = appData.users.students[studentId];
+        if (student) {
+          if (!student.skills) student.skills = [];
+          student.skills.push({
+            ...skillData,
+            status: 'assigned',
+            assignedAt: new Date().toISOString(),
+            progress: 0
+          });
+        }
+      });
+
+      saveAppData();
+      closeSkillModal();
+      loadAvailableSkills();
+      showNotification(`Skill "${skillData.name}" created and assigned to ${selectedStudents.length} students!`, 'success');
+    }
+
+    function editSkill(index) {
+      const skill = appData.skills[index];
+      if (!skill) return;
+
+      document.getElementById('skillName').value = skill.name;
+      document.getElementById('skillDescription').value = skill.description;
+      document.getElementById('skillGrade').value = skill.grade;
+      document.getElementById('skillDifficulty').value = skill.difficulty;
+      document.getElementById('skillDueDate').value = skill.dueDate;
+
+      document.getElementById('skillModalTitle').textContent = 'Edit Skill';
+      document.getElementById('skillModal').classList.add('show');
+
+      // Change form submission to edit mode
+      document.getElementById('skillForm').onsubmit = function(e) {
+        e.preventDefault();
+        updateSkill(index);
+      };
+    }
+
+    function updateSkill(index) {
+      const skill = appData.skills[index];
+      skill.name = document.getElementById('skillName').value;
+      skill.description = document.getElementById('skillDescription').value;
+      skill.grade = document.getElementById('skillGrade').value;
+      skill.difficulty = document.getElementById('skillDifficulty').value;
+      skill.dueDate = document.getElementById('skillDueDate').value;
+      skill.updatedAt = new Date().toISOString();
+
+      saveAppData();
+      closeSkillModal();
+      loadAvailableSkills();
+      showNotification('Skill updated successfully!', 'success');
+
+      // Reset form submission
+      document.getElementById('skillForm').onsubmit = function(e) {
+        e.preventDefault();
+        createSkill();
+      };
+    }
+
+    function deleteSkill(index) {
+      if (!confirm('Are you sure you want to delete this skill?')) return;
+
+      appData.skills.splice(index, 1);
+      saveAppData();
+      loadAvailableSkills();
+      showNotification('Skill deleted successfully!', 'success');
+    }
+
+    function assignSkillToStudents(index) {
+      const skill = appData.skills[index];
+      document.getElementById('skillName').value = skill.name;
+      document.getElementById('skillDescription').value = skill.description;
+      document.getElementById('skillGrade').value = skill.grade;
+      document.getElementById('skillDifficulty').value = skill.difficulty;
+      
+      loadStudentsForSkillAssignment();
+      document.getElementById('skillModalTitle').textContent = `Assign: ${skill.name}`;
+      document.getElementById('skillModal').classList.add('show');
+    }
+
+    // Initialize application when page loads
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
 
     function setupStudentEventListeners() {
       document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
