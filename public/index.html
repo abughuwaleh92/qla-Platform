@@ -314,7 +314,6 @@
     let currentAssessment = null;
     let assessmentTimer = null;
     let lessonStartTime = null;
-    let API_BASE = '';
 
     // Initialize application
     async function init() {
@@ -347,7 +346,9 @@
       document.getElementById('app').classList.remove('hidden');
 
       // Initialize WebSocket
-      socket = io();
+      if (typeof io !== 'undefined') {
+        socket = io();
+      }
       
       // Set up user interface
       document.getElementById('userName').textContent = currentUser.name;
@@ -368,7 +369,8 @@
             {left: '$$', right: '$$', display: true},
             {left: '\\[', right: '\\]', display: true},
             {left: '\\(', right: '\\)', display: false}
-          ]
+          ],
+          throwOnError: false
         });
       }
     }
@@ -515,7 +517,7 @@
                   <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                       <div class="font-semibold text-sm">${skill.name}</div>
-                      <div class="text-xs text-gray-600">${skill.difficulty}</div>
+                      <div class="text-xs text-gray-600">${skill.difficulty || ''}</div>
                     </div>
                     <span class="status ${skill.status === 'completed' ? 'completed' : 'open'}">
                       ${skill.progress || 0}%
@@ -677,6 +679,8 @@
         const response = await fetch(`/api/lessons${grade ? `?grade=${grade}` : ''}`);
         const lessons = await response.json();
         
+        console.log('Loaded lessons:', lessons);
+        
         // Group lessons by unit
         const units = {};
         lessons.forEach(lesson => {
@@ -733,31 +737,105 @@
 
     async function openLesson(lessonId) {
       try {
+        console.log('Opening lesson:', lessonId);
+        
         const response = await fetch(`/api/lessons/${lessonId}`);
         currentLesson = await response.json();
+        
+        console.log('Lesson data:', currentLesson);
         
         // Set lesson title
         document.getElementById('lessonTitle').textContent = currentLesson.title;
         
-        // Load lesson content based on format
+        // Load lesson content
         const lessonFrame = document.getElementById('lessonFrame');
         
-        // Check if we have an HTML file for this lesson
+        // Build the correct file path - note the lowercase 'lessons'
         const lessonFile = `/lessons/grade${currentLesson.grade}/lesson-${currentLesson.unit}-${currentLesson.lesson_order}.html`;
+        
+        console.log('Attempting to load lesson from:', lessonFile);
         
         // Try to load the lesson file
         fetch(lessonFile)
           .then(res => {
+            console.log('Lesson file response:', res.status);
             if (res.ok) {
-              lessonFrame.src = lessonFile;
+              return res.text();
             } else {
-              // Fallback to content from database
-              const htmlContent = currentLesson.html_content || currentLesson.content || '<h1>Lesson content not available</h1>';
-              lessonFrame.srcdoc = htmlContent;
+              throw new Error(`Lesson file not found: ${lessonFile}`);
             }
           })
-          .catch(() => {
-            const htmlContent = currentLesson.html_content || currentLesson.content || '<h1>Lesson content not available</h1>';
+          .then(html => {
+            console.log('Lesson HTML loaded successfully');
+            // Load the HTML content directly into the iframe
+            lessonFrame.srcdoc = html;
+            
+            // Add message listener for iframe communication
+            window.addEventListener('message', handleLessonMessage);
+          })
+          .catch(err => {
+            console.error('Error loading lesson file:', err);
+            // Fallback to database content or error message
+            const htmlContent = currentLesson.html_content || currentLesson.content || `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { 
+                    font-family: Arial, sans-serif; 
+                    padding: 40px; 
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    margin: 0;
+                  }
+                  .error-container {
+                    background: white;
+                    padding: 40px;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    text-align: center;
+                    max-width: 500px;
+                  }
+                  h1 { color: #6C1D45; margin-bottom: 20px; }
+                  p { color: #666; line-height: 1.6; }
+                  .details { 
+                    background: #f9f9f9; 
+                    padding: 15px; 
+                    border-radius: 8px; 
+                    margin-top: 20px;
+                    text-align: left;
+                  }
+                  .btn {
+                    display: inline-block;
+                    margin-top: 20px;
+                    padding: 10px 20px;
+                    background: #C7A34F;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 6px;
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="error-container">
+                  <h1>${currentLesson.title}</h1>
+                  <p>${currentLesson.content || 'Lesson content is being prepared.'}</p>
+                  <div class="details">
+                    <strong>Technical Details:</strong><br>
+                    Grade: ${currentLesson.grade}<br>
+                    Unit: ${currentLesson.unit}<br>
+                    Lesson Order: ${currentLesson.lesson_order}<br>
+                    Expected file: ${lessonFile}<br>
+                    <br>
+                    <em>Please contact your teacher if this issue persists.</em>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `;
             lessonFrame.srcdoc = htmlContent;
           });
         
@@ -784,13 +862,23 @@
         updateLessonProgress();
         
         // Join lesson room for real-time features
-        socket.emit('join-lesson', lessonId);
+        if (socket) {
+          socket.emit('join-lesson', lessonId);
+        }
         
         // Show modal
         document.getElementById('lessonModal').classList.add('show');
       } catch (error) {
         console.error('Error opening lesson:', error);
-        showNotification('Error opening lesson', 'error');
+        showNotification('Error opening lesson: ' + error.message, 'error');
+      }
+    }
+
+    function handleLessonMessage(event) {
+      // Handle messages from the lesson iframe
+      if (event.data.type === 'lesson-progress') {
+        console.log('Lesson progress update:', event.data);
+        // Update progress tracking
       }
     }
 
@@ -800,6 +888,9 @@
         const timeSpent = Math.round((Date.now() - lessonStartTime) / 1000); // in seconds
         saveLessonProgress(timeSpent);
       }
+      
+      // Remove message listener
+      window.removeEventListener('message', handleLessonMessage);
       
       document.getElementById('lessonModal').classList.remove('show');
       currentLesson = null;
@@ -1046,6 +1137,38 @@
       document.getElementById('assessmentModal').classList.remove('show');
       currentAssessment = null;
       loadLessons(); // Refresh lessons to show updated progress
+    }
+
+    function practiceProblems() {
+      showNotification('Practice problems coming soon!', 'info');
+    }
+
+    function askQuestion() {
+      showNotification('Q&A feature coming soon!', 'info');
+    }
+
+    function loadPractice() {
+      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Practice Problems</h2><p>Practice section coming soon...</p></div>';
+    }
+
+    function loadSkills() {
+      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Skills</h2><p>Skills section coming soon...</p></div>';
+    }
+
+    function loadProgress() {
+      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Progress</h2><p>Progress section coming soon...</p></div>';
+    }
+
+    function loadStudents() {
+      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Students</h2><p>Students section coming soon...</p></div>';
+    }
+
+    function loadAnalytics() {
+      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Analytics</h2><p>Analytics section coming soon...</p></div>';
+    }
+
+    function createLesson() {
+      window.location.href = '/teacher-tools.html';
     }
 
     function showNotification(message, type = 'info') {
