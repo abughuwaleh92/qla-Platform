@@ -6,8 +6,13 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "npm run migrate",
-    "migrate": "node migrations/init.js"
+    "build": "npm run setup",
+    "migrate": "node migrations/init.js",
+    "setup": "node setup-lessons.js && npm run migrate",
+    "verify": "node verify-lessons.js",
+    "fix-lessons": "node setup-lessons.js",
+    "test": "npm run verify",
+    "railway-postbuild": "npm run setup"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -39,8 +44,14 @@
     "education",
     "mathematics",
     "qatar",
-    "learning"
+    "learning",
+    "interactive",
+    "assessment"
   ],
   "author": "QLA Development Team",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qla/mathematics-lms"
+  }
 }
