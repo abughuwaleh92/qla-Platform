@@ -31,7 +31,7 @@ const io = new Server(server, {
 });
 
 // ============================================
-// ENVIRONMENT VARIABLES (Trimmed)
+// ENVIRONMENT VARIABLES
 // ============================================
 const config = {
   PORT: process.env.PORT || 3000,
@@ -73,7 +73,7 @@ pool.connect()
 // ============================================
 async function initializeDatabase() {
   try {
-    // Create session table for session storage
+    // Create session table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS "session" (
         "sid" varchar NOT NULL COLLATE "default",
@@ -85,7 +85,7 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
     `);
 
-    // Create users table
+    // Create all required tables
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -100,10 +100,7 @@ async function initializeDatabase() {
         last_login TIMESTAMP,
         updated_at TIMESTAMP DEFAULT NOW()
       );
-    `);
 
-    // Create lessons table
-    await pool.query(`
       CREATE TABLE IF NOT EXISTS lessons (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -117,14 +114,11 @@ async function initializeDatabase() {
         assessment_questions JSONB DEFAULT '[]',
         interactive_elements JSONB DEFAULT '[]',
         teacher_id INTEGER REFERENCES users(id),
-        status VARCHAR(50) DEFAULT 'draft',
+        status VARCHAR(50) DEFAULT 'published',
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
-    `);
 
-    // Create lesson_progress table
-    await pool.query(`
       CREATE TABLE IF NOT EXISTS lesson_progress (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -132,14 +126,13 @@ async function initializeDatabase() {
         progress INTEGER DEFAULT 0,
         time_spent INTEGER DEFAULT 0,
         video_progress INTEGER DEFAULT 0,
+        slide_progress JSONB DEFAULT '{}',
+        interactions_completed JSONB DEFAULT '[]',
         completed BOOLEAN DEFAULT FALSE,
         last_accessed TIMESTAMP DEFAULT NOW(),
         UNIQUE(user_id, lesson_id)
       );
-    `);
 
-    // Create assessments table
-    await pool.query(`
       CREATE TABLE IF NOT EXISTS assessments (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -152,10 +145,36 @@ async function initializeDatabase() {
         answers JSONB,
         created_at TIMESTAMP DEFAULT NOW()
       );
-    `);
 
-    // Create skills table
-    await pool.query(`
+      CREATE TABLE IF NOT EXISTS question_bank (
+        id SERIAL PRIMARY KEY,
+        grade INTEGER NOT NULL,
+        unit INTEGER,
+        topic VARCHAR(255),
+        question_type VARCHAR(50),
+        question TEXT NOT NULL,
+        options JSONB,
+        correct_answer JSONB,
+        explanation TEXT,
+        difficulty VARCHAR(20),
+        points INTEGER DEFAULT 10,
+        tags JSONB DEFAULT '[]',
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS classroom_sessions (
+        id SERIAL PRIMARY KEY,
+        session_code VARCHAR(10) UNIQUE,
+        teacher_id INTEGER REFERENCES users(id),
+        lesson_id INTEGER REFERENCES lessons(id),
+        current_slide INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT TRUE,
+        students JSONB DEFAULT '[]',
+        started_at TIMESTAMP DEFAULT NOW(),
+        ended_at TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS skills (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -166,10 +185,7 @@ async function initializeDatabase() {
         teacher_id INTEGER REFERENCES users(id),
         created_at TIMESTAMP DEFAULT NOW()
       );
-    `);
 
-    // Create skill_assignments table
-    await pool.query(`
       CREATE TABLE IF NOT EXISTS skill_assignments (
         id SERIAL PRIMARY KEY,
         skill_id INTEGER REFERENCES skills(id) ON DELETE CASCADE,
@@ -192,29 +208,40 @@ async function initializeDatabase() {
 initializeDatabase();
 
 // ============================================
-// CREATE UPLOADS DIRECTORY
+// CREATE REQUIRED DIRECTORIES
 // ============================================
-async function createUploadsDir() {
-  try {
-    await fs.mkdir('uploads', { recursive: true });
-    console.log('✅ Uploads directory ready');
-  } catch (error) {
-    console.error('❌ Error creating uploads directory:', error.message);
+async function createRequiredDirs() {
+  const dirs = [
+    'uploads',
+    'public',
+    'public/lessons',
+    'public/lessons/grade7',
+    'public/lessons/grade8',
+    'public/assets'
+  ];
+  
+  for (const dir of dirs) {
+    try {
+      await fs.mkdir(dir, { recursive: true });
+      console.log(`✅ Directory ready: ${dir}`);
+    } catch (error) {
+      console.error(`❌ Error creating directory ${dir}:`, error.message);
+    }
   }
 }
-createUploadsDir();
+createRequiredDirs();
 
 // ============================================
 // MIDDLEWARE CONFIGURATION
 // ============================================
-app.set('trust proxy', 1); // Trust Railway's proxy
+app.set('trust proxy', 1);
 
-// Security middleware
+// Security middleware with proper CSP for interactive lessons
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://accounts.google.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:", "*.googleusercontent.com"],
@@ -239,27 +266,27 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  credentials: true
 }));
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.static('public'));
-// Serve lesson files from the correct public/lessons directory
+
+// IMPORTANT: Serve static files with correct paths
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/lessons', express.static(path.join(__dirname, 'public', 'lessons')));
 app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // ============================================
-// SESSION CONFIGURATION WITH POSTGRESQL
+// SESSION CONFIGURATION
 // ============================================
 const sessionStore = new pgSession({
   pool: pool,
   tableName: 'session',
   createTableIfMissing: true,
-  pruneSessionInterval: 60 * 15, // Clean expired sessions every 15 minutes
-  ttl: 24 * 60 * 60 // 24 hours
+  pruneSessionInterval: 60 * 15,
+  ttl: 24 * 60 * 60
 });
 
 app.use(session({
@@ -267,11 +294,11 @@ app.use(session({
   secret: config.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  rolling: true, // Reset expiry on activity
+  rolling: true,
   cookie: {
     secure: config.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 24 * 60 * 60 * 1000,
     sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax'
   },
   name: 'qla.sid',
@@ -285,7 +312,7 @@ app.use(passport.session());
 // RATE LIMITING
 // ============================================
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: 'Too many requests, please try again later.',
   standardHeaders: true,
@@ -334,15 +361,6 @@ const upload = multer({
 // ============================================
 // GOOGLE OAUTH CONFIGURATION
 // ============================================
-console.log('🔐 OAuth Configuration Status:', {
-  clientId: config.GOOGLE_CLIENT_ID ? '✅ Set' : '❌ Missing',
-  clientSecret: config.GOOGLE_CLIENT_SECRET ? '✅ Set' : '❌ Missing',
-  environment: config.NODE_ENV,
-  callbackUrl: config.NODE_ENV === 'production'
-    ? 'https://qla.up.railway.app/auth/google/callback'
-    : 'http://localhost:3000/auth/google/callback'
-});
-
 if (config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
     clientID: config.GOOGLE_CLIENT_ID,
@@ -357,17 +375,13 @@ if (config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET) {
       const email = profile.emails?.[0]?.value;
       
       if (!email) {
-        console.error('❌ No email in Google profile');
         return done(null, false, { message: 'No email found' });
       }
 
       // Check email domain in production
       if (config.NODE_ENV === 'production' && !email.endsWith(config.ALLOWED_EMAIL_DOMAIN)) {
-        console.log(`❌ Rejected: ${email} (not ${config.ALLOWED_EMAIL_DOMAIN})`);
         return done(null, false, { message: `Only ${config.ALLOWED_EMAIL_DOMAIN} emails allowed` });
       }
-
-      console.log(`✅ Processing login for: ${email}`);
 
       // Check if user exists
       let result = await pool.query(
@@ -398,35 +412,22 @@ if (config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET) {
         );
         
         user = createResult.rows[0];
-        console.log(`✅ Created new ${role}: ${email}`);
       } else {
         // Update existing user
         user = result.rows[0];
         
-        // Update Google ID if missing (for users created before OAuth)
-        if (!user.google_id) {
-          await pool.query(
-            'UPDATE users SET google_id = $1, last_login = NOW() WHERE id = $2',
-            [profile.id, user.id]
-          );
-        } else {
-          await pool.query(
-            'UPDATE users SET last_login = NOW() WHERE id = $1',
-            [user.id]
-          );
-        }
-        
-        console.log(`✅ User logged in: ${email}`);
+        await pool.query(
+          'UPDATE users SET last_login = NOW() WHERE id = $1',
+          [user.id]
+        );
       }
 
       return done(null, user);
     } catch (error) {
-      console.error('❌ OAuth Strategy Error:', error);
+      console.error('OAuth Strategy Error:', error);
       return done(error, null);
     }
   }));
-} else {
-  console.error('❌ Google OAuth not configured - missing credentials');
 }
 
 passport.serializeUser((user, done) => {
@@ -483,155 +484,39 @@ app.get('/auth/google', (req, res, next) => {
 app.get('/auth/google/callback', (req, res, next) => {
   passport.authenticate('google', (err, user, info) => {
     if (err) {
-      console.error('❌ OAuth Callback Error:', err);
+      console.error('OAuth Callback Error:', err);
       return res.redirect(`/login-failed?error=${encodeURIComponent(err.message)}`);
     }
     
     if (!user) {
       const message = info?.message || 'Authentication failed';
-      console.error('❌ No user:', message);
       return res.redirect(`/login-failed?error=${encodeURIComponent(message)}`);
     }
     
     req.logIn(user, (loginErr) => {
       if (loginErr) {
-        console.error('❌ Login Error:', loginErr);
+        console.error('Login Error:', loginErr);
         return res.redirect(`/login-failed?error=${encodeURIComponent('Login failed')}`);
       }
       
-      console.log(`✅ Successful login: ${user.email}`);
       res.redirect('/');
     });
   })(req, res, next);
 });
 
 app.get('/auth/logout', (req, res) => {
-  const userEmail = req.user?.email;
   req.logout((err) => {
     if (err) {
-      console.error('❌ Logout error:', err);
+      console.error('Logout error:', err);
       return res.status(500).json({ error: 'Logout failed' });
     }
     req.session.destroy((err) => {
       if (err) {
-        console.error('❌ Session destroy error:', err);
+        console.error('Session destroy error:', err);
       }
-      console.log(`✅ User logged out: ${userEmail}`);
       res.redirect('/');
     });
   });
-});
-
-app.get('/login-failed', (req, res) => {
-  const error = req.query.error || 'Authentication failed';
-  res.status(401).send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Login Failed - QLA LMS</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-          display: flex; 
-          justify-content: center; 
-          align-items: center; 
-          min-height: 100vh; 
-          background: linear-gradient(135deg, #6C1D45 0%, #8B2450 100%);
-          padding: 20px;
-        }
-        .container { 
-          background: white; 
-          padding: 40px; 
-          border-radius: 16px; 
-          box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
-          max-width: 450px;
-          width: 100%;
-          text-align: center;
-        }
-        .icon {
-          width: 80px;
-          height: 80px;
-          margin: 0 auto 24px;
-          background: #ef4444;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 40px;
-        }
-        h1 { 
-          color: #1f2937; 
-          margin-bottom: 16px;
-          font-size: 28px;
-        }
-        .error-message {
-          background: #fef2f2;
-          color: #991b1b;
-          padding: 16px;
-          border-radius: 8px;
-          margin: 20px 0;
-          font-size: 14px;
-          word-break: break-word;
-        }
-        .btn { 
-          display: inline-block;
-          padding: 12px 24px; 
-          background: #6C1D45; 
-          color: white; 
-          text-decoration: none; 
-          border-radius: 8px;
-          font-weight: 500;
-          margin: 8px;
-          transition: background 0.2s;
-        }
-        .btn:hover {
-          background: #8B2450;
-        }
-        .help {
-          margin-top: 32px;
-          padding-top: 24px;
-          border-top: 1px solid #e5e7eb;
-          font-size: 14px;
-          color: #6b7280;
-          text-align: left;
-        }
-        .help ul {
-          margin-top: 12px;
-          padding-left: 20px;
-        }
-        .help li {
-          margin: 8px 0;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="icon">⚠️</div>
-        <h1>Login Failed</h1>
-        <div class="error-message">${error}</div>
-        
-        <div>
-          <a href="/" class="btn">Try Again</a>
-          <a href="mailto:support@qla.qfschools.qa" class="btn" style="background:#6b7280">Get Help</a>
-        </div>
-        
-        <div class="help">
-          <strong>Common solutions:</strong>
-          <ul>
-            <li>Use your @qla.qfschools.qa email address</li>
-            <li>Clear your browser cookies and cache</li>
-            <li>Try using Chrome or Firefox</li>
-            <li>Disable browser extensions</li>
-            <li>Contact IT support if the problem persists</li>
-          </ul>
-        </div>
-      </div>
-    </body>
-    </html>
-  `);
 });
 
 // ============================================
@@ -660,16 +545,11 @@ app.get('/api/auth/status', (req, res) => {
 // Health check
 app.get('/api/health', async (req, res) => {
   try {
-    // Check database connection
     const dbCheck = await pool.query('SELECT 1');
-    
     res.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: config.NODE_ENV,
-      database: dbCheck.rows.length > 0 ? 'connected' : 'error',
-      version: '1.0.0'
+      database: dbCheck.rows.length > 0 ? 'connected' : 'error'
     });
   } catch (error) {
     res.status(503).json({
@@ -679,43 +559,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// User Profile
-app.get('/api/users/profile', isAuthenticated, async (req, res) => {
-  try {
-    const result = await pool.query(
-      `SELECT u.*,
-        COUNT(DISTINCT lp.lesson_id) FILTER (WHERE lp.completed = true) as completed_lessons,
-        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
-        COALESCE(AVG(a.percentage), 0)::integer as average_score
-      FROM users u
-      LEFT JOIN lesson_progress lp ON u.id = lp.user_id
-      LEFT JOIN assessments a ON u.id = a.user_id
-      WHERE u.id = $1
-      GROUP BY u.id`,
-      [req.user.id]
-    );
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Profile error:', error);
-    res.status(500).json({ error: 'Failed to fetch profile' });
-  }
-});
-
-app.put('/api/users/profile', isAuthenticated, async (req, res) => {
-  try {
-    const { name, grade, bio } = req.body;
-    const result = await pool.query(
-      'UPDATE users SET name = $1, grade = $2, bio = $3, updated_at = NOW() WHERE id = $4 RETURNING *',
-      [name, grade, bio, req.user.id]
-    );
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Profile update error:', error);
-    res.status(500).json({ error: 'Failed to update profile' });
-  }
-});
-
-// Lessons
+// Lessons API - Enhanced for interactive features
 app.get('/api/lessons', isAuthenticated, async (req, res) => {
   try {
     const { grade, unit, status } = req.query;
@@ -814,125 +658,33 @@ app.get('/api/lessons/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/lessons', isTeacher, upload.single('video'), async (req, res) => {
-  try {
-    const {
-      title, grade, unit, lesson_order, content,
-      practice_problems, assessment_questions,
-      interactive_elements, video_url
-    } = req.body;
-
-    const videoPath = req.file ? `/uploads/${req.file.filename}` : video_url;
-
-    const result = await pool.query(
-      `INSERT INTO lessons (
-        title, grade, unit, lesson_order, content,
-        practice_problems, assessment_questions,
-        interactive_elements, video_url, teacher_id,
-        status, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
-      RETURNING *`,
-      [
-        title,
-        parseInt(grade),
-        parseInt(unit),
-        parseInt(lesson_order) || 0,
-        content,
-        practice_problems ? JSON.parse(practice_problems) : [],
-        assessment_questions ? JSON.parse(assessment_questions) : [],
-        interactive_elements ? JSON.parse(interactive_elements) : [],
-        videoPath,
-        req.user.id,
-        'draft'
-      ]
-    );
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Lesson creation error:', error);
-    res.status(500).json({ error: 'Failed to create lesson' });
-  }
-});
-
-app.put('/api/lessons/:id', isTeacher, upload.single('video'), async (req, res) => {
-  try {
-    const {
-      title, grade, unit, lesson_order, content,
-      practice_problems, assessment_questions,
-      interactive_elements, video_url, status
-    } = req.body;
-
-    const videoPath = req.file ? `/uploads/${req.file.filename}` : video_url;
-
-    const result = await pool.query(
-      `UPDATE lessons SET
-        title = $1, grade = $2, unit = $3, lesson_order = $4,
-        content = $5, practice_problems = $6, assessment_questions = $7,
-        interactive_elements = $8, video_url = $9, status = $10,
-        updated_at = NOW()
-      WHERE id = $11 AND teacher_id = $12
-      RETURNING *`,
-      [
-        title,
-        parseInt(grade),
-        parseInt(unit),
-        parseInt(lesson_order) || 0,
-        content,
-        practice_problems ? JSON.parse(practice_problems) : [],
-        assessment_questions ? JSON.parse(assessment_questions) : [],
-        interactive_elements ? JSON.parse(interactive_elements) : [],
-        videoPath,
-        status,
-        req.params.id,
-        req.user.id
-      ]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Lesson not found or unauthorized' });
-    }
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Lesson update error:', error);
-    res.status(500).json({ error: 'Failed to update lesson' });
-  }
-});
-
-app.delete('/api/lessons/:id', isTeacher, async (req, res) => {
-  try {
-    const result = await pool.query(
-      'DELETE FROM lessons WHERE id = $1 AND teacher_id = $2 RETURNING *',
-      [req.params.id, req.user.id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Lesson not found or unauthorized' });
-    }
-
-    res.json({ message: 'Lesson deleted successfully' });
-  } catch (error) {
-    console.error('Lesson deletion error:', error);
-    res.status(500).json({ error: 'Failed to delete lesson' });
-  }
-});
-
-// Progress Tracking
+// Enhanced progress tracking for interactive lessons
 app.post('/api/progress/lesson', isStudent, async (req, res) => {
   try {
-    const { lesson_id, progress, time_spent, video_progress, completed } = req.body;
+    const { 
+      lesson_id, 
+      progress, 
+      time_spent, 
+      video_progress, 
+      slide_progress,
+      interactions_completed,
+      completed 
+    } = req.body;
 
     const result = await pool.query(
       `INSERT INTO lesson_progress (
         user_id, lesson_id, progress, time_spent,
-        video_progress, completed, last_accessed
-      ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        video_progress, slide_progress, interactions_completed,
+        completed, last_accessed
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
       ON CONFLICT (user_id, lesson_id)
       DO UPDATE SET
         progress = GREATEST(lesson_progress.progress, $3),
         time_spent = lesson_progress.time_spent + $4,
         video_progress = GREATEST(lesson_progress.video_progress, $5),
-        completed = $6 OR lesson_progress.completed,
+        slide_progress = $6::jsonb,
+        interactions_completed = $7::jsonb,
+        completed = $8 OR lesson_progress.completed,
         last_accessed = NOW()
       RETURNING *`,
       [
@@ -941,6 +693,8 @@ app.post('/api/progress/lesson', isStudent, async (req, res) => {
         progress || 0,
         time_spent || 0,
         video_progress || 0,
+        JSON.stringify(slide_progress || {}),
+        JSON.stringify(interactions_completed || []),
         completed || false
       ]
     );
@@ -952,34 +706,230 @@ app.post('/api/progress/lesson', isStudent, async (req, res) => {
   }
 });
 
-app.get('/api/progress/overview', isAuthenticated, async (req, res) => {
+// Interactive lesson activity tracking
+app.post('/api/lessons/:id/interaction', isStudent, async (req, res) => {
   try {
-    const userId = req.user.role === 'teacher' && req.query.student_id
-      ? req.query.student_id
-      : req.user.id;
+    const { interaction_type, interaction_data, correct } = req.body;
+    const lesson_id = req.params.id;
     
-    const result = await pool.query(
-      `SELECT 
-        COUNT(DISTINCT lp.lesson_id) FILTER (WHERE lp.completed = true) as completed_lessons,
-        COUNT(DISTINCT l.id) as total_lessons,
-        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
-        COALESCE(AVG(a.percentage), 0)::integer as average_score,
-        COUNT(DISTINCT DATE(lp.last_accessed)) as study_days
-      FROM lessons l
-      LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id AND lp.user_id = $1
-      LEFT JOIN assessments a ON a.user_id = $1
-      WHERE l.status = 'published'`,
-      [userId]
+    // Log the interaction
+    await pool.query(
+      `INSERT INTO lesson_interactions 
+       (user_id, lesson_id, interaction_type, interaction_data, correct, created_at)
+       VALUES ($1, $2, $3, $4, $5, NOW())`,
+      [req.user.id, lesson_id, interaction_type, interaction_data, correct]
     );
-
-    res.json(result.rows[0]);
+    
+    // Update progress based on interaction
+    const progressUpdate = correct ? 10 : 5; // Award more progress for correct answers
+    
+    await pool.query(
+      `UPDATE lesson_progress 
+       SET progress = LEAST(progress + $1, 100),
+           interactions_completed = interactions_completed || $2::jsonb
+       WHERE user_id = $3 AND lesson_id = $4`,
+      [progressUpdate, JSON.stringify([interaction_data]), req.user.id, lesson_id]
+    );
+    
+    res.json({ success: true, progress_added: progressUpdate });
   } catch (error) {
-    console.error('Progress overview error:', error);
-    res.status(500).json({ error: 'Failed to fetch progress' });
+    console.error('Interaction tracking error:', error);
+    res.status(500).json({ error: 'Failed to track interaction' });
   }
 });
 
-// Assessments
+// Question Bank Routes
+app.get('/api/question-bank', isTeacher, async (req, res) => {
+  try {
+    const { grade, unit, topic, difficulty, question_type } = req.query;
+    let query = 'SELECT * FROM question_bank WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+    
+    if (grade) {
+      query += ` AND grade = $${paramIndex}`;
+      params.push(parseInt(grade));
+      paramIndex++;
+    }
+    if (unit) {
+      query += ` AND unit = $${paramIndex}`;
+      params.push(parseInt(unit));
+      paramIndex++;
+    }
+    if (topic) {
+      query += ` AND topic ILIKE $${paramIndex}`;
+      params.push(`%${topic}%`);
+      paramIndex++;
+    }
+    if (difficulty) {
+      query += ` AND difficulty = $${paramIndex}`;
+      params.push(difficulty);
+      paramIndex++;
+    }
+    if (question_type) {
+      query += ` AND question_type = $${paramIndex}`;
+      params.push(question_type);
+      paramIndex++;
+    }
+    
+    query += ' ORDER BY created_at DESC';
+    
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Question bank error:', error);
+    res.status(500).json({ error: 'Failed to fetch questions' });
+  }
+});
+
+app.post('/api/question-bank', isTeacher, async (req, res) => {
+  try {
+    const {
+      grade, unit, topic, question_type,
+      question, options, correct_answer,
+      explanation, difficulty, points, tags
+    } = req.body;
+    
+    const result = await pool.query(
+      `INSERT INTO question_bank 
+       (grade, unit, topic, question_type, question, options, 
+        correct_answer, explanation, difficulty, points, tags, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       RETURNING *`,
+      [
+        grade, unit, topic, question_type, question,
+        JSON.stringify(options), JSON.stringify(correct_answer),
+        explanation, difficulty, points || 10,
+        JSON.stringify(tags || []), req.user.id
+      ]
+    );
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Question creation error:', error);
+    res.status(500).json({ error: 'Failed to create question' });
+  }
+});
+
+// Classroom Session Routes for Live Teaching
+app.post('/api/classroom/start', isTeacher, async (req, res) => {
+  try {
+    const { lesson_id } = req.body;
+    const session_code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    const result = await pool.query(
+      `INSERT INTO classroom_sessions 
+       (session_code, teacher_id, lesson_id, current_slide, is_active, started_at)
+       VALUES ($1, $2, $3, 0, true, NOW())
+       RETURNING *`,
+      [session_code, req.user.id, lesson_id]
+    );
+    
+    // Emit to WebSocket
+    io.emit('classroom-started', {
+      session_code,
+      lesson_id,
+      teacher: req.user.name
+    });
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Classroom session error:', error);
+    res.status(500).json({ error: 'Failed to start classroom session' });
+  }
+});
+
+app.post('/api/classroom/join', isStudent, async (req, res) => {
+  try {
+    const { session_code } = req.body;
+    
+    const session = await pool.query(
+      'SELECT * FROM classroom_sessions WHERE session_code = $1 AND is_active = true',
+      [session_code]
+    );
+    
+    if (session.rows.length === 0) {
+      return res.status(404).json({ error: 'Session not found or inactive' });
+    }
+    
+    // Add student to session
+    const students = session.rows[0].students || [];
+    if (!students.find(s => s.id === req.user.id)) {
+      students.push({
+        id: req.user.id,
+        name: req.user.name,
+        joined_at: new Date()
+      });
+      
+      await pool.query(
+        'UPDATE classroom_sessions SET students = $1 WHERE id = $2',
+        [JSON.stringify(students), session.rows[0].id]
+      );
+    }
+    
+    // Emit to WebSocket
+    io.to(`classroom-${session_code}`).emit('student-joined', {
+      student: req.user.name,
+      total_students: students.length
+    });
+    
+    res.json({
+      session: session.rows[0],
+      lesson_id: session.rows[0].lesson_id
+    });
+  } catch (error) {
+    console.error('Join classroom error:', error);
+    res.status(500).json({ error: 'Failed to join classroom' });
+  }
+});
+
+app.post('/api/classroom/:session_code/control', isTeacher, async (req, res) => {
+  try {
+    const { action, data } = req.body;
+    const { session_code } = req.params;
+    
+    let updateQuery = '';
+    let updateParams = [];
+    
+    switch(action) {
+      case 'next_slide':
+        updateQuery = 'UPDATE classroom_sessions SET current_slide = current_slide + 1 WHERE session_code = $1';
+        updateParams = [session_code];
+        break;
+      case 'prev_slide':
+        updateQuery = 'UPDATE classroom_sessions SET current_slide = GREATEST(current_slide - 1, 0) WHERE session_code = $1';
+        updateParams = [session_code];
+        break;
+      case 'go_to_slide':
+        updateQuery = 'UPDATE classroom_sessions SET current_slide = $2 WHERE session_code = $1';
+        updateParams = [session_code, data.slide_number];
+        break;
+      case 'end_session':
+        updateQuery = 'UPDATE classroom_sessions SET is_active = false, ended_at = NOW() WHERE session_code = $1';
+        updateParams = [session_code];
+        break;
+    }
+    
+    if (updateQuery) {
+      await pool.query(updateQuery, updateParams);
+      
+      // Emit control action to all students
+      io.to(`classroom-${session_code}`).emit('classroom-control', {
+        action,
+        data
+      });
+      
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ error: 'Invalid action' });
+    }
+  } catch (error) {
+    console.error('Classroom control error:', error);
+    res.status(500).json({ error: 'Failed to control classroom' });
+  }
+});
+
+// Assessment submission with automatic grading
 app.post('/api/assessments/submit', isStudent, async (req, res) => {
   try {
     const { lesson_id, answers, time_taken } = req.body;
@@ -1054,30 +1004,35 @@ app.post('/api/assessments/submit', isStudent, async (req, res) => {
   }
 });
 
-app.get('/api/assessments/history', isAuthenticated, async (req, res) => {
+// Progress Overview
+app.get('/api/progress/overview', isAuthenticated, async (req, res) => {
   try {
     const userId = req.user.role === 'teacher' && req.query.student_id
       ? req.query.student_id
       : req.user.id;
     
     const result = await pool.query(
-      `SELECT a.*, l.title as lesson_title
-       FROM assessments a
-       JOIN lessons l ON a.lesson_id = l.id
-       WHERE a.user_id = $1
-       ORDER BY a.created_at DESC
-       LIMIT 20`,
+      `SELECT 
+        COUNT(DISTINCT lp.lesson_id) FILTER (WHERE lp.completed = true) as completed_lessons,
+        COUNT(DISTINCT l.id) as total_lessons,
+        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+        COALESCE(AVG(a.percentage), 0)::integer as average_score,
+        COUNT(DISTINCT DATE(lp.last_accessed)) as study_days
+      FROM lessons l
+      LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id AND lp.user_id = $1
+      LEFT JOIN assessments a ON a.user_id = $1
+      WHERE l.status = 'published'`,
       [userId]
     );
 
-    res.json(result.rows);
+    res.json(result.rows[0]);
   } catch (error) {
-    console.error('Assessment history error:', error);
-    res.status(500).json({ error: 'Failed to fetch history' });
+    console.error('Progress overview error:', error);
+    res.status(500).json({ error: 'Failed to fetch progress' });
   }
 });
 
-// Skills
+// Skills Management
 app.get('/api/skills', isAuthenticated, async (req, res) => {
   try {
     let query, params;
@@ -1099,10 +1054,11 @@ app.get('/api/skills', isAuthenticated, async (req, res) => {
         FROM skills s
         LEFT JOIN users u ON s.teacher_id = u.id
         LEFT JOIN skill_assignments sa ON s.id = sa.skill_id
+        WHERE s.teacher_id = $1
         GROUP BY s.id, u.name
         ORDER BY s.created_at DESC
       `;
-      params = [];
+      params = [req.user.id];
     }
 
     const result = await pool.query(query, params);
@@ -1113,81 +1069,7 @@ app.get('/api/skills', isAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/skills', isTeacher, async (req, res) => {
-  try {
-    const { name, description, grade, difficulty, due_date } = req.body;
-
-    const result = await pool.query(
-      `INSERT INTO skills (name, description, grade, difficulty, due_date, teacher_id, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())
-       RETURNING *`,
-      [name, description, grade, difficulty, due_date, req.user.id]
-    );
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Skill creation error:', error);
-    res.status(500).json({ error: 'Failed to create skill' });
-  }
-});
-
-app.post('/api/skills/:id/assign', isTeacher, async (req, res) => {
-  try {
-    const { student_ids } = req.body;
-    const skill_id = req.params.id;
-
-    if (!Array.isArray(student_ids) || student_ids.length === 0) {
-      return res.status(400).json({ error: 'No students selected' });
-    }
-
-    const assignments = await Promise.all(
-      student_ids.map(student_id =>
-        pool.query(
-          `INSERT INTO skill_assignments (skill_id, user_id, assigned_at, status)
-           VALUES ($1, $2, NOW(), 'assigned')
-           ON CONFLICT (skill_id, user_id) DO NOTHING
-           RETURNING *`,
-          [skill_id, student_id]
-        )
-      )
-    );
-
-    const assignedCount = assignments.filter(a => a.rows.length > 0).length;
-
-    res.json({
-      message: 'Skills assigned successfully',
-      assigned_count: assignedCount
-    });
-  } catch (error) {
-    console.error('Skill assignment error:', error);
-    res.status(500).json({ error: 'Failed to assign skill' });
-  }
-});
-
-app.put('/api/skills/:id/progress', isStudent, async (req, res) => {
-  try {
-    const { progress, status } = req.body;
-
-    const result = await pool.query(
-      `UPDATE skill_assignments
-       SET progress = $1, status = $2, updated_at = NOW()
-       WHERE skill_id = $3 AND user_id = $4
-       RETURNING *`,
-      [progress || 0, status || 'in_progress', req.params.id, req.user.id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Skill assignment not found' });
-    }
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Skill progress error:', error);
-    res.status(500).json({ error: 'Failed to update progress' });
-  }
-});
-
-// Analytics (Teacher only)
+// Analytics for Teachers
 app.get('/api/analytics/class', isTeacher, async (req, res) => {
   try {
     const { grade } = req.query;
@@ -1245,13 +1127,28 @@ app.get('/api/analytics/students', isTeacher, async (req, res) => {
 });
 
 // ============================================
-// WEBSOCKET HANDLERS
+// WEBSOCKET HANDLERS - Enhanced for classroom
 // ============================================
 io.on('connection', (socket) => {
   console.log('🔌 WebSocket connected:', socket.id);
 
   socket.on('join-lesson', (lessonId) => {
     socket.join(`lesson-${lessonId}`);
+    console.log(`Socket ${socket.id} joined lesson ${lessonId}`);
+  });
+
+  socket.on('join-classroom', (sessionCode) => {
+    socket.join(`classroom-${sessionCode}`);
+    console.log(`Socket ${socket.id} joined classroom ${sessionCode}`);
+  });
+
+  socket.on('lesson-interaction', (data) => {
+    // Broadcast interaction to teacher in real-time
+    io.to(`lesson-${data.lessonId}`).emit('student-interaction', {
+      studentId: data.studentId,
+      interaction: data.interaction,
+      timestamp: new Date()
+    });
   });
 
   socket.on('lesson-progress', (data) => {
@@ -1262,9 +1159,115 @@ io.on('connection', (socket) => {
     io.to(`lesson-${data.lessonId}`).emit('new-question', data);
   });
 
+  socket.on('classroom-response', (data) => {
+    // Student response in live classroom
+    io.to(`classroom-${data.sessionCode}`).emit('student-response', {
+      studentId: data.studentId,
+      response: data.response,
+      timestamp: new Date()
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log('🔌 WebSocket disconnected:', socket.id);
   });
+});
+
+// ============================================
+// CHECK AND SYNC LESSON FILES WITH DATABASE
+// ============================================
+async function syncLessonFiles() {
+  try {
+    console.log('📚 Syncing lesson files with database...');
+    
+    const grades = [7, 8];
+    
+    for (const grade of grades) {
+      const lessonDir = path.join(__dirname, 'public', 'lessons', `grade${grade}`);
+      
+      try {
+        const files = await fs.readdir(lessonDir);
+        
+        for (const file of files) {
+          if (file.endsWith('.html')) {
+            // Parse filename to get unit and lesson_order
+            const match = file.match(/lesson-(\d+)-(\d+)\.html/);
+            if (match) {
+              const unit = parseInt(match[1]);
+              const lesson_order = parseInt(match[2]);
+              
+              // Check if lesson exists in database
+              const existing = await pool.query(
+                'SELECT id FROM lessons WHERE grade = $1 AND unit = $2 AND lesson_order = $3',
+                [grade, unit, lesson_order]
+              );
+              
+              if (existing.rows.length === 0) {
+                // Read file content
+                const filePath = path.join(lessonDir, file);
+                const htmlContent = await fs.readFile(filePath, 'utf8');
+                
+                // Extract title from HTML if possible
+                const titleMatch = htmlContent.match(/<title>(.*?)<\/title>/i);
+                const title = titleMatch ? titleMatch[1] : `Grade ${grade} - Unit ${unit} - Lesson ${lesson_order}`;
+                
+                // Insert lesson into database
+                await pool.query(
+                  `INSERT INTO lessons (title, grade, unit, lesson_order, html_content, status, created_at)
+                   VALUES ($1, $2, $3, $4, $5, 'published', NOW())`,
+                  [title, grade, unit, lesson_order, htmlContent]
+                );
+                
+                console.log(`✅ Synced lesson file: ${file}`);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.log(`📁 Creating grade ${grade} lessons directory...`);
+        await fs.mkdir(lessonDir, { recursive: true });
+      }
+    }
+    
+    console.log('✅ Lesson sync complete');
+  } catch (error) {
+    console.error('❌ Lesson sync error:', error);
+  }
+}
+
+// Run sync on startup
+syncLessonFiles();
+
+// ============================================
+// SERVE LESSON FILES DIRECTLY
+// ============================================
+app.get('/api/lesson-file/:grade/:unit/:order', async (req, res) => {
+  try {
+    const { grade, unit, order } = req.params;
+    const filename = `lesson-${unit}-${order}.html`;
+    const filepath = path.join(__dirname, 'public', 'lessons', `grade${grade}`, filename);
+    
+    // Check if file exists
+    try {
+      await fs.access(filepath);
+      res.sendFile(filepath);
+    } catch {
+      // Try to get from database
+      const result = await pool.query(
+        'SELECT html_content FROM lessons WHERE grade = $1 AND unit = $2 AND lesson_order = $3',
+        [grade, unit, order]
+      );
+      
+      if (result.rows.length > 0 && result.rows[0].html_content) {
+        res.send(result.rows[0].html_content);
+      } else {
+        res.status(404).json({ error: 'Lesson file not found' });
+      }
+    }
+  } catch (error) {
+    console.error('Lesson file error:', error);
+    res.status(500).json({ error: 'Failed to load lesson file' });
+  }
 });
 
 // ============================================
@@ -1307,9 +1310,10 @@ server.listen(PORT, '0.0.0.0', () => {
 ║     URL:          ${config.CLIENT_URL.padEnd(40)}║
 ║     Database:     ${config.DATABASE_URL ? '✅ Connected'.padEnd(40) : '❌ Not configured'.padEnd(40)}║
 ║     Google OAuth: ${config.GOOGLE_CLIENT_ID ? '✅ Configured'.padEnd(40) : '❌ Not configured'.padEnd(40)}║
-║     Session Store: PostgreSQL                             ║
 ║                                                            ║
-║     Status: ✅ Ready                                      ║
+║     Interactive Features: ✅ Enabled                      ║
+║     Classroom Mode: ✅ Ready                              ║
+║     Question Bank: ✅ Active                              ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
   `);
