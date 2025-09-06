@@ -3,13 +3,13 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package.json only (not package-lock.json if it doesn't exist)
-COPY package.json ./
+# Copy package files
+COPY package*.json ./
 
 # Install all dependencies (including dev for build)
-RUN npm install
+RUN npm ci || npm install
 
-# Copy application files
+# Copy all application files
 COPY . .
 
 # Create necessary directories
@@ -27,20 +27,27 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copy package.json
-COPY package.json ./
+# Copy package files
+COPY package*.json ./
+
+# IMPORTANT: Copy scripts directory BEFORE npm install
+COPY scripts ./scripts
 
 # Install only production dependencies
-RUN npm install --omit=dev
+# The postinstall script will now work because scripts/setup-directories.js exists
+RUN npm ci --omit=dev || npm install --omit=dev
 
 # Copy application from builder
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/uploads ./uploads
+COPY --from=builder --chown=nodejs:nodejs /app/routes ./routes
+COPY --from=builder --chown=nodejs:nodejs /app/services ./services
+COPY --from=builder --chown=nodejs:nodejs /app/migrations ./migrations
 COPY --from=builder --chown=nodejs:nodejs /app/*.js ./
 COPY --from=builder --chown=nodejs:nodejs /app/*.html ./
 COPY --from=builder --chown=nodejs:nodejs /app/*.json ./
 
-# Create required directories if they don't exist
+# Ensure directories exist with correct permissions
 RUN mkdir -p uploads public/lessons/grade7 public/lessons/grade8 && \
     chown -R nodejs:nodejs uploads public
 
