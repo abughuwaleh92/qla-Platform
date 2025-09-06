@@ -14,106 +14,176 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const { Server } = require('socket.io');
 const http = require('http');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: process.env.CLIENT_URL || 'https://qla.up.railway.app',
     credentials: true
   }
 });
 
-// Database connection
+// ==========================================
+// ENVIRONMENT CONFIGURATION
+// ==========================================
+const CONFIG = {
+  // Server
+  PORT: process.env.PORT || 3000,
+  NODE_ENV: process.env.NODE_ENV || 'production',
+  CLIENT_URL: process.env.CLIENT_URL || 'https://qla.up.railway.app',
+  
+  // Google OAuth
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '467065313104-kl7djsf94og0lhll04fnt958jcq79v0q.apps.googleusercontent.com',
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+  GOOGLE_CALLBACK_URL: 'https://qla.up.railway.app/auth/google/callback',
+  
+  // Session
+  SESSION_SECRET: process.env.SESSION_SECRET || 'qla-lms-secret-key-change-this-in-production-2024',
+  
+  // Database
+  DATABASE_URL: process.env.DATABASE_URL,
+  
+  // Application
+  ALLOWED_EMAIL_DOMAIN: process.env.ALLOWED_EMAIL_DOMAIN || '@qla.qfschools.qa',
+  PASS_PERCENTAGE: parseInt(process.env.PASS_PERCENTAGE) || 70,
+  ASSESSMENT_TIME_LIMIT: parseInt(process.env.ASSESSMENT_TIME_LIMIT) || 15,
+  MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE) || 104857600 // 100MB
+};
+
+// ==========================================
+// DATABASE CONNECTION
+// ==========================================
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  connectionString: CONFIG.DATABASE_URL,
+  ssl: CONFIG.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
-// Middleware
+// Test database connection
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('❌ Error connecting to database:', err.stack);
+  } else {
+    console.log('✅ Connected to PostgreSQL database');
+    release();
+  }
+});
+
+// ==========================================
+// MIDDLEWARE CONFIGURATION
+// ==========================================
+
+// Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://accounts.google.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://api.vimeo.com", "https://www.youtube.com"],
-      frameSrc: ["'self'", "https://www.youtube.com", "https://player.vimeo.com"]
+      imgSrc: ["'self'", "data:", "https:", "blob:", "*.googleusercontent.com"],
+      connectSrc: ["'self'", "https://accounts.google.com", "https://qla.up.railway.app", "wss://qla.up.railway.app"],
+      frameSrc: ["'self'", "https://accounts.google.com", "https://www.youtube.com", "https://player.vimeo.com"]
     }
   }
 }));
+
 app.use(compression());
+
+// CORS configuration
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
+  origin: [CONFIG.CLIENT_URL, 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'qla-lms-secret-key-2024',
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Session configuration with better production settings
+const sessionConfig = {
+  secret: CONFIG.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  name: 'qla.sid',
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: CONFIG.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: CONFIG.NODE_ENV === 'production' ? 'none' : 'lax'
   }
-}));
+};
 
+// For Railway/production with PostgreSQL session store
+if (CONFIG.NODE_ENV === 'production' && CONFIG.DATABASE_URL) {
+  const pgSession = require('connect-pg-simple')(session);
+  sessionConfig.store = new pgSession({
+    pool: pool,
+    tableName: 'user_sessions',
+    createTableIfMissing: true
+  });
+}
+
+app.use(session(sessionConfig));
+
+// Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
 
-// File upload configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many authentication attempts, please try again later.'
 });
+app.use('/auth/', authLimiter);
 
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|pdf|mp4|webm|ogg|mp3|wav|doc|docx|ppt|pptx|xls|xlsx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Invalid file type'));
-    }
-  }
-});
-
-// Google OAuth configuration
+// ==========================================
+// GOOGLE OAUTH CONFIGURATION
+// ==========================================
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "/auth/google/callback"
+  clientID: CONFIG.GOOGLE_CLIENT_ID,
+  clientSecret: CONFIG.GOOGLE_CLIENT_SECRET,
+  callbackURL: CONFIG.GOOGLE_CALLBACK_URL,
+  proxy: true
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    // Check if email is from qla.qfschools.qa domain
-    const email = profile.emails[0].value;
-    if (!email.endsWith('@qla.qfschools.qa') && process.env.NODE_ENV === 'production') {
+    console.log('🔍 Google OAuth callback triggered');
+    console.log('Profile:', { id: profile.id, email: profile.emails[0]?.value });
+    
+    const email = profile.emails[0]?.value;
+    
+    if (!email) {
+      console.error('❌ No email found in Google profile');
+      return done(null, false, { message: 'No email found' });
+    }
+
+    // Check if email is from QLA domain
+    if (!email.endsWith(CONFIG.ALLOWED_EMAIL_DOMAIN) && CONFIG.NODE_ENV === 'production') {
+      console.log(`❌ Email ${email} not from allowed domain ${CONFIG.ALLOWED_EMAIL_DOMAIN}`);
       return done(null, false, { message: 'Only QLA email addresses are allowed' });
     }
 
@@ -121,30 +191,38 @@ passport.use(new GoogleStrategy({
     let user = await pool.query('SELECT * FROM users WHERE google_id = $1', [profile.id]);
     
     if (user.rows.length === 0) {
+      console.log('📝 Creating new user...');
+      // Determine role based on email
+      const role = email.includes('teacher') || email.includes('staff') || email.includes('admin') ? 'teacher' : 'student';
+      
       // Create new user
       const result = await pool.query(
         `INSERT INTO users (google_id, email, name, profile_picture, role, grade, created_at) 
-         VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING *`,
+         VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
+         RETURNING *`,
         [
           profile.id,
           email,
-          profile.displayName,
-          profile.photos[0]?.value,
-          email.includes('teacher') || email.includes('staff') ? 'teacher' : 'student',
-          7 // default grade
+          profile.displayName || profile.name?.givenName + ' ' + profile.name?.familyName || email.split('@')[0],
+          profile.photos?.[0]?.value || null,
+          role,
+          role === 'student' ? 7 : null
         ]
       );
       user = result;
+      console.log('✅ New user created:', email);
     } else {
-      // Update user info
+      console.log('✅ Existing user found:', email);
+      // Update last login
       await pool.query(
-        'UPDATE users SET name = $1, profile_picture = $2, last_login = NOW() WHERE google_id = $3',
-        [profile.displayName, profile.photos[0]?.value, profile.id]
+        'UPDATE users SET last_login = NOW(), profile_picture = $1 WHERE google_id = $2',
+        [profile.photos?.[0]?.value || user.rows[0].profile_picture, profile.id]
       );
     }
 
     return done(null, user.rows[0]);
   } catch (error) {
+    console.error('❌ Google OAuth error:', error);
     return done(error, null);
   }
 }));
@@ -162,12 +240,18 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// Authentication middleware
+// ==========================================
+// AUTHENTICATION MIDDLEWARE
+// ==========================================
 const isAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.status(401).json({ error: 'Not authenticated' });
+  if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+    res.status(401).json({ error: 'Not authenticated' });
+  } else {
+    res.redirect('/');
+  }
 };
 
 const isTeacher = (req, res, next) => {
@@ -184,25 +268,69 @@ const isStudent = (req, res, next) => {
   res.status(403).json({ error: 'Student access required' });
 };
 
-// Auth Routes
+// ==========================================
+// FILE UPLOAD CONFIGURATION
+// ==========================================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: CONFIG.MAX_FILE_SIZE },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|mp4|webm|ogg|mp3|wav|doc|docx|ppt|pptx|xls|xlsx|html/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
+
+// ==========================================
+// AUTHENTICATION ROUTES
+// ==========================================
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
+  })
 );
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { 
+    failureRedirect: '/?error=auth_failed',
+    successRedirect: '/',
+    failureMessage: true
+  }),
   (req, res) => {
-    // Successful authentication
-    res.redirect('/dashboard');
+    console.log('✅ Authentication successful, redirecting to dashboard');
+    res.redirect('/');
   }
 );
 
 app.get('/auth/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
+      console.error('Logout error:', err);
       return res.status(500).json({ error: 'Error logging out' });
     }
-    res.redirect('/');
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Session destroy error:', err);
+      }
+      res.redirect('/');
+    });
   });
 });
 
@@ -224,14 +352,29 @@ app.get('/api/auth/status', (req, res) => {
   }
 });
 
-// User Routes
+// ==========================================
+// API ROUTES
+// ==========================================
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: CONFIG.NODE_ENV,
+    app_url: CONFIG.CLIENT_URL
+  });
+});
+
+// User Profile Routes
 app.get('/api/users/profile', isAuthenticated, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT u.*, 
               COUNT(DISTINCT lp.lesson_id) as completed_lessons,
-              SUM(lp.time_spent) as total_study_time,
-              AVG(a.score) as average_score
+              COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+              COALESCE(AVG(a.percentage), 0) as average_score
        FROM users u
        LEFT JOIN lesson_progress lp ON u.id = lp.user_id AND lp.completed = true
        LEFT JOIN assessments a ON u.id = a.user_id
@@ -241,6 +384,7 @@ app.get('/api/users/profile', isAuthenticated, async (req, res) => {
     );
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Profile fetch error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -254,6 +398,7 @@ app.put('/api/users/profile', isAuthenticated, async (req, res) => {
     );
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Profile update error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -265,7 +410,7 @@ app.get('/api/lessons', isAuthenticated, async (req, res) => {
     let query = `
       SELECT l.*, u.name as teacher_name,
              COUNT(DISTINCT lp.user_id) as student_count,
-             AVG(lp.progress) as avg_progress
+             COALESCE(AVG(lp.progress), 0) as avg_progress
       FROM lessons l
       LEFT JOIN users u ON l.teacher_id = u.id
       LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id
@@ -288,13 +433,40 @@ app.get('/api/lessons', isAuthenticated, async (req, res) => {
       query += ` AND l.status = $${paramCount}`;
       params.push(status);
       paramCount++;
+    } else {
+      // Default to showing only published lessons to students
+      if (req.user.role === 'student') {
+        query += ` AND l.status = 'published'`;
+      }
     }
 
     query += ' GROUP BY l.id, u.name ORDER BY l.grade, l.unit, l.lesson_order';
     
     const result = await pool.query(query, params);
+    
+    // Add user progress for each lesson if user is a student
+    if (req.user.role === 'student') {
+      const lessonIds = result.rows.map(l => l.id);
+      if (lessonIds.length > 0) {
+        const progressResult = await pool.query(
+          'SELECT * FROM lesson_progress WHERE user_id = $1 AND lesson_id = ANY($2)',
+          [req.user.id, lessonIds]
+        );
+        
+        const progressMap = {};
+        progressResult.rows.forEach(p => {
+          progressMap[p.lesson_id] = p;
+        });
+        
+        result.rows.forEach(lesson => {
+          lesson.user_progress = progressMap[lesson.id] || null;
+        });
+      }
+    }
+    
     res.json(result.rows);
   } catch (error) {
+    console.error('Lessons fetch error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -314,16 +486,17 @@ app.get('/api/lessons/:id', isAuthenticated, async (req, res) => {
     }
 
     // Get user's progress for this lesson
-    const progress = await pool.query(
-      'SELECT * FROM lesson_progress WHERE lesson_id = $1 AND user_id = $2',
-      [req.params.id, req.user.id]
-    );
+    if (req.user.role === 'student') {
+      const progress = await pool.query(
+        'SELECT * FROM lesson_progress WHERE lesson_id = $1 AND user_id = $2',
+        [req.params.id, req.user.id]
+      );
+      lesson.rows[0].user_progress = progress.rows[0] || null;
+    }
 
-    res.json({
-      ...lesson.rows[0],
-      user_progress: progress.rows[0] || null
-    });
+    res.json(lesson.rows[0]);
   } catch (error) {
+    console.error('Lesson fetch error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -347,16 +520,17 @@ app.post('/api/lessons', isTeacher, upload.single('video'), async (req, res) => 
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
       RETURNING *`,
       [
-        title, grade, unit, lesson_order, content,
-        JSON.parse(practice_problems || '[]'),
-        JSON.parse(assessment_questions || '[]'),
-        JSON.parse(interactive_elements || '[]'),
+        title, grade, unit, lesson_order || 0, content,
+        practice_problems ? JSON.parse(practice_problems) : [],
+        assessment_questions ? JSON.parse(assessment_questions) : [],
+        interactive_elements ? JSON.parse(interactive_elements) : [],
         videoPath, req.user.id, 'draft'
       ]
     );
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Lesson creation error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -380,10 +554,10 @@ app.put('/api/lessons/:id', isTeacher, upload.single('video'), async (req, res) 
       WHERE id = $11 AND teacher_id = $12
       RETURNING *`,
       [
-        title, grade, unit, lesson_order, content,
-        JSON.parse(practice_problems || '[]'),
-        JSON.parse(assessment_questions || '[]'),
-        JSON.parse(interactive_elements || '[]'),
+        title, grade, unit, lesson_order || 0, content,
+        practice_problems ? JSON.parse(practice_problems) : [],
+        assessment_questions ? JSON.parse(assessment_questions) : [],
+        interactive_elements ? JSON.parse(interactive_elements) : [],
         videoPath, status, req.params.id, req.user.id
       ]
     );
@@ -394,6 +568,7 @@ app.put('/api/lessons/:id', isTeacher, upload.single('video'), async (req, res) 
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Lesson update error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -411,6 +586,7 @@ app.delete('/api/lessons/:id', isTeacher, async (req, res) => {
 
     res.json({ message: 'Lesson deleted successfully' });
   } catch (error) {
+    console.error('Lesson deletion error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -427,28 +603,32 @@ app.post('/api/progress/lesson', isStudent, async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
       ON CONFLICT (user_id, lesson_id)
       DO UPDATE SET
-        progress = $3, time_spent = lesson_progress.time_spent + $4,
-        video_progress = $5, completed = $6, last_accessed = NOW()
+        progress = GREATEST(lesson_progress.progress, $3),
+        time_spent = lesson_progress.time_spent + $4,
+        video_progress = GREATEST(lesson_progress.video_progress, $5),
+        completed = $6 OR lesson_progress.completed,
+        last_accessed = NOW()
       RETURNING *`,
-      [req.user.id, lesson_id, progress, time_spent, video_progress, completed]
+      [req.user.id, lesson_id, progress || 0, time_spent || 0, video_progress || 0, completed || false]
     );
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Progress update error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get('/api/progress/overview', isAuthenticated, async (req, res) => {
   try {
-    const userId = req.user.role === 'teacher' ? req.query.student_id : req.user.id;
+    const userId = req.user.role === 'teacher' && req.query.student_id ? req.query.student_id : req.user.id;
     
     const progress = await pool.query(
       `SELECT 
-        COUNT(DISTINCT lp.lesson_id) as completed_lessons,
+        COUNT(DISTINCT lp.lesson_id) FILTER (WHERE lp.completed = true) as completed_lessons,
         COUNT(DISTINCT l.id) as total_lessons,
-        SUM(lp.time_spent) as total_study_time,
-        AVG(a.score) as average_score,
+        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+        COALESCE(AVG(a.percentage), 0) as average_score,
         COUNT(DISTINCT DATE(lp.last_accessed)) as study_days
       FROM lessons l
       LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id AND lp.user_id = $1
@@ -459,6 +639,7 @@ app.get('/api/progress/overview', isAuthenticated, async (req, res) => {
 
     res.json(progress.rows[0]);
   } catch (error) {
+    console.error('Progress overview error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -478,7 +659,7 @@ app.post('/api/assessments/submit', isStudent, async (req, res) => {
       return res.status(404).json({ error: 'Lesson not found' });
     }
 
-    const questions = lesson.rows[0].assessment_questions;
+    const questions = lesson.rows[0].assessment_questions || [];
     let score = 0;
     let totalPoints = 0;
     const results = [];
@@ -498,8 +679,8 @@ app.post('/api/assessments/submit', isStudent, async (req, res) => {
       });
     });
 
-    const percentage = Math.round((score / totalPoints) * 100);
-    const passed = percentage >= 70;
+    const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
+    const passed = percentage >= CONFIG.PASS_PERCENTAGE;
 
     // Save assessment result
     const result = await pool.query(
@@ -508,7 +689,7 @@ app.post('/api/assessments/submit', isStudent, async (req, res) => {
         percentage, passed, time_taken, answers, created_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
       RETURNING *`,
-      [req.user.id, lesson_id, score, totalPoints, percentage, passed, time_taken, JSON.stringify(results)]
+      [req.user.id, lesson_id, score, totalPoints, percentage, passed, time_taken, results]
     );
 
     // Update lesson progress if passed
@@ -527,13 +708,14 @@ app.post('/api/assessments/submit', isStudent, async (req, res) => {
       passed
     });
   } catch (error) {
+    console.error('Assessment submission error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get('/api/assessments/history', isAuthenticated, async (req, res) => {
   try {
-    const userId = req.user.role === 'teacher' ? req.query.student_id : req.user.id;
+    const userId = req.user.role === 'teacher' && req.query.student_id ? req.query.student_id : req.user.id;
     
     const assessments = await pool.query(
       `SELECT a.*, l.title as lesson_title
@@ -547,6 +729,7 @@ app.get('/api/assessments/history', isAuthenticated, async (req, res) => {
 
     res.json(assessments.rows);
   } catch (error) {
+    console.error('Assessment history error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -554,24 +737,35 @@ app.get('/api/assessments/history', isAuthenticated, async (req, res) => {
 // Skills Routes
 app.get('/api/skills', isAuthenticated, async (req, res) => {
   try {
-    let query = `
-      SELECT s.*, u.name as teacher_name,
-             COUNT(DISTINCT sa.user_id) as assigned_count
-      FROM skills s
-      LEFT JOIN users u ON s.teacher_id = u.id
-      LEFT JOIN skill_assignments sa ON s.id = sa.skill_id
-    `;
+    let query;
+    let params = [];
 
     if (req.user.role === 'student') {
-      query += ` JOIN skill_assignments sa2 ON s.id = sa2.skill_id
-                 WHERE sa2.user_id = ${req.user.id}`;
+      query = `
+        SELECT s.*, u.name as teacher_name, sa.status, sa.progress
+        FROM skills s
+        LEFT JOIN users u ON s.teacher_id = u.id
+        JOIN skill_assignments sa ON s.id = sa.skill_id
+        WHERE sa.user_id = $1
+        ORDER BY s.created_at DESC
+      `;
+      params = [req.user.id];
+    } else {
+      query = `
+        SELECT s.*, u.name as teacher_name,
+               COUNT(DISTINCT sa.user_id) as assigned_count
+        FROM skills s
+        LEFT JOIN users u ON s.teacher_id = u.id
+        LEFT JOIN skill_assignments sa ON s.id = sa.skill_id
+        GROUP BY s.id, u.name
+        ORDER BY s.created_at DESC
+      `;
     }
 
-    query += ' GROUP BY s.id, u.name ORDER BY s.created_at DESC';
-
-    const result = await pool.query(query);
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
+    console.error('Skills fetch error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -591,6 +785,7 @@ app.post('/api/skills', isTeacher, async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Skill creation error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -617,6 +812,7 @@ app.post('/api/skills/:id/assign', isTeacher, async (req, res) => {
       assigned_count: assignments.filter(a => a.rows.length > 0).length
     });
   } catch (error) {
+    console.error('Skill assignment error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -639,6 +835,7 @@ app.put('/api/skills/:id/progress', isStudent, async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Skill progress update error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -647,26 +844,42 @@ app.put('/api/skills/:id/progress', isStudent, async (req, res) => {
 app.get('/api/analytics/class', isTeacher, async (req, res) => {
   try {
     const { grade, date_from, date_to } = req.query;
-
-    const analytics = await pool.query(
-      `SELECT 
+    let query = `
+      SELECT 
         COUNT(DISTINCT u.id) as total_students,
-        AVG(lp.progress) as avg_progress,
-        SUM(lp.time_spent) as total_study_time,
+        COALESCE(AVG(lp.progress), 0) as avg_progress,
+        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
         COUNT(DISTINCT lp.lesson_id) as lessons_accessed,
-        AVG(a.score) as avg_assessment_score
+        COALESCE(AVG(a.percentage), 0) as avg_assessment_score
       FROM users u
       LEFT JOIN lesson_progress lp ON u.id = lp.user_id
       LEFT JOIN assessments a ON u.id = a.user_id
       WHERE u.role = 'student'
-      ${grade ? 'AND u.grade = $1' : ''}
-      ${date_from ? 'AND lp.last_accessed >= $2' : ''}
-      ${date_to ? 'AND lp.last_accessed <= $3' : ''}`,
-      [grade, date_from, date_to].filter(Boolean)
-    );
+    `;
+    
+    const params = [];
+    let paramCount = 1;
 
+    if (grade) {
+      query += ` AND u.grade = $${paramCount}`;
+      params.push(grade);
+      paramCount++;
+    }
+    if (date_from) {
+      query += ` AND lp.last_accessed >= $${paramCount}`;
+      params.push(date_from);
+      paramCount++;
+    }
+    if (date_to) {
+      query += ` AND lp.last_accessed <= $${paramCount}`;
+      params.push(date_to);
+      paramCount++;
+    }
+
+    const analytics = await pool.query(query, params);
     res.json(analytics.rows[0]);
   } catch (error) {
+    console.error('Analytics error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -676,31 +889,33 @@ app.get('/api/analytics/students', isTeacher, async (req, res) => {
     const students = await pool.query(
       `SELECT 
         u.id, u.name, u.email, u.grade,
-        COUNT(DISTINCT lp.lesson_id) as completed_lessons,
-        AVG(lp.progress) as avg_progress,
-        SUM(lp.time_spent) as total_study_time,
-        AVG(a.score) as avg_score,
+        COUNT(DISTINCT lp.lesson_id) FILTER (WHERE lp.completed = true) as completed_lessons,
+        COALESCE(AVG(lp.progress), 0) as avg_progress,
+        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+        COALESCE(AVG(a.percentage), 0) as avg_score,
         MAX(lp.last_accessed) as last_active
       FROM users u
       LEFT JOIN lesson_progress lp ON u.id = lp.user_id
       LEFT JOIN assessments a ON u.id = a.user_id
       WHERE u.role = 'student'
       GROUP BY u.id
-      ORDER BY avg_progress DESC`
+      ORDER BY avg_progress DESC NULLS LAST`
     );
 
     res.json(students.rows);
   } catch (error) {
+    console.error('Student analytics error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // WebSocket for real-time features
 io.on('connection', (socket) => {
-  console.log('New WebSocket connection');
+  console.log('New WebSocket connection:', socket.id);
 
   socket.on('join-lesson', (lessonId) => {
     socket.join(`lesson-${lessonId}`);
+    console.log(`Socket ${socket.id} joined lesson-${lessonId}`);
   });
 
   socket.on('lesson-progress', (data) => {
@@ -712,28 +927,50 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('WebSocket disconnected');
+    console.log('WebSocket disconnected:', socket.id);
   });
 });
 
-// Serve static files for production
+// ==========================================
+// SERVE STATIC FILES & FALLBACK
+// ==========================================
+
+// Serve index.html for all non-API routes (SPA)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Error handling middleware
+// ==========================================
+// ERROR HANDLING
+// ==========================================
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err.stack);
   res.status(500).json({ 
-    error: process.env.NODE_ENV === 'production' 
+    error: CONFIG.NODE_ENV === 'production' 
       ? 'Something went wrong!' 
-      : err.message 
+      : err.message,
+    stack: CONFIG.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// ==========================================
+// START SERVER
+// ==========================================
+const PORT = CONFIG.PORT;
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+    ============================================
+    🚀 QLA LMS Server Started Successfully!
+    ============================================
+    📍 Environment: ${CONFIG.NODE_ENV}
+    🌐 Server URL: ${CONFIG.CLIENT_URL}
+    🔌 Port: ${PORT}
+    🔐 Google OAuth: ${CONFIG.GOOGLE_CLIENT_ID ? '✅ Configured' : '❌ Not configured'}
+    💾 Database: ${CONFIG.DATABASE_URL ? '✅ Connected' : '❌ Not connected'}
+    📧 Domain: ${CONFIG.ALLOWED_EMAIL_DOMAIN}
+    ============================================
+  `);
 });
 
 module.exports = app;
