@@ -5,6 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "railway-fix": "node railway-fix.js",
+    "postinstall": "node railway-fix.js"
     "dev": "nodemon server.js",
     "build": "npm run setup:dirs && npm run migrate",
     "setup": "npm run setup:dirs && npm run migrate && npm run verify",
@@ -211,10 +213,4 @@
   }
 }
 
-{
-  "scripts": {
-    "start": "node server.js",
-    "railway-fix": "node railway-fix.js",
-    "postinstall": "node railway-fix.js"
-  }
-}
+
