@@ -1,202 +1,1031 @@
-'use strict';
-
-/**
- * Minimal, production-safe Google OAuth service for Railway.
- * - Absolute callback URL to prevent redirect_uri_mismatch
- * - trust proxy + HTTPS redirect for correct protocol behind Railway
- * - Session-based login with domain gating to qla.qfschools.qa
- *
- * Dependencies (install if needed):
- *   npm i express express-session passport passport-google-oauth20 cookie-parser
- */
-
 const express = require('express');
 const session = require('express-session');
-const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-
-////////////////////////////////////////////////////////////////////////////////
-// Configuration (env-first, with sane defaults for your deployment)
-////////////////////////////////////////////////////////////////////////////////
-
-const APP_URL = process.env.APP_URL || 'https://qla.up.railway.app'; // <-- your Railway domain
-const PORT = process.env.PORT || 8080;
-
-const GOOGLE_CLIENT_ID =
-  process.env.GOOGLE_CLIENT_ID ||
-  '467065313104-kl7djsf94og0lhll04fnt958jcq79v0q.apps.googleusercontent.com';
-
-const GOOGLE_CLIENT_SECRET =
-  process.env.GOOGLE_CLIENT_SECRET ||
-  // NOTE: for safety, prefer setting GOOGLE_CLIENT_SECRET in Railway variables.
-  // If you leave a literal secret here while testing, ROTATE it afterwards.
-  'REPLACE_WITH_GOOGLE_CLIENT_SECRET';
-
-const GOOGLE_CALLBACK_URL =
-  process.env.GOOGLE_CALLBACK_URL ||
-  `${APP_URL}/auth/google/callback`; // <-- absolute and must match Google Console exactly
-
-const ALLOWED_HOSTED_DOMAIN = process.env.ALLOWED_HOSTED_DOMAIN || 'qla.qfschools.qa';
-
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  'replace-me-with-a-long-random-secret-and-do-not-commit';
-
-////////////////////////////////////////////////////////////////////////////////
-// App & Middleware
-////////////////////////////////////////////////////////////////////////////////
+const { Pool } = require('pg');
+const path = require('path');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const { Server } = require('socket.io');
+const http = require('http');
+const fs = require('fs').promises;
+require('dotenv').config();
 
 const app = express();
-
-// Railway is behind a proxy; this ensures req.protocol === 'https' when appropriate
-app.set('trust proxy', 1);
-
-// Optionally force HTTPS (prevents accidental http callback regeneration)
-app.use((req, res, next) => {
-  // Respect Railway's X-Forwarded-Proto
-  const xfProto = (req.headers['x-forwarded-proto'] || '').toLowerCase();
-  if (xfProto && xfProto !== 'https') {
-    const url = `https://${req.headers.host}${req.url}`;
-    return res.redirect(301, url);
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'https://qla.up.railway.app',
+    credentials: true
   }
-  return next();
 });
 
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// ============================================
+// DATABASE CONNECTION
+// ============================================
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
 
-// Session (cookie-based). For production over HTTPS only:
-app.use(
-  session({
-    name: 'qla.sid',
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: true, // requires HTTPS (we enforced it above)
-      maxAge: 1000 * 60 * 60 * 8, // 8 hours
-    },
-  })
-);
+// Test database connection
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('❌ Database connection error:', err.stack);
+  } else {
+    console.log('✅ Database connected successfully');
+    release();
+  }
+});
+
+// ============================================
+// MIDDLEWARE CONFIGURATION
+// ============================================
+app.set('trust proxy', 1); // Trust Railway's proxy
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://accounts.google.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "*.googleusercontent.com"],
+      connectSrc: ["'self'", "https://api.vimeo.com", "https://www.youtube.com", "https://accounts.google.com"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://player.vimeo.com", "https://accounts.google.com"]
+    }
+  }
+}));
+
+app.use(compression());
+app.use(cors({
+  origin: ['https://qla.up.railway.app', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
+
+// ============================================
+// SESSION CONFIGURATION
+// ============================================
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'qla-lms-secret-key-' + Date.now(),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  },
+  name: 'qla.sid' // Custom session name
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-////////////////////////////////////////////////////////////////////////////////
-// Passport: Google OAuth 2.0
-////////////////////////////////////////////////////////////////////////////////
+// ============================================
+// RATE LIMITING
+// ============================================
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // limit auth attempts
+  message: 'Too many authentication attempts, please try again later.'
+});
+
+app.use('/api/', limiter);
+app.use('/auth/', authLimiter);
+
+// ============================================
+// FILE UPLOAD CONFIGURATION
+// ============================================
+// Create uploads directory if it doesn't exist
+const createUploadsDir = async () => {
+  try {
+    await fs.mkdir('uploads', { recursive: true });
+    console.log('✅ Uploads directory ready');
+  } catch (error) {
+    console.error('❌ Error creating uploads directory:', error);
+  }
+};
+createUploadsDir();
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { 
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 100 * 1024 * 1024 // 100MB default
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|mp4|webm|ogg|mp3|wav|doc|docx|ppt|pptx|xls|xlsx/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Allowed types: images, videos, documents'));
+    }
+  }
+});
+
+// ============================================
+// GOOGLE OAUTH STRATEGY
+// ============================================
+const GOOGLE_CALLBACK_URL = process.env.NODE_ENV === 'production'
+  ? 'https://qla.up.railway.app/auth/google/callback'
+  : 'http://localhost:3000/auth/google/callback';
+
+console.log('🔐 Google OAuth Callback URL:', GOOGLE_CALLBACK_URL);
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: GOOGLE_CALLBACK_URL,
+  proxy: true // Important for Railway
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    // Extract email
+    const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+    
+    if (!email) {
+      return done(null, false, { message: 'No email found in Google profile' });
+    }
+
+    // Check if email is from QLA domain (only in production)
+    const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN || '@qla.qfschools.qa';
+    if (process.env.NODE_ENV === 'production' && !email.endsWith(allowedDomain)) {
+      console.log(`❌ Rejected login attempt from: ${email}`);
+      return done(null, false, { message: `Only ${allowedDomain} email addresses are allowed` });
+    }
+
+    console.log(`✅ Processing login for: ${email}`);
+
+    // Check if user exists
+    let userResult = await pool.query('SELECT * FROM users WHERE google_id = $1', [profile.id]);
+    
+    if (userResult.rows.length === 0) {
+      // Determine role based on email
+      let role = 'student';
+      let grade = 7; // default grade
+      
+      if (email.includes('teacher') || email.includes('staff') || email.includes('admin')) {
+        role = 'teacher';
+        grade = null;
+      }
+
+      // Create new user
+      const insertResult = await pool.query(
+        `INSERT INTO users (google_id, email, name, profile_picture, role, grade, created_at, last_login) 
+         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) 
+         RETURNING *`,
+        [
+          profile.id,
+          email,
+          profile.displayName || profile.name?.givenName || 'User',
+          profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+          role,
+          grade
+        ]
+      );
+      
+      userResult = insertResult;
+      console.log(`✅ Created new user: ${email} (${role})`);
+    } else {
+      // Update existing user's last login
+      await pool.query(
+        'UPDATE users SET last_login = NOW(), profile_picture = $2 WHERE id = $1',
+        [userResult.rows[0].id, profile.photos && profile.photos[0] ? profile.photos[0].value : userResult.rows[0].profile_picture]
+      );
+      console.log(`✅ Updated existing user: ${email}`);
+    }
+
+    return done(null, userResult.rows[0]);
+  } catch (error) {
+    console.error('❌ OAuth Strategy Error:', error);
+    return done(error, null);
+  }
+}));
 
 passport.serializeUser((user, done) => {
-  // Keep the session small; store only minimal fields
-  done(null, { id: user.id, email: user.email, name: user.name, picture: user.picture });
+  done(null, user.id);
 });
 
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
+passport.deserializeUser(async (id, done) => {
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    done(null, result.rows[0]);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: GOOGLE_CALLBACK_URL,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        // Hosted domain claim appears only for Workspace accounts
-        const hd = profile._json && profile._json.hd ? profile._json.hd.toLowerCase() : '';
-        if (ALLOWED_HOSTED_DOMAIN && hd !== ALLOWED_HOSTED_DOMAIN.toLowerCase()) {
-          return done(null, false, { message: `Unauthorized domain: ${hd}` });
-        }
+// ============================================
+// AUTHENTICATION MIDDLEWARE
+// ============================================
+const isAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'Not authenticated. Please login.' });
+};
 
-        // Build a minimal user object
-        const user = {
-          id: profile.id,
-          email: profile.emails && profile.emails[0] ? profile.emails[0].value : '',
-          name: profile.displayName || '',
-          picture:
-            (profile.photos && profile.photos[0] && profile.photos[0].value) || undefined,
-          hd,
-        };
+const isTeacher = (req, res, next) => {
+  if (req.isAuthenticated() && req.user.role === 'teacher') {
+    return next();
+  }
+  res.status(403).json({ error: 'Teacher access required' });
+};
 
-        // TODO: Optionally look up / create user in DB here.
+const isStudent = (req, res, next) => {
+  if (req.isAuthenticated() && req.user.role === 'student') {
+    return next();
+  }
+  res.status(403).json({ error: 'Student access required' });
+};
 
-        return done(null, user);
-      } catch (err) {
-        return done(err);
-      }
-    }
-  )
-);
-
-////////////////////////////////////////////////////////////////////////////////
-// Auth routes
-////////////////////////////////////////////////////////////////////////////////
-
-function ensureAuth(req, res, next) {
-  if (req.isAuthenticated && req.isAuthenticated()) return next();
-  return res.status(401).json({ ok: false, error: 'Not authenticated' });
-}
-
-app.get('/healthz', (_req, res) => res.json({ ok: true }));
-
-// Kick off OAuth. `hd` narrows the chooser; we still enforce domain in verify above.
-app.get(
-  '/auth/google',
-  passport.authenticate('google', {
+// ============================================
+// AUTHENTICATION ROUTES
+// ============================================
+app.get('/auth/google',
+  passport.authenticate('google', { 
     scope: ['profile', 'email'],
-    prompt: 'select_account',
-    hd: ALLOWED_HOSTED_DOMAIN, // hint only
+    prompt: 'select_account' // Always show account selection
   })
 );
 
-// Callback must match GOOGLE_CALLBACK_URL exactly
-app.get(
-  '/auth/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: '/auth/failure',
-    keepSessionInfo: true,
+app.get('/auth/google/callback',
+  passport.authenticate('google', { 
+    failureRedirect: '/login-failed',
+    failureMessage: true 
   }),
   (req, res) => {
-    // Success → redirect to your app’s landing/dashboard
+    // Successful authentication
+    console.log(`✅ User logged in: ${req.user.email}`);
     res.redirect('/');
   }
 );
 
-app.get('/auth/failure', (req, res) => {
-  res
-    .status(401)
-    .send(
-      `<h1>Sign-in failed</h1><p>There was a problem signing you in with Google.</p>`
-    );
+app.get('/login-failed', (req, res) => {
+  res.status(401).send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Login Failed</title>
+      <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f5f5f5; }
+        .error-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
+        h1 { color: #dc2626; }
+        a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #6C1D45; color: white; text-decoration: none; border-radius: 5px; }
+      </style>
+    </head>
+    <body>
+      <div class="error-box">
+        <h1>Login Failed</h1>
+        <p>Only @qla.qfschools.qa email addresses are allowed.</p>
+        <a href="/">Try Again</a>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
-app.get('/logout', (req, res, next) => {
-  // Passport 0.6: logout is async with callback
-  req.logout(err => {
-    if (err) return next(err);
-    req.session.destroy(() => {
-      res.clearCookie('qla.sid');
+app.get('/auth/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+      return res.status(500).json({ error: 'Error logging out' });
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Session destroy error:', err);
+      }
       res.redirect('/');
     });
   });
 });
 
-app.get('/me', ensureAuth, (req, res) => {
-  res.json({ ok: true, user: req.user });
+app.get('/api/auth/status', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ 
+      authenticated: true, 
+      user: {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name,
+        role: req.user.role,
+        grade: req.user.grade,
+        profile_picture: req.user.profile_picture
+      }
+    });
+  } else {
+    res.json({ authenticated: false });
+  }
 });
 
-////////////////////////////////////////////////////////////////////////////////
-// Start server
-////////////////////////////////////////////////////////////////////////////////
+// ============================================
+// API ROUTES
+// ============================================
 
-app.listen(PORT, () => {
-  console.log(`[qla] Service listening on ${PORT}`);
-  console.log(`[qla] App URL: ${APP_URL}`);
-  console.log(`[qla] Google Callback URL: ${GOOGLE_CALLBACK_URL}`);
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV,
+    database: pool.totalCount > 0 ? 'connected' : 'disconnected'
+  });
 });
+
+// User Profile Routes
+app.get('/api/users/profile', isAuthenticated, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT u.*, 
+              COUNT(DISTINCT lp.lesson_id) as completed_lessons,
+              COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+              COALESCE(AVG(a.percentage), 0) as average_score
+       FROM users u
+       LEFT JOIN lesson_progress lp ON u.id = lp.user_id AND lp.completed = true
+       LEFT JOIN assessments a ON u.id = a.user_id
+       WHERE u.id = $1
+       GROUP BY u.id`,
+      [req.user.id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
+
+app.put('/api/users/profile', isAuthenticated, async (req, res) => {
+  try {
+    const { name, grade, bio } = req.body;
+    const result = await pool.query(
+      'UPDATE users SET name = $1, grade = $2, bio = $3, updated_at = NOW() WHERE id = $4 RETURNING *',
+      [name, grade, bio, req.user.id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Lesson Routes
+app.get('/api/lessons', isAuthenticated, async (req, res) => {
+  try {
+    const { grade, unit, status } = req.query;
+    let query = `
+      SELECT l.*, u.name as teacher_name,
+             COUNT(DISTINCT lp.user_id) as student_count,
+             COALESCE(AVG(lp.progress), 0) as avg_progress
+      FROM lessons l
+      LEFT JOIN users u ON l.teacher_id = u.id
+      LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id
+      WHERE 1=1
+    `;
+    const params = [];
+    let paramCount = 1;
+
+    // Add filters
+    if (grade) {
+      query += ` AND l.grade = $${paramCount}`;
+      params.push(parseInt(grade));
+      paramCount++;
+    }
+    if (unit) {
+      query += ` AND l.unit = $${paramCount}`;
+      params.push(parseInt(unit));
+      paramCount++;
+    }
+    if (status) {
+      query += ` AND l.status = $${paramCount}`;
+      params.push(status);
+      paramCount++;
+    }
+
+    // Only show published lessons to students
+    if (req.user.role === 'student') {
+      query += ` AND l.status = 'published'`;
+    }
+
+    query += ' GROUP BY l.id, u.name ORDER BY l.grade, l.unit, l.lesson_order';
+    
+    const result = await pool.query(query, params);
+    
+    // Add user progress for students
+    if (req.user.role === 'student' && result.rows.length > 0) {
+      const lessonIds = result.rows.map(l => l.id);
+      const progressResult = await pool.query(
+        'SELECT * FROM lesson_progress WHERE user_id = $1 AND lesson_id = ANY($2::int[])',
+        [req.user.id, lessonIds]
+      );
+      
+      const progressMap = {};
+      progressResult.rows.forEach(p => {
+        progressMap[p.lesson_id] = p;
+      });
+      
+      result.rows.forEach(lesson => {
+        lesson.user_progress = progressMap[lesson.id] || null;
+      });
+    }
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Lessons fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch lessons' });
+  }
+});
+
+app.get('/api/lessons/:id', isAuthenticated, async (req, res) => {
+  try {
+    const lesson = await pool.query(
+      `SELECT l.*, u.name as teacher_name
+       FROM lessons l
+       LEFT JOIN users u ON l.teacher_id = u.id
+       WHERE l.id = $1`,
+      [req.params.id]
+    );
+
+    if (lesson.rows.length === 0) {
+      return res.status(404).json({ error: 'Lesson not found' });
+    }
+
+    // Get user's progress for this lesson
+    if (req.user.role === 'student') {
+      const progress = await pool.query(
+        'SELECT * FROM lesson_progress WHERE lesson_id = $1 AND user_id = $2',
+        [req.params.id, req.user.id]
+      );
+      lesson.rows[0].user_progress = progress.rows[0] || null;
+    }
+
+    res.json(lesson.rows[0]);
+  } catch (error) {
+    console.error('Lesson fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch lesson' });
+  }
+});
+
+app.post('/api/lessons', isTeacher, upload.single('video'), async (req, res) => {
+  try {
+    const {
+      title, grade, unit, lesson_order, content,
+      practice_problems, assessment_questions,
+      interactive_elements, video_url
+    } = req.body;
+
+    const videoPath = req.file ? `/uploads/${req.file.filename}` : video_url;
+
+    const result = await pool.query(
+      `INSERT INTO lessons (
+        title, grade, unit, lesson_order, content,
+        practice_problems, assessment_questions,
+        interactive_elements, video_url, teacher_id,
+        status, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+      RETURNING *`,
+      [
+        title, 
+        parseInt(grade), 
+        parseInt(unit), 
+        parseInt(lesson_order) || 0, 
+        content,
+        practice_problems ? JSON.parse(practice_problems) : [],
+        assessment_questions ? JSON.parse(assessment_questions) : [],
+        interactive_elements ? JSON.parse(interactive_elements) : [],
+        videoPath, 
+        req.user.id, 
+        'draft'
+      ]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Lesson creation error:', error);
+    res.status(500).json({ error: 'Failed to create lesson' });
+  }
+});
+
+app.put('/api/lessons/:id', isTeacher, upload.single('video'), async (req, res) => {
+  try {
+    const {
+      title, grade, unit, lesson_order, content,
+      practice_problems, assessment_questions,
+      interactive_elements, video_url, status
+    } = req.body;
+
+    const videoPath = req.file ? `/uploads/${req.file.filename}` : video_url;
+
+    const result = await pool.query(
+      `UPDATE lessons SET
+        title = $1, grade = $2, unit = $3, lesson_order = $4,
+        content = $5, practice_problems = $6, assessment_questions = $7,
+        interactive_elements = $8, video_url = $9, status = $10,
+        updated_at = NOW()
+      WHERE id = $11 AND teacher_id = $12
+      RETURNING *`,
+      [
+        title, 
+        parseInt(grade), 
+        parseInt(unit), 
+        parseInt(lesson_order) || 0, 
+        content,
+        practice_problems ? JSON.parse(practice_problems) : [],
+        assessment_questions ? JSON.parse(assessment_questions) : [],
+        interactive_elements ? JSON.parse(interactive_elements) : [],
+        videoPath, 
+        status, 
+        req.params.id, 
+        req.user.id
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Lesson not found or unauthorized' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Lesson update error:', error);
+    res.status(500).json({ error: 'Failed to update lesson' });
+  }
+});
+
+app.delete('/api/lessons/:id', isTeacher, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'DELETE FROM lessons WHERE id = $1 AND teacher_id = $2 RETURNING *',
+      [req.params.id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Lesson not found or unauthorized' });
+    }
+
+    res.json({ message: 'Lesson deleted successfully' });
+  } catch (error) {
+    console.error('Lesson deletion error:', error);
+    res.status(500).json({ error: 'Failed to delete lesson' });
+  }
+});
+
+// Progress Tracking
+app.post('/api/progress/lesson', isStudent, async (req, res) => {
+  try {
+    const { lesson_id, progress, time_spent, video_progress, completed } = req.body;
+
+    const result = await pool.query(
+      `INSERT INTO lesson_progress (
+        user_id, lesson_id, progress, time_spent,
+        video_progress, completed, last_accessed
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      ON CONFLICT (user_id, lesson_id)
+      DO UPDATE SET
+        progress = GREATEST(lesson_progress.progress, $3),
+        time_spent = lesson_progress.time_spent + $4,
+        video_progress = GREATEST(lesson_progress.video_progress, $5),
+        completed = $6 OR lesson_progress.completed,
+        last_accessed = NOW()
+      RETURNING *`,
+      [req.user.id, lesson_id, progress || 0, time_spent || 0, video_progress || 0, completed || false]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Progress update error:', error);
+    res.status(500).json({ error: 'Failed to update progress' });
+  }
+});
+
+app.get('/api/progress/overview', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user.role === 'teacher' && req.query.student_id 
+      ? req.query.student_id 
+      : req.user.id;
+    
+    const progress = await pool.query(
+      `SELECT 
+        COUNT(DISTINCT lp.lesson_id) FILTER (WHERE lp.completed = true) as completed_lessons,
+        COUNT(DISTINCT l.id) as total_lessons,
+        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+        COALESCE(AVG(a.percentage), 0) as average_score,
+        COUNT(DISTINCT DATE(lp.last_accessed)) as study_days
+      FROM lessons l
+      LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id AND lp.user_id = $1
+      LEFT JOIN assessments a ON a.user_id = $1
+      WHERE l.status = 'published'`,
+      [userId]
+    );
+
+    res.json(progress.rows[0]);
+  } catch (error) {
+    console.error('Progress overview error:', error);
+    res.status(500).json({ error: 'Failed to fetch progress overview' });
+  }
+});
+
+// Assessment Routes
+app.post('/api/assessments/submit', isStudent, async (req, res) => {
+  try {
+    const { lesson_id, answers, time_taken } = req.body;
+
+    // Get lesson assessment questions
+    const lesson = await pool.query(
+      'SELECT assessment_questions FROM lessons WHERE id = $1',
+      [lesson_id]
+    );
+
+    if (lesson.rows.length === 0) {
+      return res.status(404).json({ error: 'Lesson not found' });
+    }
+
+    const questions = lesson.rows[0].assessment_questions || [];
+    if (questions.length === 0) {
+      return res.status(400).json({ error: 'No assessment questions available' });
+    }
+
+    let score = 0;
+    let totalPoints = 0;
+    const results = [];
+
+    // Calculate score
+    questions.forEach((question, index) => {
+      const points = question.points || 10;
+      totalPoints += points;
+      const userAnswer = answers[index];
+      const correctAnswer = question.correct;
+      const isCorrect = userAnswer === correctAnswer;
+      
+      if (isCorrect) score += points;
+      
+      results.push({
+        question: question.question,
+        user_answer: userAnswer,
+        correct_answer: correctAnswer,
+        is_correct: isCorrect,
+        points: isCorrect ? points : 0
+      });
+    });
+
+    const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
+    const passPercentage = parseInt(process.env.PASS_PERCENTAGE) || 70;
+    const passed = percentage >= passPercentage;
+
+    // Save assessment result
+    const result = await pool.query(
+      `INSERT INTO assessments (
+        user_id, lesson_id, score, total_points,
+        percentage, passed, time_taken, answers, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+      RETURNING *`,
+      [req.user.id, lesson_id, score, totalPoints, percentage, passed, time_taken || 0, JSON.stringify(results)]
+    );
+
+    // Update lesson progress if passed
+    if (passed) {
+      await pool.query(
+        `UPDATE lesson_progress 
+         SET completed = true, progress = 100
+         WHERE user_id = $1 AND lesson_id = $2`,
+        [req.user.id, lesson_id]
+      );
+    }
+
+    res.json({
+      ...result.rows[0],
+      results,
+      passed,
+      pass_percentage: passPercentage
+    });
+  } catch (error) {
+    console.error('Assessment submission error:', error);
+    res.status(500).json({ error: 'Failed to submit assessment' });
+  }
+});
+
+app.get('/api/assessments/history', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user.role === 'teacher' && req.query.student_id 
+      ? req.query.student_id 
+      : req.user.id;
+    
+    const assessments = await pool.query(
+      `SELECT a.*, l.title as lesson_title
+       FROM assessments a
+       JOIN lessons l ON a.lesson_id = l.id
+       WHERE a.user_id = $1
+       ORDER BY a.created_at DESC
+       LIMIT 20`,
+      [userId]
+    );
+
+    res.json(assessments.rows);
+  } catch (error) {
+    console.error('Assessment history error:', error);
+    res.status(500).json({ error: 'Failed to fetch assessment history' });
+  }
+});
+
+// Skills Routes
+app.get('/api/skills', isAuthenticated, async (req, res) => {
+  try {
+    let query;
+    let params = [];
+
+    if (req.user.role === 'student') {
+      query = `
+        SELECT s.*, u.name as teacher_name, sa.status, sa.progress
+        FROM skills s
+        LEFT JOIN users u ON s.teacher_id = u.id
+        JOIN skill_assignments sa ON s.id = sa.skill_id
+        WHERE sa.user_id = $1
+        ORDER BY s.created_at DESC
+      `;
+      params = [req.user.id];
+    } else {
+      query = `
+        SELECT s.*, u.name as teacher_name,
+               COUNT(DISTINCT sa.user_id) as assigned_count
+        FROM skills s
+        LEFT JOIN users u ON s.teacher_id = u.id
+        LEFT JOIN skill_assignments sa ON s.id = sa.skill_id
+        GROUP BY s.id, u.name
+        ORDER BY s.created_at DESC
+      `;
+    }
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Skills fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch skills' });
+  }
+});
+
+app.post('/api/skills', isTeacher, async (req, res) => {
+  try {
+    const { name, description, grade, difficulty, due_date } = req.body;
+
+    const result = await pool.query(
+      `INSERT INTO skills (
+        name, description, grade, difficulty,
+        due_date, teacher_id, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      RETURNING *`,
+      [name, description, grade, difficulty, due_date, req.user.id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Skill creation error:', error);
+    res.status(500).json({ error: 'Failed to create skill' });
+  }
+});
+
+app.post('/api/skills/:id/assign', isTeacher, async (req, res) => {
+  try {
+    const { student_ids } = req.body;
+    const skill_id = req.params.id;
+
+    if (!Array.isArray(student_ids) || student_ids.length === 0) {
+      return res.status(400).json({ error: 'No students selected' });
+    }
+
+    const assignments = await Promise.all(
+      student_ids.map(student_id =>
+        pool.query(
+          `INSERT INTO skill_assignments (skill_id, user_id, assigned_at, status)
+           VALUES ($1, $2, NOW(), 'assigned')
+           ON CONFLICT (skill_id, user_id) DO NOTHING
+           RETURNING *`,
+          [skill_id, student_id]
+        )
+      )
+    );
+
+    const assignedCount = assignments.filter(a => a.rows.length > 0).length;
+
+    res.json({ 
+      message: 'Skills assigned successfully',
+      assigned_count: assignedCount
+    });
+  } catch (error) {
+    console.error('Skill assignment error:', error);
+    res.status(500).json({ error: 'Failed to assign skill' });
+  }
+});
+
+app.put('/api/skills/:id/progress', isStudent, async (req, res) => {
+  try {
+    const { progress, status } = req.body;
+
+    const result = await pool.query(
+      `UPDATE skill_assignments
+       SET progress = $1, status = $2, updated_at = NOW()
+       WHERE skill_id = $3 AND user_id = $4
+       RETURNING *`,
+      [progress || 0, status || 'in_progress', req.params.id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Skill assignment not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Skill progress update error:', error);
+    res.status(500).json({ error: 'Failed to update skill progress' });
+  }
+});
+
+// Analytics Routes (Teacher Only)
+app.get('/api/analytics/class', isTeacher, async (req, res) => {
+  try {
+    const { grade, date_from, date_to } = req.query;
+    
+    let query = `
+      SELECT 
+        COUNT(DISTINCT u.id) as total_students,
+        COALESCE(AVG(lp.progress), 0) as avg_progress,
+        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+        COUNT(DISTINCT lp.lesson_id) as lessons_accessed,
+        COALESCE(AVG(a.percentage), 0) as avg_assessment_score
+      FROM users u
+      LEFT JOIN lesson_progress lp ON u.id = lp.user_id
+      LEFT JOIN assessments a ON u.id = a.user_id
+      WHERE u.role = 'student'
+    `;
+    
+    const params = [];
+    let paramCount = 1;
+    
+    if (grade) {
+      query += ` AND u.grade = $${paramCount}`;
+      params.push(parseInt(grade));
+      paramCount++;
+    }
+    if (date_from) {
+      query += ` AND lp.last_accessed >= $${paramCount}`;
+      params.push(date_from);
+      paramCount++;
+    }
+    if (date_to) {
+      query += ` AND lp.last_accessed <= $${paramCount}`;
+      params.push(date_to);
+      paramCount++;
+    }
+
+    const result = await pool.query(query, params);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Class analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch class analytics' });
+  }
+});
+
+app.get('/api/analytics/students', isTeacher, async (req, res) => {
+  try {
+    const students = await pool.query(
+      `SELECT 
+        u.id, u.name, u.email, u.grade,
+        COUNT(DISTINCT lp.lesson_id) FILTER (WHERE lp.completed = true) as completed_lessons,
+        COALESCE(AVG(lp.progress), 0) as avg_progress,
+        COALESCE(SUM(lp.time_spent), 0) as total_study_time,
+        COALESCE(AVG(a.percentage), 0) as avg_score,
+        MAX(lp.last_accessed) as last_active
+      FROM users u
+      LEFT JOIN lesson_progress lp ON u.id = lp.user_id
+      LEFT JOIN assessments a ON u.id = a.user_id
+      WHERE u.role = 'student'
+      GROUP BY u.id
+      ORDER BY avg_progress DESC NULLS LAST`
+    );
+
+    res.json(students.rows);
+  } catch (error) {
+    console.error('Student analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch student analytics' });
+  }
+});
+
+// ============================================
+// WEBSOCKET CONFIGURATION
+// ============================================
+io.on('connection', (socket) => {
+  console.log('🔌 New WebSocket connection:', socket.id);
+
+  socket.on('join-lesson', (lessonId) => {
+    socket.join(`lesson-${lessonId}`);
+    console.log(`Socket ${socket.id} joined lesson-${lessonId}`);
+  });
+
+  socket.on('lesson-progress', (data) => {
+    socket.to(`lesson-${data.lessonId}`).emit('student-progress', data);
+  });
+
+  socket.on('question-asked', (data) => {
+    io.to(`lesson-${data.lessonId}`).emit('new-question', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('🔌 WebSocket disconnected:', socket.id);
+  });
+});
+
+// ============================================
+// STATIC FILE SERVING
+// ============================================
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ============================================
+// ERROR HANDLING
+// ============================================
+app.use((err, req, res, next) => {
+  console.error('❌ Application Error:', err.stack);
+  
+  // Handle multer errors
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: 'File too large' });
+  }
+  
+  res.status(500).json({ 
+    error: process.env.NODE_ENV === 'production' 
+      ? 'Something went wrong!' 
+      : err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
+// ============================================
+// SERVER STARTUP
+// ============================================
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+╔═══════════════════════════════════════════════════════╗
+║                                                       ║
+║   🚀 QLA Mathematics LMS Server                      ║
+║                                                       ║
+║   Environment: ${process.env.NODE_ENV || 'development'}                           ║
+║   Port: ${PORT}                                      ║
+║   URL: ${process.env.CLIENT_URL || 'http://localhost:' + PORT}   ║
+║   Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}                          ║
+║   Google OAuth: ${process.env.GOOGLE_CLIENT_ID ? 'Configured' : 'Not configured'}                      ║
+║                                                       ║
+║   ✅ Server is running successfully!                 ║
+║                                                       ║
+╚═══════════════════════════════════════════════════════╝
+  `);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    pool.end(() => {
+      console.log('Database pool closed');
+      process.exit(0);
+    });
+  });
+});
+
+module.exports = app;
