@@ -247,12 +247,10 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static('public'));
-// Serve grade lessons directly for iframe access
-app.use('/lessons/grade7', express.static(path.join(__dirname, 'grade7')));
-app.use('/lessons/grade8', express.static(path.join(__dirname, 'grade8')));
-
+// Serve lesson files from the correct public/lessons directory
+app.use('/lessons', express.static(path.join(__dirname, 'public', 'lessons')));
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
 app.use('/uploads', express.static('uploads'));
-
 // ============================================
 // SESSION CONFIGURATION WITH POSTGRESQL
 // ============================================
