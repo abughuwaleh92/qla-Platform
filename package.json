@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "npm run migrate",
+    "build": "npm run migrate","npm install connect-pg-simple"
     "migrate": "node migrations/init.js"
   },
   "engines": {
