@@ -1,20 +1,23 @@
 {
   "name": "qla-lms-platform",
-  "version": "1.0.0",
-  "description": "Qatar Leadership Academy Mathematics Learning Management System",
+  "version": "2.0.0",
+  "description": "Qatar Leadership Academy Interactive Mathematics Learning Management System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "npm run migrate",
+    "build": "npm run setup",
+    "setup": "node scripts/setup-platform.js",
     "migrate": "node migrations/init.js",
-    "verify": "node verify-lessons.js",
-    "setup": "npm run migrate && npm run verify",
-    "fix-dirs": "mkdir -p public/lessons/grade7 public/lessons/grade8 public/assets uploads",
-    "test": "node verify-lessons.js"
+    "sync-lessons": "node scripts/sync-lessons.js",
+    "verify": "node scripts/verify-deployment.js",
+    "test": "npm run verify",
+    "postinstall": "npm run setup",
+    "railway-build": "npm install && npm run setup && npm run migrate"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -33,7 +36,8 @@
     "compression": "^1.7.4",
     "socket.io": "^4.6.1",
     "uuid": "^9.0.1",
-    "express-validator": "^7.0.1"
+    "express-validator": "^7.0.1",
+    "nodemailer": "^6.9.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
@@ -43,8 +47,16 @@
     "education",
     "mathematics",
     "qatar",
-    "learning"
+    "learning",
+    "interactive",
+    "assessment",
+    "classroom",
+    "realtime"
   ],
   "author": "QLA Development Team",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qla/mathematics-lms"
+  }
 }
