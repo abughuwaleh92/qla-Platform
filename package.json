@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "npm run migrate","npm install connect-pg-simple"
+    "build": "npm run migrate",
     "migrate": "node migrations/init.js"
+    "npm install connect-pg-simple", 
   },
   "engines": {
     "node": ">=18.0.0"
