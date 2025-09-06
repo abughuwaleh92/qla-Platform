@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>QLA Mathematics LMS | Qatar Leadership Academy</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  
+  <!-- KaTeX for Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Socket.IO for real-time features -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <style>
+    :root{
+      --maroon:#6C1D45; --maroon2:#8B2450; --gold:#C7A34F; --gold2:#E4D4A8;
+      --ink:#0F172A; --slate:#5b6572; --line:#e9eef2; --bg:#F7FAFC;
+      --ok:#136f3a; --soon:#8a3d00; --purple:#7C3AED; --blue:#1D4ED8;
+      --danger:#dc2626; --warning:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5}
+
+    .hero{
+      position:relative; color:#fff;
+      background: linear-gradient(135deg, rgba(108,29,69,.88) 0%, rgba(139,36,80,.84) 45%, rgba(108,29,69,.88) 100%);
+      overflow:hidden;
+    }
+    .hero::before{
+      content:""; position:absolute; inset:-40% -40% auto auto; width:200%; height:200%;
+      background:radial-gradient(circle, rgba(199,163,79,.22) 0%, transparent 70%);
+      animation:float 22s ease-in-out infinite; pointer-events:none;
+    }
+    @keyframes float{0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(30px,-30px) rotate(120deg)} 66%{transform:translate(-20px,20px) rotate(240deg)}}
+
+    .logo-tile{
+      background:#fff; border:1px solid var(--line); border-radius:16px;
+      padding:8px 10px; display:inline-flex; align-items:center; justify-content:center;
+      box-shadow:0 10px 24px rgba(0,0,0,.08)
+    }
+
+    .nav-tabs{ display:flex; gap:8px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.35); border-radius:14px; padding:6px; flex-wrap:wrap }
+    .nav-tab{ flex:1; min-width:120px; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.35); color:#fff; background:transparent; cursor:pointer; font-weight:600; text-align:center; transition:all .3s ease }
+    .nav-tab.active{ background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--maroon); transform:scale(1.02) }
+    .nav-tab:hover:not(.active){ background:rgba(255,255,255,.1) }
+
+    .card{ background:#fff; border:1px solid var(--line); border-radius:18px; transition:all .3s ease }
+    .card:hover{ transform:translateY(-2px); box-shadow:0 20px 40px rgba(0,0,0,.1) }
+    
+    .interactive-row{ 
+      border:1px solid var(--line); border-radius:12px; padding:12px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff;
+      transition:all .3s ease; cursor:pointer; position:relative; overflow:hidden
+    }
+    .interactive-row::before{
+      content:""; position:absolute; left:-100%; top:0; bottom:0; width:4px;
+      background:linear-gradient(135deg,var(--gold),var(--maroon)); transition:left .3s ease
+    }
+    .interactive-row:hover{ transform:translateX(4px); box-shadow:0 12px 28px rgba(0,0,0,.08) }
+    .interactive-row:hover::before{ left:0 }
+    .interactive-row.completed::before{ left:0; background:var(--ok) }
+
+    .status{font-size:11px; padding:6px 12px; border-radius:999px; border:1px solid transparent; text-transform:uppercase; letter-spacing:.3px; font-weight:600}
+    .open{ background:rgba(19,111,58,.1); color:var(--ok); border-color:rgba(19,111,58,.25) }
+    .soon{ background:rgba(186,91,8,.08); color:var(--soon); border-color:rgba(186,91,8,.25) }
+    .completed{ background:rgba(124,58,237,.1); color:var(--purple); border-color:rgba(124,58,237,.25) }
+    .locked{ background:rgba(220,38,38,.1); color:var(--danger); border-color:rgba(220,38,38,.25) }
+
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:all .3s ease }
+    .modal.show{ opacity:1; pointer-events:auto }
+    .modal-content{ background:#fff; border-radius:20px; max-width:95vw; max-height:95vh; overflow:auto; box-shadow:0 25px 50px rgba(0,0,0,.25) }
+
+    .progress-bar{ height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden }
+    .progress-fill{ height:100%; background:linear-gradient(90deg,var(--gold),var(--maroon)); transition:width .5s ease }
+
+    .btn{ 
+      display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:12px; 
+      font-weight:600; text-decoration:none; transition:all .3s ease; cursor:pointer; border:none;
+    }
+    .btn-primary{ background:var(--maroon); color:#fff }
+    .btn-primary:hover{ background:var(--maroon2); transform:translateY(-2px) }
+    .btn-secondary{ background:var(--gold); color:var(--maroon) }
+    .btn-secondary:hover{ background:var(--gold2); transform:translateY(-2px) }
+
+    .lesson-viewer{
+      position:relative; width:100%; height:600px; background:#fff; border-radius:12px; overflow:hidden;
+    }
+    .lesson-iframe{
+      width:100%; height:100%; border:none;
+    }
+
+    .video-player{
+      position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden;
+    }
+
+    @keyframes slideIn{ from{transform:translateY(20px); opacity:0} to{transform:translateY(0); opacity:1} }
+    .animate-slide-in{ animation:slideIn .5s ease-out }
+
+    .notification{ 
+      position:fixed; top:20px; right:20px; z-index:2000; padding:16px 24px; 
+      border-radius:12px; color:#fff; font-weight:600; transform:translateX(400px); 
+      transition:transform .3s ease; box-shadow:0 10px 30px rgba(0,0,0,.2);
+    }
+    .notification.show{ transform:translateX(0) }
+    .notification.success{ background:var(--ok) }
+    .notification.error{ background:var(--danger) }
+    .notification.info{ background:var(--blue) }
+
+    .loader{
+      border:3px solid #f3f3f3; border-top:3px solid var(--maroon); border-radius:50%;
+      width:40px; height:40px; animation:spin 1s linear infinite;
+    }
+    @keyframes spin{ 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+    @media (max-width: 768px) {
+      .nav-tabs{ flex-direction:column }
+      .nav-tab{ min-width:auto }
+      .modal-content{ margin:10px; max-width:calc(100vw - 20px) }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="loader mx-auto mb-4"></div>
+      <h2 class="text-xl font-bold text-[var(--maroon)]">Loading QLA Mathematics LMS...</h2>
+    </div>
+  </div>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--maroon)] to-[var(--maroon2)] hidden">
+    <div class="card p-8 max-w-md w-full mx-4">
+      <div class="text-center">
+        <div class="logo-tile mx-auto mb-6">
+          <div class="w-20 h-20 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-2xl">QLA</div>
+        </div>
+        <h1 class="text-3xl font-bold text-[var(--maroon)] mb-2">Mathematics LMS</h1>
+        <p class="text-gray-600 mb-8">Qatar Leadership Academy</p>
+        
+        <a href="/auth/google" class="btn btn-primary w-full justify-center">
+          <i class="fab fa-google"></i>
+          Sign in with Google
+        </a>
+        <p class="text-sm text-gray-500 mt-4">Use your @qla.qfschools.qa email</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application -->
+  <div id="app" class="hidden">
+    <header class="hero shadow-2xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="flex items-center justify-between py-6">
+          <div class="flex items-center gap-4">
+            <span class="logo-tile">
+              <div class="w-16 h-16 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-xl">QLA</div>
+            </span>
+            <div>
+              <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins">
+                <span id="portalTitle">Mathematics LMS</span>
+              </h1>
+              <p class="text-sm opacity-90 mt-1">Qatar Leadership Academy</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <div class="font-semibold" id="userName">Loading...</div>
+              <div class="text-xs opacity-80" id="userRole">...</div>
+            </div>
+            <button onclick="logout()" class="bg-white/10 backdrop-blur rounded-full p-2 hover:bg-white/20 transition-colors">
+              <i class="fas fa-sign-out-alt text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="pb-6">
+          <div class="nav-tabs" role="tablist" id="navTabs">
+            <!-- Navigation tabs will be inserted here -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="mainContent">
+      <!-- Dynamic content will be loaded here -->
+    </main>
+  </div>
+
+  <!-- Lesson Viewer Modal -->
+  <div id="lessonModal" class="modal">
+    <div class="modal-content w-full max-w-7xl mx-4 p-0">
+      <div class="flex items-center justify-between p-4 border-b">
+        <h2 id="lessonTitle" class="text-2xl font-bold"></h2>
+        <button onclick="closeLessonModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="flex h-[80vh]">
+        <!-- Lesson Content -->
+        <div class="flex-1 overflow-hidden">
+          <iframe id="lessonFrame" class="lesson-iframe" src=""></iframe>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="w-80 border-l p-4 overflow-y-auto">
+          <div class="space-y-4">
+            <!-- Video Section -->
+            <div class="card p-4">
+              <h4 class="font-bold mb-3">Video Lesson</h4>
+              <div id="videoContainer" class="video-player bg-gray-100 flex items-center justify-center">
+                <i class="fas fa-play-circle text-6xl text-gray-400"></i>
+              </div>
+              <div class="mt-2">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="videoProgress" style="width:0%"></div>
+                </div>
+                <div class="text-sm text-gray-600 mt-1">
+                  Progress: <span id="videoProgressText">0%</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Progress Overview -->
+            <div class="card p-4">
+              <h4 class="font-bold mb-3">Lesson Progress</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                  <span>Slides Viewed</span>
+                  <span id="slidesProgress">0/0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span>Activities Completed</span>
+                  <span id="activitiesProgress">0/0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span>Time Spent</span>
+                  <span id="timeSpent">0m</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="space-y-2">
+              <button onclick="startAssessment()" class="btn btn-primary w-full">
+                <i class="fas fa-clipboard-check"></i>Take Assessment
+              </button>
+              <button onclick="practiceProblems()" class="btn btn-secondary w-full">
+                <i class="fas fa-dumbbell"></i>Practice Problems
+              </button>
+              <button onclick="askQuestion()" class="btn w-full bg-[var(--purple)] text-white">
+                <i class="fas fa-question"></i>Ask Question
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assessment Modal -->
+  <div id="assessmentModal" class="modal">
+    <div class="modal-content w-full max-w-4xl mx-4 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 id="assessmentTitle" class="text-2xl font-bold">Assessment</h2>
+        <div class="text-sm text-gray-600">
+          Question <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span>
+        </div>
+      </div>
+      
+      <div id="assessmentContent" class="min-h-[300px]">
+        <!-- Assessment questions will be loaded here -->
+      </div>
+      
+      <div class="flex justify-between mt-6 pt-6 border-t">
+        <button id="prevQuestionBtn" onclick="previousQuestion()" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i>Previous
+        </button>
+        
+        <div class="text-center">
+          <div class="text-sm text-gray-600">Time Remaining</div>
+          <div class="text-lg font-bold" id="assessmentTimer">15:00</div>
+        </div>
+        
+        <button id="nextQuestionBtn" onclick="nextQuestion()" class="btn btn-primary">
+          Next<i class="fas fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+      
+      <div class="mt-4 text-center">
+        <button id="submitAssessmentBtn" onclick="submitAssessment()" class="btn bg-[var(--ok)] text-white hidden">
+          <i class="fas fa-check"></i>Submit Assessment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let socket = null;
+    let currentUser = null;
+    let currentLesson = null;
+    let currentAssessment = null;
+    let assessmentTimer = null;
+    let lessonStartTime = null;
+    let API_BASE = '';
+
+    // Initialize application
+    async function init() {
+      try {
+        // Check authentication status
+        const response = await fetch('/api/auth/status');
+        const data = await response.json();
+
+        if (data.authenticated) {
+          currentUser = data.user;
+          initializeApp();
+        } else {
+          showLoginScreen();
+        }
+      } catch (error) {
+        console.error('Initialization error:', error);
+        showLoginScreen();
+      }
+    }
+
+    function showLoginScreen() {
+      document.getElementById('loadingScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('app').classList.add('hidden');
+    }
+
+    function initializeApp() {
+      document.getElementById('loadingScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+
+      // Initialize WebSocket
+      socket = io();
+      
+      // Set up user interface
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userRole').textContent = 
+        currentUser.role === 'teacher' ? 'Teacher' : `Grade ${currentUser.grade} Student`;
+      
+      // Set up navigation based on role
+      if (currentUser.role === 'teacher') {
+        setupTeacherPortal();
+      } else {
+        setupStudentPortal();
+      }
+
+      // Initialize KaTeX
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\[', right: '\\]', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    }
+
+    function setupStudentPortal() {
+      document.getElementById('portalTitle').textContent = 'Student Portal';
+      
+      const navTabs = `
+        <button class="nav-tab active" onclick="showTab('dashboard')">
+          <i class="fas fa-home mr-2"></i>Dashboard
+        </button>
+        <button class="nav-tab" onclick="showTab('lessons')">
+          <i class="fas fa-book mr-2"></i>Lessons
+        </button>
+        <button class="nav-tab" onclick="showTab('practice')">
+          <i class="fas fa-dumbbell mr-2"></i>Practice
+        </button>
+        <button class="nav-tab" onclick="showTab('skills')">
+          <i class="fas fa-star mr-2"></i>Skills
+        </button>
+        <button class="nav-tab" onclick="showTab('progress')">
+          <i class="fas fa-chart-line mr-2"></i>Progress
+        </button>
+      `;
+      
+      document.getElementById('navTabs').innerHTML = navTabs;
+      loadStudentDashboard();
+    }
+
+    function setupTeacherPortal() {
+      document.getElementById('portalTitle').textContent = 'Teacher Portal';
+      
+      const navTabs = `
+        <button class="nav-tab active" onclick="showTab('dashboard')">
+          <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+        </button>
+        <button class="nav-tab" onclick="showTab('lessons')">
+          <i class="fas fa-book-open mr-2"></i>Lessons
+        </button>
+        <button class="nav-tab" onclick="showTab('students')">
+          <i class="fas fa-users mr-2"></i>Students
+        </button>
+        <button class="nav-tab" onclick="showTab('skills')">
+          <i class="fas fa-tasks mr-2"></i>Skills
+        </button>
+        <button class="nav-tab" onclick="showTab('analytics')">
+          <i class="fas fa-chart-bar mr-2"></i>Analytics
+        </button>
+      `;
+      
+      document.getElementById('navTabs').innerHTML = navTabs;
+      loadTeacherDashboard();
+    }
+
+    async function loadStudentDashboard() {
+      try {
+        // Fetch user progress
+        const progressResponse = await fetch('/api/progress/overview');
+        const progress = await progressResponse.json();
+        
+        // Fetch lessons
+        const lessonsResponse = await fetch(`/api/lessons?grade=${currentUser.grade}`);
+        const lessons = await lessonsResponse.json();
+        
+        // Fetch skills
+        const skillsResponse = await fetch('/api/skills');
+        const skills = await skillsResponse.json();
+        
+        const completionRate = progress.total_lessons > 0 
+          ? Math.round((progress.completed_lessons / progress.total_lessons) * 100) 
+          : 0;
+        
+        const content = `
+          <div class="grid gap-6 md:grid-cols-4 mb-8">
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold">
+                ${completionRate}%
+              </div>
+              <h3 class="font-bold text-lg mb-2">Progress</h3>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${completionRate}%"></div>
+              </div>
+            </div>
+            
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
+                <i class="fas fa-trophy text-2xl"></i>
+              </div>
+              <h3 class="font-bold text-lg mb-2">Completed</h3>
+              <div class="text-3xl font-bold text-[var(--ok)]">${progress.completed_lessons || 0}</div>
+            </div>
+            
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
+                <i class="fas fa-star text-2xl"></i>
+              </div>
+              <h3 class="font-bold text-lg mb-2">Skills</h3>
+              <div class="text-3xl font-bold text-[var(--blue)]">${skills.length}</div>
+            </div>
+            
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
+                <i class="fas fa-fire text-2xl"></i>
+              </div>
+              <h3 class="font-bold text-lg mb-2">Streak</h3>
+              <div class="text-3xl font-bold text-[var(--purple)]">${progress.study_days || 0}</div>
+            </div>
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-3">
+            <div class="lg:col-span-2">
+              <div class="card p-6">
+                <h3 class="font-bold text-xl mb-4">
+                  <i class="fas fa-rocket mr-2 text-[var(--gold)]"></i>Continue Learning
+                </h3>
+                <div class="space-y-4">
+                  ${lessons.slice(0, 3).map(lesson => `
+                    <div class="interactive-row ${lesson.user_progress?.completed ? 'completed' : ''}" 
+                         onclick="openLesson(${lesson.id})">
+                      <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-lg bg-[var(--maroon)] text-white flex items-center justify-center">
+                          <i class="fas fa-play"></i>
+                        </div>
+                        <div>
+                          <div class="font-semibold">${lesson.title}</div>
+                          <div class="text-sm text-gray-600">Unit ${lesson.unit}</div>
+                        </div>
+                      </div>
+                      <span class="status ${lesson.user_progress?.completed ? 'completed' : 'open'}">
+                        ${lesson.user_progress?.completed ? 'Review' : 'Start'}
+                      </span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+            
+            <div class="card p-6">
+              <h3 class="font-bold text-xl mb-4">
+                <i class="fas fa-target mr-2 text-[var(--maroon)]"></i>Assigned Skills
+              </h3>
+              <div class="space-y-3">
+                ${skills.slice(0, 5).map(skill => `
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <div class="font-semibold text-sm">${skill.name}</div>
+                      <div class="text-xs text-gray-600">${skill.difficulty}</div>
+                    </div>
+                    <span class="status ${skill.status === 'completed' ? 'completed' : 'open'}">
+                      ${skill.progress || 0}%
+                    </span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('mainContent').innerHTML = content;
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        showNotification('Error loading dashboard', 'error');
+      }
+    }
+
+    async function loadTeacherDashboard() {
+      try {
+        // Fetch analytics
+        const analyticsResponse = await fetch('/api/analytics/class');
+        const analytics = await analyticsResponse.json();
+        
+        // Fetch students
+        const studentsResponse = await fetch('/api/analytics/students');
+        const students = await studentsResponse.json();
+        
+        const content = `
+          <div class="grid gap-6 md:grid-cols-4 mb-8">
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
+                <i class="fas fa-users text-2xl"></i>
+              </div>
+              <h3 class="font-bold text-lg mb-2">Total Students</h3>
+              <div class="text-3xl font-bold text-[var(--blue)]">${analytics.total_students || 0}</div>
+            </div>
+            
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
+                <i class="fas fa-percentage text-2xl"></i>
+              </div>
+              <h3 class="font-bold text-lg mb-2">Avg Progress</h3>
+              <div class="text-3xl font-bold text-[var(--ok)]">${Math.round(analytics.avg_progress || 0)}%</div>
+            </div>
+            
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-[var(--warning)] mx-auto mb-4 flex items-center justify-center text-white">
+                <i class="fas fa-clock text-2xl"></i>
+              </div>
+              <h3 class="font-bold text-lg mb-2">Study Time</h3>
+              <div class="text-3xl font-bold text-[var(--warning)]">${Math.round((analytics.total_study_time || 0) / 60)}h</div>
+            </div>
+            
+            <div class="card p-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
+                <i class="fas fa-chart-line text-2xl"></i>
+              </div>
+              <h3 class="font-bold text-lg mb-2">Avg Score</h3>
+              <div class="text-3xl font-bold text-[var(--purple)]">${Math.round(analytics.avg_assessment_score || 0)}%</div>
+            </div>
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-2">
+            <div class="card p-6">
+              <h3 class="font-bold text-xl mb-4">
+                <i class="fas fa-trophy mr-2 text-[var(--gold)]"></i>Top Performers
+              </h3>
+              <div class="space-y-3">
+                ${students.slice(0, 5).map((student, index) => `
+                  <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div class="w-8 h-8 rounded-full bg-[var(--ok)] text-white flex items-center justify-center font-bold">
+                      ${index + 1}
+                    </div>
+                    <div class="flex-1">
+                      <div class="font-semibold">${student.name}</div>
+                      <div class="text-sm text-gray-600">Grade ${student.grade}</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="font-bold text-[var(--ok)]">${Math.round(student.avg_progress || 0)}%</div>
+                      <div class="text-xs text-gray-600">${student.completed_lessons} lessons</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div class="card p-6">
+              <h3 class="font-bold text-xl mb-4">
+                <i class="fas fa-exclamation-triangle mr-2 text-[var(--warning)]"></i>Need Attention
+              </h3>
+              <div class="space-y-3">
+                ${students.filter(s => (s.avg_progress || 0) < 50).slice(0, 5).map(student => `
+                  <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
+                    <div class="w-8 h-8 rounded-full bg-[var(--danger)] text-white flex items-center justify-center">
+                      <i class="fas fa-exclamation"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="font-semibold">${student.name}</div>
+                      <div class="text-sm text-gray-600">Last active: ${student.last_active ? new Date(student.last_active).toLocaleDateString() : 'Never'}</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="font-bold text-[var(--danger)]">${Math.round(student.avg_progress || 0)}%</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('mainContent').innerHTML = content;
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        showNotification('Error loading dashboard', 'error');
+      }
+    }
+
+    async function showTab(tabName) {
+      // Update active tab
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // Load content based on tab
+      switch(tabName) {
+        case 'dashboard':
+          if (currentUser.role === 'teacher') {
+            loadTeacherDashboard();
+          } else {
+            loadStudentDashboard();
+          }
+          break;
+        case 'lessons':
+          loadLessons();
+          break;
+        case 'practice':
+          loadPractice();
+          break;
+        case 'skills':
+          loadSkills();
+          break;
+        case 'progress':
+          loadProgress();
+          break;
+        case 'students':
+          loadStudents();
+          break;
+        case 'analytics':
+          loadAnalytics();
+          break;
+      }
+    }
+
+    async function loadLessons() {
+      try {
+        const grade = currentUser.role === 'student' ? currentUser.grade : '';
+        const response = await fetch(`/api/lessons${grade ? `?grade=${grade}` : ''}`);
+        const lessons = await response.json();
+        
+        // Group lessons by unit
+        const units = {};
+        lessons.forEach(lesson => {
+          if (!units[lesson.unit]) {
+            units[lesson.unit] = [];
+          }
+          units[lesson.unit].push(lesson);
+        });
+        
+        const content = `
+          <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-4">Lessons</h2>
+            ${currentUser.role === 'teacher' ? `
+              <button onclick="createLesson()" class="btn btn-primary mb-4">
+                <i class="fas fa-plus"></i>Create New Lesson
+              </button>
+            ` : ''}
+          </div>
+          
+          ${Object.entries(units).map(([unit, unitLessons]) => `
+            <div class="card p-6 mb-6">
+              <h3 class="font-bold text-xl mb-4">Unit ${unit}</h3>
+              <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                ${unitLessons.map(lesson => `
+                  <div class="interactive-row ${lesson.user_progress?.completed ? 'completed' : ''}" 
+                       onclick="openLesson(${lesson.id})">
+                    <div class="flex-1">
+                      <div class="font-semibold">${lesson.title}</div>
+                      <div class="text-sm text-gray-600">
+                        ${lesson.teacher_name ? `by ${lesson.teacher_name}` : ''}
+                      </div>
+                      ${lesson.user_progress ? `
+                        <div class="mt-2">
+                          <div class="progress-bar h-2">
+                            <div class="progress-fill" style="width:${lesson.user_progress.progress}%"></div>
+                          </div>
+                        </div>
+                      ` : ''}
+                    </div>
+                    <span class="status ${lesson.status || 'open'}">${lesson.status || 'Open'}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        `;
+        
+        document.getElementById('mainContent').innerHTML = content;
+      } catch (error) {
+        console.error('Error loading lessons:', error);
+        showNotification('Error loading lessons', 'error');
+      }
+    }
+
+    async function openLesson(lessonId) {
+      try {
+        const response = await fetch(`/api/lessons/${lessonId}`);
+        currentLesson = await response.json();
+        
+        // Set lesson title
+        document.getElementById('lessonTitle').textContent = currentLesson.title;
+        
+        // Load lesson content based on format
+        const lessonFrame = document.getElementById('lessonFrame');
+        
+        // Check if we have an HTML file for this lesson
+        const lessonFile = `/lessons/grade${currentLesson.grade}/lesson-${currentLesson.unit}-${currentLesson.lesson_order}.html`;
+        
+        // Try to load the lesson file
+        fetch(lessonFile)
+          .then(res => {
+            if (res.ok) {
+              lessonFrame.src = lessonFile;
+            } else {
+              // Fallback to content from database
+              const htmlContent = currentLesson.html_content || currentLesson.content || '<h1>Lesson content not available</h1>';
+              lessonFrame.srcdoc = htmlContent;
+            }
+          })
+          .catch(() => {
+            const htmlContent = currentLesson.html_content || currentLesson.content || '<h1>Lesson content not available</h1>';
+            lessonFrame.srcdoc = htmlContent;
+          });
+        
+        // Set up video if available
+        if (currentLesson.video_url) {
+          document.getElementById('videoContainer').innerHTML = `
+            <video id="lessonVideo" controls class="w-full h-full">
+              <source src="${currentLesson.video_url}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          `;
+          
+          // Track video progress
+          const video = document.getElementById('lessonVideo');
+          video.addEventListener('timeupdate', () => {
+            const progress = (video.currentTime / video.duration) * 100;
+            document.getElementById('videoProgress').style.width = `${progress}%`;
+            document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
+          });
+        }
+        
+        // Initialize progress tracking
+        lessonStartTime = Date.now();
+        updateLessonProgress();
+        
+        // Join lesson room for real-time features
+        socket.emit('join-lesson', lessonId);
+        
+        // Show modal
+        document.getElementById('lessonModal').classList.add('show');
+      } catch (error) {
+        console.error('Error opening lesson:', error);
+        showNotification('Error opening lesson', 'error');
+      }
+    }
+
+    function closeLessonModal() {
+      // Save progress before closing
+      if (currentLesson && lessonStartTime) {
+        const timeSpent = Math.round((Date.now() - lessonStartTime) / 1000); // in seconds
+        saveLessonProgress(timeSpent);
+      }
+      
+      document.getElementById('lessonModal').classList.remove('show');
+      currentLesson = null;
+      lessonStartTime = null;
+    }
+
+    async function saveLessonProgress(timeSpent) {
+      if (!currentLesson || currentUser.role !== 'student') return;
+      
+      try {
+        const video = document.getElementById('lessonVideo');
+        const videoProgress = video ? (video.currentTime / video.duration) * 100 : 0;
+        
+        await fetch('/api/progress/lesson', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lesson_id: currentLesson.id,
+            progress: currentLesson.user_progress?.progress || 0,
+            time_spent: timeSpent,
+            video_progress: videoProgress,
+            completed: false
+          })
+        });
+      } catch (error) {
+        console.error('Error saving progress:', error);
+      }
+    }
+
+    function updateLessonProgress() {
+      if (!currentLesson) return;
+      
+      // Update time spent
+      if (lessonStartTime) {
+        const minutes = Math.round((Date.now() - lessonStartTime) / 60000);
+        document.getElementById('timeSpent').textContent = `${minutes}m`;
+      }
+      
+      // Update other progress indicators
+      // This would be enhanced with actual tracking from the lesson iframe
+      document.getElementById('slidesProgress').textContent = '0/0';
+      document.getElementById('activitiesProgress').textContent = '0/0';
+      
+      // Schedule next update
+      setTimeout(updateLessonProgress, 30000); // Update every 30 seconds
+    }
+
+    async function startAssessment() {
+      if (!currentLesson || !currentLesson.assessment_questions || currentLesson.assessment_questions.length === 0) {
+        showNotification('No assessment available for this lesson', 'info');
+        return;
+      }
+      
+      currentAssessment = {
+        lesson_id: currentLesson.id,
+        questions: currentLesson.assessment_questions,
+        currentQuestion: 0,
+        answers: [],
+        startTime: Date.now(),
+        timeLimit: 15 * 60 // 15 minutes in seconds
+      };
+      
+      document.getElementById('assessmentTitle').textContent = `${currentLesson.title} - Assessment`;
+      document.getElementById('totalQuestions').textContent = currentAssessment.questions.length;
+      
+      loadAssessmentQuestion();
+      startAssessmentTimer();
+      
+      document.getElementById('assessmentModal').classList.add('show');
+      closeLessonModal();
+    }
+
+    function loadAssessmentQuestion() {
+      const question = currentAssessment.questions[currentAssessment.currentQuestion];
+      document.getElementById('currentQuestion').textContent = currentAssessment.currentQuestion + 1;
+      
+      const content = `
+        <div class="card p-6">
+          <h4 class="font-bold text-lg mb-4">Question ${currentAssessment.currentQuestion + 1}</h4>
+          <p class="text-lg mb-6">${question.question}</p>
+          <div class="space-y-3">
+            ${question.options.map((option, index) => `
+              <div class="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-[var(--gold)] transition-colors"
+                   onclick="selectAnswer(${index})" id="option-${index}">
+                <label class="cursor-pointer">
+                  <input type="radio" name="answer" value="${index}" class="mr-3">
+                  ${String.fromCharCode(65 + index)}. ${option}
+                </label>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('assessmentContent').innerHTML = content;
+      
+      // Restore selected answer if any
+      if (currentAssessment.answers[currentAssessment.currentQuestion] !== undefined) {
+        selectAnswer(currentAssessment.answers[currentAssessment.currentQuestion]);
+      }
+      
+      // Update navigation buttons
+      document.getElementById('prevQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === 0 ? 'none' : 'block';
+      
+      document.getElementById('nextQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === currentAssessment.questions.length - 1 ? 'none' : 'block';
+      
+      document.getElementById('submitAssessmentBtn').classList.toggle('hidden',
+        currentAssessment.currentQuestion !== currentAssessment.questions.length - 1);
+    }
+
+    function selectAnswer(index) {
+      // Store answer
+      currentAssessment.answers[currentAssessment.currentQuestion] = index;
+      
+      // Update UI
+      document.querySelectorAll('[id^="option-"]').forEach(el => {
+        el.classList.remove('border-[var(--maroon)]', 'bg-gray-50');
+      });
+      
+      document.getElementById(`option-${index}`).classList.add('border-[var(--maroon)]', 'bg-gray-50');
+      document.querySelector(`input[value="${index}"]`).checked = true;
+    }
+
+    function previousQuestion() {
+      if (currentAssessment.currentQuestion > 0) {
+        currentAssessment.currentQuestion--;
+        loadAssessmentQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentAssessment.currentQuestion < currentAssessment.questions.length - 1) {
+        currentAssessment.currentQuestion++;
+        loadAssessmentQuestion();
+      }
+    }
+
+    function startAssessmentTimer() {
+      let timeRemaining = currentAssessment.timeLimit;
+      
+      assessmentTimer = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        document.getElementById('assessmentTimer').textContent = 
+          `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeRemaining <= 0) {
+          clearInterval(assessmentTimer);
+          submitAssessment();
+        }
+      }, 1000);
+    }
+
+    async function submitAssessment() {
+      clearInterval(assessmentTimer);
+      
+      const timeTaken = Math.round((Date.now() - currentAssessment.startTime) / 1000);
+      
+      try {
+        const response = await fetch('/api/assessments/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lesson_id: currentAssessment.lesson_id,
+            answers: currentAssessment.answers,
+            time_taken: timeTaken
+          })
+        });
+        
+        const result = await response.json();
+        
+        // Show results
+        const content = `
+          <div class="text-center py-8">
+            <div class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold ${result.passed ? 'bg-[var(--ok)] text-white' : 'bg-[var(--danger)] text-white'}">
+              ${result.percentage}%
+            </div>
+            <h3 class="text-2xl font-bold mb-2">${result.passed ? 'Congratulations!' : 'Keep Practicing!'}</h3>
+            <p class="text-lg mb-4">${result.passed ? 'You passed the assessment!' : `You need 70% to pass. You scored ${result.percentage}%.`}</p>
+            
+            <div class="grid gap-4 md:grid-cols-3 max-w-md mx-auto mb-6">
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="font-bold text-2xl">${result.score}</div>
+                <div class="text-sm text-gray-600">Points Earned</div>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="font-bold text-2xl">${result.total_points}</div>
+                <div class="text-sm text-gray-600">Total Points</div>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="font-bold text-2xl">${Math.round(timeTaken / 60)}m</div>
+                <div class="text-sm text-gray-600">Time Taken</div>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              ${result.results.map((q, index) => `
+                <div class="card p-4 text-left ${q.is_correct ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+                  <div class="flex justify-between items-start mb-2">
+                    <h4 class="font-bold">Question ${index + 1}</h4>
+                    <span class="${q.is_correct ? 'text-green-600' : 'text-red-600'} font-bold">
+                      ${q.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                    </span>
+                  </div>
+                  <p class="mb-2">${q.question}</p>
+                  <div class="text-sm">
+                    <p>Your answer: ${currentAssessment.questions[index].options[q.user_answer] || 'No answer'}</p>
+                    ${!q.is_correct ? `
+                      <p class="text-green-600">Correct answer: ${currentAssessment.questions[index].options[q.correct_answer]}</p>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div class="mt-6">
+              <button onclick="closeAssessmentModal()" class="btn btn-primary">
+                <i class="fas fa-check"></i>Continue
+              </button>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('assessmentContent').innerHTML = content;
+        
+        // Hide navigation
+        document.getElementById('prevQuestionBtn').style.display = 'none';
+        document.getElementById('nextQuestionBtn').style.display = 'none';
+        document.getElementById('submitAssessmentBtn').classList.add('hidden');
+        
+        if (result.passed) {
+          showNotification('🎉 Congratulations! You passed the assessment!', 'success');
+        }
+      } catch (error) {
+        console.error('Error submitting assessment:', error);
+        showNotification('Error submitting assessment', 'error');
+      }
+    }
+
+    function closeAssessmentModal() {
+      document.getElementById('assessmentModal').classList.remove('show');
+      currentAssessment = null;
+      loadLessons(); // Refresh lessons to show updated progress
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    function logout() {
+      window.location.href = '/auth/logout';
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
