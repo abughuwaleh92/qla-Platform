@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G7 • Unit 1 • Multiplication & Division of Rational Numbers (QLA)</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX: CSS + JS (robust auto-render bootstrap) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  /* Boot KaTeX once DOM is parsed; expose global helper for re-typeset after dynamic updates. */
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root = document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t = setInterval(() => {
+        if (window.renderMathInElement) { clearInterval(t); run(); }
+      }, 25);
+      setTimeout(() => clearInterval(t), 6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  /* Stage */
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:120px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  /* Popover (glossary) */
+  #pop{position:fixed;inset:auto auto 20px 20px;max-width:min(560px,90vw);background:#fff;border:2px solid var(--gold);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding:14px 16px;z-index:40;display:none;text-align:left}
+  #pop strong{color:var(--maroon)} #pop .close{float:right;color:#666;cursor:pointer;font-weight:800}
+
+  /* Canvases */
+  .wide-wrap{width:100%;max-width:980px}
+  canvas.nline, canvas.area, canvas.scale{width:100%;height:180px;border-radius:12px;background:linear-gradient(180deg,#fff,#fafafa);border:2px solid #ececec}
+  canvas.area{height:260px}
+
+  .sortable li{user-select:none}.sortable .dragging{opacity:.5}
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+
+  /* Toggle pills for sign game & T/F */
+  .pill{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #e5e7eb;border-radius:999px;padding:.35rem .75rem;cursor:pointer;background:#fff}
+  .pill.active{border-color:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.15)}
+</style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-24 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Unit 1 — The Number System</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Lesson: Multiplication &amp; Division of Rational Numbers</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Grade 7</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Aligned to AERO 7.NS.2a–2d. Member of Qatar Foundation.</div>
+    </section>
+
+    <!-- 1 • LOs + Keywords -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Objectives &amp; Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Objectives</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Determine the <strong>sign</strong> and <strong>magnitude</strong> of products/quotients of rational numbers.</li>
+            <li>Multiply fractions using <strong>cross‑cancel</strong>, then multiply numerators &amp; denominators and <strong>simplify</strong>.</li>
+            <li>Divide fractions by multiplying by the <strong>reciprocal</strong> (invert‑and‑multiply) and justify why it works.</li>
+            <li>Interpret multiplication as <strong>scaling (resizing)</strong>, including cases \(0&lt;|k|&lt;1\) and negative \(k\).</li>
+            <li>Multiply/divide <strong>decimals</strong> (place‑value reasoning; powers of ten) and check results for reasonableness.</li>
+          </ul>
+          <p class="text-xs text-gray-500 mt-2">Standards focus: AERO 7.NS.2a–2d (school scope Unit 1).</p>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap for definitions)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="rational">rational number</span>
+            <span class="chip" data-key="product">product</span>
+            <span class="chip" data-key="factor">factor</span>
+            <span class="chip" data-key="quotient">quotient</span>
+            <span class="chip" data-key="reciprocal">reciprocal</span>
+            <span class="chip" data-key="multinv">multiplicative inverse</span>
+            <span class="chip" data-key="identity">multiplicative identity</span>
+            <span class="chip" data-key="zero">zero property</span>
+            <span class="chip" data-key="scaling">scaling</span>
+            <span class="chip" data-key="crosscancel">cross‑cancel</span>
+            <span class="chip" data-key="simplify">simplest form</span>
+            <span class="chip" data-key="power10">power of ten</span>
+            <span class="chip" data-key="abs">absolute value</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">We build meaning with area models, scaling, and inverse relationships before procedural shortcuts.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Warm‑Up: Sign patterns -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Warm‑Up: What happens to the sign?</h2>
+      <div class="grid md:grid-cols-3 gap-4 w-full max-w-5xl">
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Multiply</div>
+          <div class="text-2xl">\( (+3)\times(+4)=\) <span class="font-extrabold">12</span></div>
+          <div class="text-sm mt-1">Same signs → positive.</div>
+        </div>
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Multiply</div>
+          <div class="text-2xl">\( (-5)\times(+2)=\) <span class="font-extrabold">-10</span></div>
+          <div class="text-sm mt-1">Different signs → negative.</div>
+        </div>
+        <div class="card p-4">
+          <div class="font-bold text-maroon mb-1">Divide</div>
+          <div class="text-2xl">\( (-18)\div(-3)=\) <span class="font-extrabold">6</span></div>
+          <div class="text-sm mt-1">Same signs → positive.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 • Scaling Explorer: k·x -->
+    <section class="slide" id="scaleSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Explorer: Multiplication as Scaling</h2>
+      <p class="text-gray-600 mb-2">Choose a number \(x\) and a scale factor \(k\). See how \(k\cdot x\) changes magnitude and direction.</p>
+      <div class="wide-wrap"><canvas id="scaleCanvas" class="scale" aria-label="Scaling explorer"></canvas></div>
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+        <label class="chip">x = <input id="scaleX" class="border rounded px-2 py-1 w-24" value="6"/></label>
+        <label class="chip">k = <input id="scaleK" class="border rounded px-2 py-1 w-24" value="0.5"/></label>
+        <span class="chip">k·x = <b id="scaleOut">3</b></span>
+        <button id="scaleRand" class="btn">Randomize</button>
+        <button id="scaleSnap" class="btn">Snap to tenths</button>
+        <button id="scaleReset" class="btn">Reset</button>
+        <button id="scaleExportCSV" class="btn">Export CSV</button>
+        <button id="scaleExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="scaleHint" class="hint mt-3 text-left text-sm">If \(0&lt;|k|&lt;1\), the result shrinks in magnitude; if \(|k|&gt;1\), it grows; negative \(k\) flips direction (sign).</div>
+    </section>
+
+    <!-- 4 • Area Model for fraction multiplication -->
+    <section class="slide" id="areaSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Area Model: Fraction × Fraction</h2>
+      <p class="text-gray-600 mb-2">Visualize \( \frac{a}{b}\times\frac{c}{d} \) as the overlap of shaded parts of a unit rectangle.</p>
+      <div class="wide-wrap"><canvas id="areaCanvas" class="area" aria-label="Area model"></canvas></div>
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+        <span class="chip">\( \frac{a}{b} =\) <input id="aNum" class="border rounded px-2 py-1 w-16" value="3"> /
+          <input id="aDen" class="border rounded px-2 py-1 w-16" value="4"></span>
+        <span class="chip">\( \frac{c}{d} =\) <input id="bNum" class="border rounded px-2 py-1 w-16" value="2"> /
+          <input id="bDen" class="border rounded px-2 py-1 w-16" value="5"></span>
+        <label class="chip">negative? <input id="areaNeg" type="checkbox" class="ml-2"></label>
+        <span class="chip">Result = <b id="areaOut">\( \frac{6}{20}=\frac{3}{10} \)</b></span>
+        <button id="areaRand" class="btn">Randomize</button>
+        <button id="areaExportCSV" class="btn">Export CSV</button>
+        <button id="areaExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div class="hint mt-3 text-left text-sm">Multiply numerators &amp; denominators: \( \frac{a}{b}\times\frac{c}{d}=\frac{ac}{bd}\). Then simplify by dividing top &amp; bottom by a common factor.</div>
+    </section>
+
+    <!-- 5 • Cross‑Cancel Playground -->
+    <section class="slide" id="xcSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Cross‑Cancel Playground</h2>
+      <div class="card p-5 w-full max-w-4xl text-left">
+        <div class="text-xl">Compute: <span id="xcExpr" class="font-extrabold"></span></div>
+        <div class="mt-3 grid md:grid-cols-2 gap-3">
+          <div class="card p-4">
+            <div class="font-semibold text-maroon mb-1">Cancel factors (optional)</div>
+            <div class="text-sm">Enter a common factor that divides a numerator with an opposite denominator.</div>
+            <div class="mt-2 flex flex-wrap gap-2 items-center">
+              <span class="chip">Cancel factor = <input id="xcF" class="border rounded px-2 py-1 w-20" placeholder="e.g., 2"></span>
+              <button id="xcApply" class="btn">Apply</button>
+              <button id="xcReset" class="btn">Reset</button>
+            </div>
+            <div id="xcWork" class="mt-3 text-lg"></div>
+          </div>
+          <div class="card p-4">
+            <div class="font-semibold text-maroon mb-1">Final Answer (simplest form)</div>
+            <div class="text-xl">= <input id="xcAns" class="border rounded px-2 py-1 w-40" placeholder="e.g., 3/10 or -0.3"></div>
+            <div class="mt-3 flex gap-2">
+              <button id="xcCheck" class="btn maroon">Check</button>
+              <button id="xcHint" class="btn">Hint</button>
+              <button id="xcNew" class="btn">New</button>
+              <button id="xcExportCSV" class="btn">Export CSV</button>
+              <button id="xcExportJSON" class="btn">Export JSON</button>
+            </div>
+            <div id="xcFb" class="mt-2 h-6 font-semibold"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 • Division: Invert & Multiply -->
+    <section class="slide" id="divSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Division of Fractions: Invert &amp; Multiply</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="divList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="divCheck" class="btn maroon">Check</button>
+          <button id="divNew" class="btn">New set</button>
+          <button id="divExportCSV" class="btn">Export CSV</button>
+          <button id="divExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="divFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+      <div class="hint mt-3 text-left text-sm">For \( \frac{a}{b}\div\frac{c}{d} \) with \(c\neq0\): multiply by the reciprocal \( \frac{d}{c} \). Guardrail: division by zero is undefined.</div>
+    </section>
+
+    <!-- 7 • Sign Rules Game -->
+    <section class="slide" id="signSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Sign Rules (Product &amp; Quotient)</h2>
+      <div class="card p-5 w-full max-w-4xl text-left">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <h3 class="text-xl font-bold text-maroon mb-1">Multiplication</h3>
+            <div id="signMul" class="grid grid-cols-2 gap-2"></div>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-maroon mb-1">Division</h3>
+            <div id="signDiv" class="grid grid-cols-2 gap-2"></div>
+          </div>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button id="signCheck" class="btn maroon">Check</button>
+          <button id="signReset" class="btn">Reset</button>
+          <button id="signExportCSV" class="btn">Export CSV</button>
+          <button id="signExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="signFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+      <div class="hint mt-3 text-left text-sm">Same signs → positive; different signs → negative (both for product and quotient).</div>
+    </section>
+
+    <!-- 8 • Decimal Multiplication -->
+    <section class="slide" id="dmSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Multiplying Decimals (place‑value)</h2>
+      <div id="dmList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="dmCheck" class="btn maroon">Check</button>
+        <button id="dmNew" class="btn">New set</button>
+        <button id="dmExportCSV" class="btn">Export CSV</button>
+        <button id="dmExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="dmFb" class="mt-2 h-6 font-semibold"></div>
+      <div class="hint mt-3 text-left text-sm">Ignore decimals, multiply whole‑number parts, then place the decimal so total decimal digits = sum of decimal digits of the factors.</div>
+    </section>
+
+    <!-- 9 • Decimal Division -->
+    <section class="slide" id="ddSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Dividing Decimals (powers of 10)</h2>
+      <div id="ddList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="ddCheck" class="btn maroon">Check</button>
+        <button id="ddNew" class="btn">New set</button>
+        <button id="ddExportCSV" class="btn">Export CSV</button>
+        <button id="ddExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="ddFb" class="mt-2 h-6 font-semibold"></div>
+      <div class="hint mt-3 text-left text-sm">Make the divisor a whole number by multiplying numerator &amp; denominator by \(10^k\). Then divide.</div>
+    </section>
+
+    <!-- 10 • Mixed Practice Generator -->
+    <section class="slide" id="mixSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice Generator (levels)</h2>
+      <div class="card p-5 w-full max-w-3xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Difficulty:</span>
+          <select id="mixLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (integers)</option>
+            <option value="med" selected>medium (integer/fraction × or ÷)</option>
+            <option value="hard">hard (fraction/decimal × or ÷; signed)</option>
+          </select>
+          <button id="mixNew" class="btn">New question</button>
+        </div>
+        <div class="mt-3 text-2xl">Compute: <span id="mixQ" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="mixAns" class="border rounded px-3 py-2 w-60" placeholder="e.g., -7/6 or -1.166..." />
+          <button id="mixCheck" class="btn maroon">Check</button>
+          <button id="mixHint" class="btn">Hint</button>
+          <button id="mixExportCSV" class="btn">Export CSV</button>
+          <button id="mixExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="mixHintBox" class="mt-3 text-sm"></div>
+        <div id="mixFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 11 • Real‑world practice -->
+    <section class="slide" id="realSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Real‑World Practice</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="realList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="realNew" class="btn">New set</button>
+          <button id="realCheck" class="btn maroon">Check</button>
+          <button id="realExportCSV" class="btn">Export CSV</button>
+          <button id="realExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="realFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 12 • Challenge: Missing factor/divisor -->
+    <section class="slide" id="chalSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge: Find the Missing Number</h2>
+      <div class="grid md:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-1">Missing factor</h3>
+          <div class="grid gap-2">
+            <div>\( p \times q = r \). If \( p=-\tfrac{3}{4} \) and \( r=\tfrac{9}{10} \), then \( q=\) <input class="ch1 border rounded px-2 py-1 w-32" data-ans="-6/5"></div>
+            <div>\( p \times q = r \). If \( p=2.5 \) and \( r=-3.75 \), then \( q=\) <input class="ch1 border rounded px-2 py-1 w-32" data-ans="-1.5"></div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-1">Missing divisor/dividend</h3>
+          <div class="grid gap-2">
+            <div>\( a \div b = r \). If \( a=\tfrac{5}{6} \) and \( r=-\tfrac{5}{9} \), then \( b=\) <input class="ch1 border rounded px-2 py-1 w-32" data-ans="-3/2"></div>
+            <div>\( a \div b = r \). If \( b=-\tfrac{2}{3} \) and \( r=3 \), then \( a=\) <input class="ch1 border rounded px-2 py-1 w-32" data-ans="-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="chCheck" class="btn maroon">Check</button>
+        <button id="chReset" class="btn">Reset</button>
+        <button id="chExportCSV" class="btn">Export CSV</button>
+        <button id="chExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="chFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 13 • Error Analysis -->
+    <section class="slide" id="errSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Error Analysis</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="errBox" class="text-lg"></div>
+        <div class="mt-2">
+          <label class="mr-2"><input type="radio" name="errChoice" value="A"> Wrong reciprocal / flipped the wrong fraction</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="B"> Failed to simplify / cross‑cancel correctly</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="C"> Sign error</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="D"> Decimal place-value error</label>
+        </div>
+        <div class="mt-2 flex gap-2">
+          <button id="errCheck" class="btn maroon">Check</button>
+          <button id="errReveal" class="btn">Reveal correct work</button>
+          <button id="errNew" class="btn">New example</button>
+          <button id="errExportCSV" class="btn">Export CSV</button>
+          <button id="errExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="errFb" class="mt-2 h-6 font-semibold"></div>
+        <div id="errRevealBox" class="mt-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- 14 • Quick True/False -->
+    <section class="slide" id="tfSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Quick True / False</h2>
+      <div id="tfList" class="w-full max-w-4xl grid md:grid-cols-2 gap-3"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="tfCheck" class="btn maroon">Check</button>
+        <button id="tfNew" class="btn">New set</button>
+        <button id="tfExportCSV" class="btn">Export CSV</button>
+        <button id="tfExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="tfFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 15 • Exit ticket -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 ideas you learned about multiplying/dividing rationals</li>
+            <li>2 strategies you can use (visual / arithmetic)</li>
+            <li>1 question you still have</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p>We’ll connect to <strong>multi‑step expressions</strong>, order of operations, and proportional reasoning with rational numbers (AERO 7.EE &amp; 7.RP).</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[110px] banner rounded-md" style="background-image:url('qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 16</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* ---------- Deck Navigation, Math Render Hook, Export Helpers, Core Math ---------- */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G7_Unit1_MulDiv_Rationals_QLA';
+  let i=0;
+
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    const sid=slides[i].id||'';
+    if(sid==='scaleSlide') drawScale();
+    if(sid==='areaSlide') drawArea();
+    if(sid==='xcSlide') renderXC();
+    renderMath(slides[i]);
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  function id(x){return document.getElementById(x)}
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<18;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+
+  /* Math re-render helper */
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+
+  /* Export helpers */
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  /* Number utilities */
+  const gcd=(a,b)=>{a=Math.trunc(Math.abs(a));b=Math.trunc(Math.abs(b));while(b){[a,b]=[b,a%b]}return a||1};
+  const lcm=(a,b)=>Math.abs(a*b)/gcd(a,b);
+
+  /* Rational helpers */
+  function parseRational(s){
+    if(typeof s==='number') return [Math.trunc(s*1000),1000]; // rough
+    if(!s) return null;
+    s=s.toString().trim().replace('−','-');
+    const m=s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/);
+    if(m){const A=+m[1],B=+m[2],C=+m[3];const sign=A<0?-1:1;return toFrac(A*C+sign*B, C);}
+    const f=s.match(/^(-?\d+)\/(-?\d+)$/);
+    if(f){let n=+f[1],d=+f[2]; if(d===0) return null; return toFrac(n,d);}
+    if(!isNaN(Number(s))){
+      const parts=s.split('.');
+      if(parts.length===1) return [Number(s),1];
+      const k=parts[1].length; const n=Math.round(Number(s)*10**k); const d=10**k; return toFrac(n,d);
+    }
+    return null;
+  }
+  function toFrac(n,d){let g=gcd(n,d); d<0&&(g=-g); return [n/g,d/g]}
+  const sFrac=([n,d])=> d===1? String(n) : `${n}/${d}`;
+  const fracEq=(a,b)=>a[0]*b[1]===b[0]*a[1];
+  const addFrac=(a,b)=>toFrac(a[0]*b[1]+b[0]*a[1], a[1]*b[1]);
+  const subFrac=(a,b)=>toFrac(a[0]*b[1]-b[0]*a[1], a[1]*b[1]);
+  const mulFrac=(a,b)=>toFrac(a[0]*b[0], a[1]*b[1]);
+  function divFrac(a,b){ if(b[0]===0) return null; return toFrac(a[0]*b[1], a[1]*b[0]); }
+  const asNumber=([n,d])=> n/d;
+
+  /* ---------- Glossary popover ---------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    rational:'<strong>Rational number</strong>: any number that can be written as \\(\\frac{p}{q}\\) with integers \\(p,q\\) and \\(q\\neq0\\) (terminating or repeating decimals).',
+    product:'<strong>Product</strong>: the result of multiplication.',
+    factor:'<strong>Factor</strong>: a number multiplied by another to give a product.',
+    quotient:'<strong>Quotient</strong>: the result of division.',
+    reciprocal:'<strong>Reciprocal</strong> of \\(\\tfrac{a}{b}\\) (\\(a\\neq0\\)) is \\(\\tfrac{b}{a}\\); their product is 1.',
+    multinv:'<strong>Multiplicative inverse</strong>: a number that multiplies with the original to give 1 (the reciprocal).',
+    identity:'<strong>Multiplicative identity</strong>: the number 1 because \\(1\\cdot x=x\\).',
+    zero:'<strong>Zero property</strong>: \\(0\\cdot x=0\\); dividing by 0 is <em>undefined</em>.',
+    scaling:'<strong>Scaling</strong>: multiplication stretches/shrinks a value by a factor \\(k\\) (and flips sign if \\(k<0\\)).',
+    crosscancel:'<strong>Cross‑cancel</strong>: divide a numerator and the opposite denominator by a common factor before multiplying.',
+    simplify:'<strong>Simplest form</strong>: numerator/denominator share no common factor &gt; 1.',
+    power10:'<strong>Power of ten</strong>: numbers like \\(10,100,1000,\\dots\\) used to shift decimals.',
+    abs:'<strong>Absolute value</strong>: \\(|x|\\) is the distance from 0; affects magnitude, not sign.'
+  };
+  function showPop(html,anchor){
+    POP_BODY.innerHTML=html; POP.style.display='block';
+    const r=anchor?anchor.getBoundingClientRect():{left:20,top:window.innerHeight-120};
+    POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px';
+    POP.style.bottom=(window.innerHeight - r.top + 10)+'px';
+  }
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(el){const key=el.dataset.key; if(GLOS[key]) showPop(GLOS[key], el);}
+  });
+
+  /* ---------- Scaling Explorer ---------- */
+  const cSc=id('scaleCanvas'); const scX=id('scaleX'), scK=id('scaleK'), scOut=id('scaleOut'), scHint=id('scaleHint');
+  const scState={min:-20,max:20,x:6,k:0.5,snap:false};
+  function mapSc(x){const m=32,W=cSc.clientWidth;return m+(x-scState.min)*(W-2*m)/(scState.max-scState.min)}
+  function drawScale(){
+    if(!cSc) return; const ctx=cSc.getContext('2d');
+    cSc.width=cSc.clientWidth*devicePixelRatio; cSc.height=cSc.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+    const y=cSc.clientHeight/2, m=32; ctx.clearRect(0,0,cSc.clientWidth,cSc.clientHeight);
+    // axis
+    ctx.lineWidth=2; ctx.strokeStyle='#6C1D45'; ctx.beginPath(); ctx.moveTo(m,y); ctx.lineTo(cSc.clientWidth-m,y); ctx.stroke();
+    for(let t=scState.min;t<=scState.max;t+=2){const x=mapSc(t); ctx.beginPath(); ctx.moveTo(x,y-8); ctx.lineTo(x,y+8); ctx.stroke(); ctx.fillStyle='#555'; ctx.font='12px Inter'; ctx.fillText(String(t),x-8,y+24);}
+    // bars
+    const x0=mapSc(0), xA=mapSc(scState.x), xB=mapSc(scState.k*scState.x);
+    // base x (maroon)
+    ctx.strokeStyle='#6C1D45'; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(x0,y-20); ctx.lineTo(xA,y-20); ctx.stroke();
+    // scaled kx (gold)
+    ctx.strokeStyle='#C7A34F'; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(x0,y+20); ctx.lineTo(xB,y+20); ctx.stroke();
+    scOut.textContent=(scState.k*scState.x).toFixed(2).replace(/\.00$/,'');
+    // hint text
+    const mag=(Math.abs(scState.k)<1)?'shrinks':'expands';
+    const flip=(scState.k<0)?' and flips sign':''; 
+    scHint.innerHTML = `Here, \\(k=${scState.k}\\), so it ${mag}${flip}.`;
+    renderMath(id('scaleSlide'));
+  }
+  function setSc(){ scState.x=Number(scX.value||0); scState.k=Number(scK.value||0); drawScale(); }
+  scX.addEventListener('input', setSc); scK.addEventListener('input', setSc);
+  id('scaleRand').addEventListener('click',()=>{scState.x=+(Math.random()*16-8).toFixed(1); scState.k=+(Math.random()*3-1.5).toFixed(2); scX.value=scState.x; scK.value=scState.k; drawScale();});
+  id('scaleReset').addEventListener('click',()=>{scState.x=6;scState.k=0.5;scX.value=6;scK.value=0.5;drawScale()});
+  id('scaleSnap').addEventListener('click',()=>{scState.snap=!scState.snap; id('scaleSnap').classList.toggle('ring-2'); let f=(v)=> scState.snap? Math.round(v*10)/10 : v; scX.value=f(Number(scX.value||0)); scK.value=f(Number(scK.value||0)); setSc();});
+  id('scaleExportCSV').addEventListener('click',()=> downloadCSV(`${deckTitle}_scaling.csv`, [['x','k','k*x'], [scState.x, scState.k, scState.x*scState.k]]));
+  id('scaleExportJSON').addEventListener('click',()=> downloadJSON(`${deckTitle}_scaling.json`, {x:scState.x,k:scState.k,product:scState.x*scState.k}));
+
+  /* ---------- Area Model ---------- */
+  const cAr=id('areaCanvas'); const aN=id('aNum'), aD=id('aDen'), bN=id('bNum'), bD=id('bDen'), areaNeg=id('areaNeg'), areaOut=id('areaOut');
+  function drawArea(){
+    const an=clamp(Number(aN.value||0),-50,50), ad=Math.max(1, Math.abs(Number(aD.value||1)));
+    const bn=clamp(Number(bN.value||0),-50,50), bd=Math.max(1, Math.abs(Number(bD.value||1)));
+    const sign = (areaNeg.checked? -1:1) * (Math.sign(an)*Math.sign(bn) || 1);
+    const aa=[Math.abs(an),ad], bb=[Math.abs(bn),bd];
+    const prod=mulFrac([sign*aa[0],aa[1]], [bb[0],bb[1]]);
+    // canvas
+    const ctx=cAr.getContext('2d');
+    cAr.width=cAr.clientWidth*devicePixelRatio; cAr.height=cAr.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+    const W=cAr.clientWidth, H=cAr.clientHeight, pad=36; ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='#2b2b2b'; ctx.lineWidth=2;
+    // grid
+    const w=(W-2*pad), h=(H-2*pad);
+    ctx.strokeRect(pad,pad,w,h);
+    // verticals by bd
+    for(let j=1;j<bd;j++){ const x=pad + j*w/bd; ctx.beginPath(); ctx.moveTo(x,pad); ctx.lineTo(x,pad+h); ctx.strokeStyle='#e5e7eb'; ctx.stroke(); }
+    // horizontals by ad
+    for(let i=1;i<ad;i++){ const y=pad + i*h/ad; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+w,y); ctx.strokeStyle='#e5e7eb'; ctx.stroke(); }
+    // shade A rows
+    ctx.fillStyle='rgba(108,29,69,0.22)'; ctx.fillRect(pad,pad, w, h*(aa[0]/ad));
+    // shade B cols
+    ctx.fillStyle='rgba(199,163,79,0.25)'; ctx.fillRect(pad, pad, w*(bb[0]/bd), h);
+    // intersection darker
+    ctx.fillStyle='rgba(108,29,69,0.35)'; ctx.fillRect(pad, pad, w*(bb[0]/bd), h*(aa[0]/ad));
+    // labels
+    ctx.fillStyle='#6C1D45'; ctx.font='14px Inter';
+    ctx.fillText(`${aa[0]}/${ad}`, pad+6, pad-10);
+    ctx.fillText(`${bb[0]}/${bd}`, pad+w+8, pad+14);
+    // output
+    areaOut.innerHTML = `\\( ${sFrac([prod[0],prod[1]])} \\)` + (prod[1]!==1? ` = \\( ${sFrac(prod)} \\)` : '');
+    if(prod[0]!==0) renderMath(id('areaSlide'));
+  }
+  [aN,aD,bN,bD,areaNeg].forEach(el=>el.addEventListener('input',drawArea));
+  id('areaRand').addEventListener('click',()=>{
+    const dens=[3,4,5,6,7,8,9,10];
+    aD.value=dens[Math.floor(Math.random()*dens.length)];
+    bD.value=dens[Math.floor(Math.random()*dens.length)];
+    aN.value=Math.floor(Math.random()*aD.value);
+    bN.value=Math.floor(Math.random()*bD.value);
+    areaNeg.checked=Math.random()<0.4;
+    drawArea();
+  });
+  id('areaExportCSV').addEventListener('click',()=>{
+    const data=[['a_num','a_den','b_num','b_den','negative','product'], [aN.value,aD.value,bN.value,bD.value, areaNeg.checked, areaOut.textContent]];
+    downloadCSV(`${deckTitle}_area_model.csv`, data);
+  });
+  id('areaExportJSON').addEventListener('click',()=>{
+    downloadJSON(`${deckTitle}_area_model.json`, {a:{n:aN.value,d:aD.value}, b:{n:bN.value,d:bD.value}, negative:areaNeg.checked, product: areaOut.textContent});
+  });
+
+  /* ---------- Cross-Cancel Playground ---------- */
+  const xcState={A:null,B:null,work:[],base:null};
+  const xcExpr=id('xcExpr'), xcWork=id('xcWork'), xcF=id('xcF'), xcAns=id('xcAns'), xcFb=id('xcFb');
+  function newXC(){
+    const dens=[3,4,5,6,7,8,9,10,12];
+    const d1=dens[Math.floor(Math.random()*dens.length)], d2=dens[Math.floor(Math.random()*dens.length)];
+    const n1=Math.floor(Math.random()*d1)+1, n2=Math.floor(Math.random()*d2)+1;
+    const s1=Math.random()<0.5?1:-1, s2=Math.random()<0.5?1:-1;
+    xcState.A=[s1*n1,d1]; xcState.B=[s2*n2,d2];
+    xcState.work=[]; xcState.base={A:[...xcState.A],B:[...xcState.B]};
+    xcExpr.innerHTML=`\\( ${sFrac(xcState.A)} \\times ${sFrac(xcState.B)} \\)`;
+    xcWork.innerHTML='(No cancellations yet.)';
+    xcAns.value=''; xcFb.textContent='';
+    renderMath(id('xcSlide'));
+  }
+  function renderXC(){
+    if(!xcState.A) newXC();
+    xcExpr.innerHTML=`\\( ${sFrac(xcState.A)} \\times ${sFrac(xcState.B)} \\)`;
+    const [a1,a2]=xcState.A, [b1,b2]=xcState.B;
+    let s='Steps:<br/>';
+    if(xcState.work.length===0) s='(No cancellations yet.)';
+    else xcState.work.forEach((w,idx)=> s+= `${idx+1}) divide by ${w.f}: \\( ${w.prev} \\Rightarrow ${w.next} \\)<br/>`);
+    xcWork.innerHTML=s;
+    renderMath(id('xcSlide'));
+  }
+  id('xcApply').addEventListener('click',()=>{
+    const f=Math.max(1, Math.abs(Number(xcF.value||1)));
+    let [a1,a2]=xcState.A, [b1,b2]=xcState.B;
+    // try cancel a1 with b2 or b1 with a2
+    let did=false, prev=`${sFrac([a1,a2])}\\times${sFrac([b1,b2])}`;
+    if(a1%f===0 && b2%f===0){ a1/=f; b2/=f; did=true; }
+    else if(b1%f===0 && a2%f===0){ b1/=f; a2/=f; did=true; }
+    if(did){
+      xcState.work.push({f, prev, next:`${sFrac([a1,a2])}\\times${sFrac([b1,b2])}`});
+      xcState.A=[a1,a2]; xcState.B=[b1,b2]; renderXC();
+    } else {
+      xcFb.textContent='No cross pair divisible by that factor.'; xcFb.className='mt-2 h-6 font-semibold text-red-700';
+    }
+  });
+  id('xcReset').addEventListener('click',()=>{xcState.A=[...xcState.base.A]; xcState.B=[...xcState.base.B]; xcState.work=[]; xcFb.textContent=''; renderXC();});
+  id('xcNew').addEventListener('click',newXC);
+  id('xcHint').addEventListener('click',()=>{
+    const g1=gcd(Math.abs(xcState.A[0]), Math.abs(xcState.B[1]));
+    const g2=gcd(Math.abs(xcState.B[0]), Math.abs(xcState.A[1]));
+    const msg=(g1>1 || g2>1) ? `Try dividing by \\(${Math.max(g1,g2)}\\).` : 'No useful cross‑cancellation; just multiply then simplify.';
+    xcFb.textContent=''; id('xcWork').insertAdjacentHTML('beforeend', `<div class="hint mt-2">${msg}</div>`); renderMath(id('xcSlide'));
+  });
+  id('xcCheck').addEventListener('click',()=>{
+    const ans=mulFrac(xcState.A, xcState.B);
+    const got=parseRational(xcAns.value);
+    if(got && fracEq(toFrac(got[0],got[1]), ans)){xcFb.textContent='✅ Correct! '+sFrac(ans); xcFb.className='mt-2 h-6 font-semibold text-green-700'; confetti();}
+    else {xcFb.textContent='❌ Not quite. Expected '+sFrac(ans); xcFb.className='mt-2 h-6 font-semibold text-red-700';}
+  });
+  id('xcExportCSV').addEventListener('click',()=>{
+    const rows=[['A','B','after_cancels','correct','user']];
+    const after=`${sFrac(xcState.A)} x ${sFrac(xcState.B)}`;
+    const correct=sFrac(mulFrac(xcState.A, xcState.B));
+    rows.push([sFrac(xcState.base.A), sFrac(xcState.base.B), after, correct, xcAns.value||'']);
+    downloadCSV(`${deckTitle}_cross_cancel.csv`, rows);
+  });
+  id('xcExportJSON').addEventListener('click',()=>{
+    const data={A:sFrac(xcState.base.A),B:sFrac(xcState.base.B),after:`${sFrac(xcState.A)} x ${sFrac(xcState.B)}`,steps:xcState.work,correct:sFrac(mulFrac(xcState.A,xcState.B)),user:xcAns.value||''};
+    downloadJSON(`${deckTitle}_cross_cancel.json`, data);
+  });
+  newXC();
+
+  /* ---------- Division: Invert & Multiply ---------- */
+  const divState={set:[]};
+  function newDivSet(){
+    divState.set=[];
+    const box=id('divList'); box.innerHTML='';
+    for(let k=0;k<4;k++){
+      const d1=[3,4,5,6,8,9,10][Math.floor(Math.random()*7)];
+      const d2=[3,4,5,6,8,9,10][Math.floor(Math.random()*7)];
+      let n1=Math.floor(Math.random()*d1)+1;
+      let n2=Math.floor(Math.random()*d2)+1;
+      const s1=Math.random()<0.5?1:-1, s2=Math.random()<0.5?1:-1;
+      const A=[s1*n1,d1], B=[s2*n2,d2];
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`
+        <div class="text-left font-semibold text-maroon">Item ${k+1}</div>
+        <div class="text-xl mt-1">\\( ${sFrac(A)} \\div ${sFrac(B)} = ${sFrac(A)} \\times (\\,\\square\\,) = \\)</div>
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+          Reciprocal of \\( ${sFrac(B)} \\) = 
+          <input class="dinv border rounded px-2 py-1 w-24" placeholder="num"> /
+          <input class="dinv border rounded px-2 py-1 w-24" placeholder="den">
+          <span class="ml-4">Final answer: <input class="dout border rounded px-2 py-1 w-32" placeholder="e.g., -7/6"></span>
+        </div>`;
+      row.dataset.A=sFrac(A); row.dataset.B=sFrac(B);
+      box.appendChild(row);
+      divState.set.push({A,B});
+    }
+    renderMath(id('divSlide'));
+  }
+  newDivSet();
+  id('divNew').addEventListener('click',newDivSet);
+  id('divCheck').addEventListener('click',()=>{
+    let total=0,ok=0; const rows=[...id('divList').querySelectorAll('.card')];
+    rows.forEach((row,idx)=>{
+      total++;
+      const {A,B}=divState.set[idx];
+      const invN=row.querySelectorAll('.dinv')[0], invD=row.querySelectorAll('.dinv')[1], out=row.querySelector('.dout');
+      let good=true;
+      // check reciprocal
+      if(Number(invN.value)==B[1] && Number(invD.value)==B[0] && B[0]!==0){ invN.style.borderColor=invD.style.borderColor='#22c55e'; }
+      else { invN.style.borderColor=invD.style.borderColor='#ef4444'; good=false; }
+      // check final
+      const correct=divFrac(A,B); const got=parseRational(out.value);
+      if(correct && got && fracEq(got,correct)){ out.style.borderColor='#22c55e'; } else { out.style.borderColor='#ef4444'; good=false; }
+      if(good) ok++;
+    });
+    id('divFb').textContent= ok===total?'✅ Excellent!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('divExportCSV').addEventListener('click',()=>{
+    const rows=[['A','B','correct','user']];
+    divState.set.forEach(({A,B},idx)=>{
+      const correct=divFrac(A,B);
+      const out=id('divList').querySelectorAll('.dout')[idx];
+      rows.push([sFrac(A), sFrac(B), correct? sFrac(correct):'undefined', out.value||'']);
+    });
+    downloadCSV(`${deckTitle}_division.csv`, rows);
+  });
+  id('divExportJSON').addEventListener('click',()=>{
+    const data=divState.set.map(({A,B},idx)=>({A:sFrac(A),B:sFrac(B),correct: (divFrac(A,B)? sFrac(divFrac(A,B)):'undefined'), user: id('divList').querySelectorAll('.dout')[idx].value||''}));
+    downloadJSON(`${deckTitle}_division.json`, data);
+  });
+
+  /* ---------- Sign Rules Game ---------- */
+  const signCombos=[['+','+'],['+','-'],['-','+'],['-','-']];
+  function buildSignGrid(rootId,op){
+    const root=id(rootId); root.innerHTML='';
+    signCombos.forEach((s,idx)=>{
+      const row=document.createElement('div'); row.className='p-3 border rounded flex items-center justify-between bg-white';
+      const lhs = op==='×'? `(${s[0]})×(${s[1]})` : `(${s[0]})÷(${s[1]})`;
+      row.innerHTML = `<div class="text-lg"> ${lhs} </div>
+        <div class="flex items-center gap-2">
+          <span class="pill" data-val="+" role="button" aria-label="positive">+</span>
+          <span class="pill" data-val="-" role="button" aria-label="negative">−</span>
+        </div>`;
+      root.appendChild(row);
+    });
+    root.querySelectorAll('.pill').forEach(pill=>{
+      pill.addEventListener('click',()=>{
+        const sib=[...pill.parentElement.querySelectorAll('.pill')];
+        sib.forEach(x=>x.classList.remove('active'));
+        pill.classList.add('active');
+      });
+    });
+  }
+  buildSignGrid('signMul','×'); buildSignGrid('signDiv','÷');
+  id('signReset').addEventListener('click',()=>{ buildSignGrid('signMul','×'); buildSignGrid('signDiv','÷'); id('signFb').textContent=''; });
+  id('signCheck').addEventListener('click',()=>{
+    const evalSign=(a,b)=> (a===b)?'+':'-';
+    const mulRows=[...id('signMul').children], divRows=[...id('signDiv').children];
+    let total=0,ok=0; const csv=[['op','a','b','correct','user']];
+    mulRows.forEach((row,idx)=>{ total++;
+      const a=signCombos[idx][0], b=signCombos[idx][1], correct=evalSign(a,b);
+      const user=row.querySelector('.pill.active')?.dataset.val || '';
+      if(user===correct) ok++;
+      csv.push(['*',a,b,correct,user]);
+    });
+    divRows.forEach((row,idx)=>{ total++;
+      const a=signCombos[idx][0], b=signCombos[idx][1], correct=evalSign(a,b);
+      const user=row.querySelector('.pill.active')?.dataset.val || '';
+      if(user===correct) ok++;
+      csv.push(['/',a,b,correct,user]);
+    });
+    id('signFb').textContent= ok===total ? '✅ Perfect!' : 'Score: '+ok+'/'+total;
+    if(ok===total) confetti();
+    id('signExportCSV').onclick=()=> downloadCSV(`${deckTitle}_sign_rules.csv`, csv);
+    id('signExportJSON').onclick=()=> downloadJSON(`${deckTitle}_sign_rules.json`, csv.slice(1).map(r=>({op:r[0],a:r[1],b:r[2],correct:r[3],user:r[4]})));
+  });
+
+  /* ---------- Decimal Multiplication ---------- */
+  const dmState={set:[]};
+  function decMulNew(){
+    const bank=[['1.2','0.35'],['-0.6','-2.5'],['3.14','0.2'],['-4.5','0.07'],['2.75','-1.4'],['0.08','0.9']];
+    dmState.set=[]; const box=id('dmList'); box.innerHTML='';
+    bank.sort(()=>Math.random()-0.5).slice(0,4).forEach((p,idx)=>{
+      const [a,b]=p;
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">${a} × ${b} = <input class="dmout border rounded px-2 py-1 w-32" placeholder="answer"></div>
+        <div class="mt-2 text-sm">Decimal places in product should be 
+          <input class="dmplaces border rounded px-2 py-1 w-16" placeholder="#"> (check thinking)</div>`;
+      row.dataset.a=a; row.dataset.b=b; box.appendChild(row);
+      dmState.set.push({a,b});
+    });
+  }
+  decMulNew(); id('dmNew').addEventListener('click',decMulNew);
+  id('dmCheck').addEventListener('click',()=>{
+    let total=0,ok=0; id('dmList').querySelectorAll('.card').forEach(row=>{
+      total++;
+      const a=row.dataset.a, b=row.dataset.b;
+      const places=(a.split('.')[1]?.length||0)+(b.split('.')[1]?.length||0);
+      const correct=(parseFloat(a)*parseFloat(b));
+      const got=Number(row.querySelector('.dmout').value);
+      const gotP=Number(row.querySelector('.dmplaces').value);
+      let good=true;
+      if(Math.abs(got-correct)<1e-10){ row.querySelector('.dmout').style.borderColor='#22c55e'; } else { good=false; row.querySelector('.dmout').style.borderColor='#ef4444'; }
+      if(gotP===places){ row.querySelector('.dmplaces').style.borderColor='#22c55e'; } else { good=false; row.querySelector('.dmplaces').style.borderColor='#ef4444'; }
+      if(good) ok++;
+    });
+    id('dmFb').textContent= ok===total?'✅ All correct!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('dmExportCSV').addEventListener('click',()=>{
+    const rows=[['a','b','correct','places','user','user_places']];
+    id('dmList').querySelectorAll('.card').forEach(row=>{
+      const a=row.dataset.a, b=row.dataset.b;
+      const places=(a.split('.')[1]?.length||0)+(b.split('.')[1]?.length||0);
+      rows.push([a,b,parseFloat(a)*parseFloat(b), places, row.querySelector('.dmout').value||'', row.querySelector('.dmplaces').value||'']);
+    });
+    downloadCSV(`${deckTitle}_decimal_mul.csv`, rows);
+  });
+  id('dmExportJSON').addEventListener('click',()=>{
+    const data=[...id('dmList').querySelectorAll('.card')].map(row=>{
+      const a=row.dataset.a, b=row.dataset.b;
+      return {a,b,correct:parseFloat(a)*parseFloat(b), places:(a.split('.')[1]?.length||0)+(b.split('.')[1]?.length||0), user: row.querySelector('.dmout').value||'', user_places: row.querySelector('.dmplaces').value||''}
+    });
+    downloadJSON(`${deckTitle}_decimal_mul.json`, data);
+  });
+
+  /* ---------- Decimal Division ---------- */
+  const ddState={set:[]};
+  function decDivNew(){
+    const bank=[['3.6','0.12'],['-7.5','-0.5'],['2.45','0.7'],['-1.26','0.14'],['6.3','-0.09'],['0.84','0.21']];
+    ddState.set=[]; const box=id('ddList'); box.innerHTML='';
+    bank.sort(()=>Math.random()-0.5).slice(0,4).forEach((p,idx)=>{
+      const [a,b]=p; const decB=(b.split('.')[1]?.length||0);
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">${a} ÷ ${b} = <input class="ddout border rounded px-2 py-1 w-32" placeholder="answer"></div>
+        <div class="mt-2 text-sm">Choose \(k\) so \(b\\cdot 10^k\) is a whole number: 
+          <input class="ddk border rounded px-2 py-1 w-16" placeholder="k"> (expected ${decB})</div>`;
+      row.dataset.a=a; row.dataset.b=b; box.appendChild(row);
+      ddState.set.push({a,b});
+    });
+  }
+  decDivNew(); id('ddNew').addEventListener('click',decDivNew);
+  id('ddCheck').addEventListener('click',()=>{
+    let total=0,ok=0; id('ddList').querySelectorAll('.card').forEach(row=>{
+      total++;
+      const a=parseFloat(row.dataset.a), b=parseFloat(row.dataset.b);
+      const k=(row.dataset.b.split('.')[1]?.length||0);
+      const correct=a/b;
+      const got=Number(row.querySelector('.ddout').value);
+      const gotK=Number(row.querySelector('.ddk').value);
+      let good=true;
+      if(Math.abs(got-correct)<1e-10){ row.querySelector('.ddout').style.borderColor='#22c55e'; } else { good=false; row.querySelector('.ddout').style.borderColor='#ef4444'; }
+      if(gotK===k){ row.querySelector('.ddk').style.borderColor='#22c55e'; } else { good=false; row.querySelector('.ddk').style.borderColor='#ef4444'; }
+      if(good) ok++;
+    });
+    id('ddFb').textContent= ok===total?'✅ All correct!':'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('ddExportCSV').addEventListener('click',()=>{
+    const rows=[['a','b','correct','k','user','user_k']];
+    id('ddList').querySelectorAll('.card').forEach(row=>{
+      const a=parseFloat(row.dataset.a), b=parseFloat(row.dataset.b);
+      const k=(row.dataset.b.split('.')[1]?.length||0);
+      rows.push([a,b,a/b,k,row.querySelector('.ddout').value||'',row.querySelector('.ddk').value||'']);
+    });
+    downloadCSV(`${deckTitle}_decimal_div.csv`, rows);
+  });
+  id('ddExportJSON').addEventListener('click',()=>{
+    const data=[...id('ddList').querySelectorAll('.card')].map(row=>{
+      const a=parseFloat(row.dataset.a), b=parseFloat(row.dataset.b);
+      const k=(row.dataset.b.split('.')[1]?.length||0);
+      return {a,b,correct:a/b,k,user:row.querySelector('.ddout').value||'',user_k:row.querySelector('.ddk').value||''}
+    });
+    downloadJSON(`${deckTitle}_decimal_div.json`, data);
+  });
+
+  /* ---------- Mixed Practice Generator ---------- */
+  const mixLevel=id('mixLevel'), mixQ=id('mixQ'), mixAns=id('mixAns'), mixHintBox=id('mixHintBox'), mixFb=id('mixFb');
+  let mixCur=null;
+  function rndInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+  function newMix(){
+    mixAns.value=''; mixHintBox.textContent=''; mixFb.textContent='';
+    const lvl=mixLevel.value; let A,B,op;
+    const ops = Math.random()<0.5? '×' : '÷';
+    if(lvl==='easy'){
+      A=[rndInt(-9,9),1]; B=[rndInt(1,9)*(Math.random()<0.5?-1:1),1];
+      op=ops;
+    } else if(lvl==='med'){
+      if(Math.random()<0.5){ // integer ×/÷ fraction
+        const d=[3,4,5,6,8,9,10][rndInt(0,6)];
+        A=[rndInt(-9,9),1]; B=[rndInt(1,d)*(Math.random()<0.5?-1:1), d];
+      } else { // fraction ×/÷ integer
+        const d=[3,4,5,6,8,9,10][rndInt(0,6)];
+        A=[rndInt(1,d)*(Math.random()<0.5?-1:1), d]; B=[rndInt(1,9)*(Math.random()<0.5?-1:1),1];
+      }
+      op=ops;
+    } else {
+      if(Math.random()<0.5){ // fraction with fraction
+        const d1=[3,4,5,6,7,8,9,10][rndInt(0,7)], d2=[3,4,5,6,7,8,9,10][rndInt(0,7)];
+        A=[rndInt(-d1+1,d1-1),d1]; B=[rndInt(1,d2)*(Math.random()<0.5?-1:1),d2];
+      } else { // decimals
+        const a=(rndInt(-25,25)/10), b=(rndInt(5,25)/10)*(Math.random()<0.5?-1:1);
+        A=parseRational(String(a)); B=parseRational(String(b));
+      }
+      op=ops;
+    }
+    mixCur={A,B,op};
+    mixQ.innerHTML=`\\( ${sFrac(A)} \\ ${op}\\ ${sFrac(B)} \\)`;
+    renderMath(id('mixSlide'));
+  }
+  id('mixNew').addEventListener('click',newMix); newMix();
+  id('mixHint').addEventListener('click',()=>{
+    if(!mixCur) return;
+    const {A,B,op}=mixCur;
+    if(op==='×'){
+      const g1=gcd(Math.abs(A[0]), Math.abs(B[1])), g2=gcd(Math.abs(B[0]), Math.abs(A[1]));
+      const tip=(g1>1||g2>1)? `Try cross‑cancel by \\(${Math.max(g1,g2)}\\).` : 'Multiply numerators and denominators, then simplify.';
+      mixHintBox.innerHTML=`<div class="hint">Multiply: \\( ${sFrac(A)}\\times${sFrac(B)} \\Rightarrow ${sFrac(mulFrac(A,B))}\\). ${tip}</div>`;
+    } else {
+      mixHintBox.innerHTML=`<div class="hint">Division: multiply by the reciprocal \\( ${sFrac(A)}\\div${sFrac(B)} = ${sFrac(A)}\\times${sFrac([B[1],B[0]])} \\).</div>`;
+    }
+    renderMath(id('mixSlide'));
+  });
+  id('mixCheck').addEventListener('click',()=>{
+    if(!mixCur) return;
+    const got=parseRational(mixAns.value);
+    let correct=null;
+    if(mixCur.op==='×') correct=mulFrac(mixCur.A,mixCur.B);
+    else correct=divFrac(mixCur.A,mixCur.B);
+    if(correct && got && fracEq(toFrac(got[0],got[1]), correct)){ mixFb.textContent='✅ Correct! '+sFrac(correct); mixFb.className='mt-2 h-6 font-semibold text-green-700'; confetti(); }
+    else { mixFb.textContent='❌ Not quite. Expected '+(correct? sFrac(correct):'undefined'); mixFb.className='mt-2 h-6 font-semibold text-red-700'; }
+  });
+  id('mixExportCSV').addEventListener('click',()=>{
+    if(!mixCur) return;
+    const correct=mixCur.op==='×'? mulFrac(mixCur.A,mixCur.B): divFrac(mixCur.A,mixCur.B);
+    downloadCSV(`${deckTitle}_mixed_current.csv`, [['A','op','B','correct','user'], [sFrac(mixCur.A),mixCur.op,sFrac(mixCur.B), correct? sFrac(correct):'undefined', mixAns.value||'']]);
+  });
+  id('mixExportJSON').addEventListener('click',()=>{
+    if(!mixCur) return;
+    const correct=mixCur.op==='×'? mulFrac(mixCur.A,mixCur.B): divFrac(mixCur.A,mixCur.B);
+    downloadJSON(`${deckTitle}_mixed_current.json`, {A:sFrac(mixCur.A),op:mixCur.op,B:sFrac(mixCur.B),correct: correct? sFrac(correct):'undefined', user: mixAns.value||''});
+  });
+
+  /* ---------- Real‑world practice ---------- */
+  const realState={items:[]};
+  function realTemplates(){
+    const items=[], r=(a,b)=>rndInt(a,b);
+    // Recipe scaling
+    const cupsN=r(1,3), cupsD=[2,3,4][r(0,2)], scaleN=[1,3,5][r(0,2)], scaleD=[2,4,3][r(0,2)];
+    const scaleSign = 1; // scale is positive
+    items.push({
+      text:`Recipe: needs \\( \\tfrac{${cupsN}}{${cupsD}} \\) cup sugar per batch. For \\( \\tfrac{${scaleN}}{${scaleD}} \\) of a batch, sugar needed =`,
+      ans: sFrac( mulFrac([cupsN,cupsD],[scaleN*scaleSign,scaleD]) ), check: mulFrac([cupsN,cupsD],[scaleN,scaleD]), suffix:'cups'
+    });
+    // Unit price
+    const price=r(10,60), packs=r(2,8);
+    items.push({
+      text:`Grocery: QAR ${price} for ${packs} identical items. Unit price (QAR/item) =`,
+      ans: (price/packs), suffix:'QAR', type:'decimal'
+    });
+    // Speed / rate
+    const dist=r(60,240), timeN=r(3,12), timeD=[2,3,4,5][r(0,3)];
+    items.push({
+      text:`Trip: distance ${dist} km in \\( \\tfrac{${timeN}}{${timeD}} \\) h. Average speed (km/h) =`,
+      ans: dist / (timeN/timeD), suffix:'km/h', type:'decimal'
+    });
+    // Elevation scaling (negative)
+    const elev=r(-40,-5), factorN=[2,3,1][r(0,2)], factorD=[3,2,4][r(0,2)];
+    items.push({
+      text:`Submarine depth: \\(${elev}\\) m. It dives to \\( \\tfrac{${factorN}}{${factorD}} \\) of that depth. New depth =`,
+      ans: elev * (factorN/factorD), suffix:'m', type:'decimal'
+    });
+    return items;
+  }
+  function realNew(){
+    realState.items=realTemplates();
+    const box=id('realList'); box.innerHTML='';
+    realState.items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl"> ${o.text} <input class="rin border rounded px-2 py-1 w-32" id="r_${idx}" placeholder="answer"> ${o.suffix||''}</div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('realSlide'));
+  }
+  id('realNew').addEventListener('click',realNew); realNew();
+  id('realCheck').addEventListener('click',()=>{
+    let ok=0; realState.items.forEach((o,idx)=>{
+      const el=id('r_'+idx);
+      const correctVal = (typeof o.ans==='string')? asNumber(parseRational(o.ans)) : o.ans;
+      const got=Number(el.value);
+      if(Math.abs(got-correctVal)<1e-10){ok++; el.style.borderColor='#22c55e'} else el.style.borderColor='#ef4444';
+    });
+    id('realFb').textContent = ok===realState.items.length? '✅ Excellent!' : 'Score: '+ok+'/'+realState.items.length;
+    if(ok===realState.items.length) confetti();
+  });
+  id('realExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer','user']];
+    realState.items.forEach((o,idx)=>rows.push([o.text, (typeof o.ans==='string'? o.ans : o.ans), id('r_'+idx).value||'' ]));
+    downloadCSV(`${deckTitle}_real_world.csv`, rows);
+  });
+  id('realExportJSON').addEventListener('click',()=>{
+    const data=realState.items.map((o,idx)=>({prompt:o.text, answer:(typeof o.ans==='string'? o.ans : o.ans), user:id('r_'+idx).value||''}));
+    downloadJSON(`${deckTitle}_real_world.json`, data);
+  });
+
+  /* ---------- Challenge & Error Analysis ---------- */
+  id('chCheck').addEventListener('click',()=>{
+    let ok=true; document.querySelectorAll('.ch1').forEach(inp=>{
+      const want=parseRational(inp.dataset.ans); const got=parseRational(inp.value);
+      if(!(got && fracEq(got,want))){ok=false; inp.style.borderColor='#ef4444'} else inp.style.borderColor='#22c55e'
+    });
+    id('chFb').textContent= ok?'✅ Excellent!':'❌ Try to fix the red ones'; if(ok) confetti();
+  });
+  id('chReset').addEventListener('click',()=>{document.querySelectorAll('.ch1').forEach(i=>{i.value='';i.style.borderColor='#e5e7eb'}); id('chFb').textContent=''});
+  id('chExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']];
+    document.querySelectorAll('.ch1').forEach(inp=>{
+      rows.push([inp.parentElement.textContent.replace(/\s+/g,' ').trim(), inp.dataset.ans, inp.value||'']);
+    });
+    downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('chExportJSON').addEventListener('click',()=>{
+    const data=[...document.querySelectorAll('.ch1')].map(inp=>({prompt:inp.parentElement.textContent.replace(/\s+/g,' ').trim(), correct:inp.dataset.ans, user:inp.value||''}));
+    downloadJSON(`${deckTitle}_challenge.json`, data);
+  });
+
+  function errBank(){
+    return [
+      {
+        work:'\\( \\tfrac{3}{4} \\div \\tfrac{2}{5} = \\tfrac{3}{4} \\times \\tfrac{2}{5} = \\tfrac{6}{20} = \\tfrac{3}{10} \\)  (reciprocal not used!)',
+        correct:'Division requires reciprocal: \\( \\tfrac{3}{4} \\div \\tfrac{2}{5} = \\tfrac{3}{4}\\times\\tfrac{5}{2}=\\tfrac{15}{8}=1\\tfrac{7}{8} \\).',
+        key:'A'
+      },
+      {
+        work:'\\( -\\tfrac{6}{7} \\times \\tfrac{7}{9} = \\tfrac{6}{9} = \\tfrac{2}{3} \\) (lost the negative)',
+        correct:'Signs: negative × positive → negative. Also cross‑cancel 7’s first: result \\( -\\tfrac{6}{9}=-\\tfrac{2}{3} \\).',
+        key:'C'
+      },
+      {
+        work:'\\( 1.2 \\times 0.35 = 0.42 \\) (placed decimals incorrectly)',
+        correct:'Ignore decimals: \\(12\\times35=420\\). Two + one = three decimal places → \\(0.420=0.42\\). Actually correct.',
+        key:'D' // trick: explanation acknowledges the correct rule; but student stated "incorrectly" in scenario -> pick D decimal place confusion in general
+      },
+      {
+        work:'\\( \\tfrac{4}{15} \\times \\tfrac{9}{8} = \\tfrac{36}{120} = \\tfrac{9}{30} \\)',
+        correct:'Cross‑cancel first: divide 9 and 15 by 3 → \\( \\tfrac{4}{5}\\times\\tfrac{3}{8}=\\tfrac{12}{40}=\\tfrac{3}{10} \\).',
+        key:'B'
+      }
+    ];
+  }
+  const errState={item:null};
+  function errNew(){
+    const bank=errBank(); errState.item=bank[Math.floor(Math.random()*bank.length)];
+    id('errBox').innerHTML=`Incorrect work:<br/> <div class="mt-1 text-maroon"> ${errState.item.work} </div>`;
+    id('errFb').textContent=''; id('errRevealBox').textContent='';
+    renderMath(id('errSlide'));
+  }
+  id('errNew').addEventListener('click',errNew); errNew();
+  id('errCheck').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    if(!sel){ id('errFb').textContent='Choose an option.'; return; }
+    if(sel.value===errState.item.key){ id('errFb').textContent='✅ Correct diagnosis.'; confetti(); }
+    else { id('errFb').textContent='❌ Not quite. Try again or reveal the correct work.'; }
+  });
+  id('errReveal').addEventListener('click',()=>{
+    id('errRevealBox').innerHTML = `<div class="hint">${errState.item.correct}</div>`;
+    renderMath(id('errSlide'));
+  });
+  id('errExportCSV').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    downloadCSV(`${deckTitle}_error_analysis.csv`, [['incorrect_work','correct_explanation','answer_key','user_choice'], [id('errBox').innerText.trim(), errState.item.correct, errState.item.key, sel?sel.value:'']]);
+  });
+  id('errExportJSON').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    downloadJSON(`${deckTitle}_error_analysis.json`, {incorrect:id('errBox').innerText.trim(), correct:errState.item.correct, key:errState.item.key, user: sel?sel.value:''});
+  });
+
+  /* ---------- True / False ---------- */
+  const tfState={set:[]};
+  function tfNew(){
+    const bank=[
+      {q:'\\( 0\\times r = 0 \\) for any rational \\(r\\).', a:true},
+      {q:'\\( \\tfrac{a}{b} \\div \\tfrac{c}{d} = \\tfrac{a\\cdot c}{b\\cdot d} \\).', a:false},
+      {q:'If \\(k\\) is negative, then \\(k\\cdot x\\) has opposite sign to \\(x\\).', a:true},
+      {q:'\\( \\tfrac{3}{5} \\times \\tfrac{10}{9} = \\tfrac{1}{3} \\).', a:false},
+      {q:'Dividing by 0 is undefined.', a:true},
+      {q:'\\( (-2)\\times(-3)=+6 \\).', a:true}
+    ].sort(()=>Math.random()-0.5).slice(0,4);
+    tfState.set=bank;
+    const box=id('tfList'); box.innerHTML='';
+    bank.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4 flex items-center justify-between';
+      row.innerHTML=`<div class="text-lg"> ${o.q} </div>
+        <div class="flex items-center gap-2">
+          <span class="pill" data-val="T">True</span>
+          <span class="pill" data-val="F">False</span>
+        </div>`;
+      box.appendChild(row);
+    });
+    box.querySelectorAll('.pill').forEach(pill=>{
+      pill.addEventListener('click',()=>{
+        const sib=[...pill.parentElement.querySelectorAll('.pill')];
+        sib.forEach(x=>x.classList.remove('active'));
+        pill.classList.add('active');
+      });
+    });
+    renderMath(id('tfSlide'));
+  }
+  tfNew(); id('tfNew').addEventListener('click',tfNew);
+  id('tfCheck').addEventListener('click',()=>{
+    let total=0,ok=0; const csv=[['statement','correct','user']];
+    [...id('tfList').children].forEach((row,idx)=>{
+      total++;
+      const correct = tfState.set[idx].a? 'T':'F';
+      const user=row.querySelector('.pill.active')?.dataset.val || '';
+      if(user===correct) ok++;
+      csv.push([row.querySelector('.text-lg').innerText.trim(), correct, user]);
+    });
+    id('tfFb').textContent= ok===total? '✅ Perfect!' : 'Score: '+ok+'/'+total;
+    if(ok===total) confetti();
+    id('tfExportCSV').onclick=()=> downloadCSV(`${deckTitle}_true_false.csv`, csv);
+    id('tfExportJSON').onclick=()=> downloadJSON(`${deckTitle}_true_false.json`, csv.slice(1).map(r=>({q:r[0],correct:r[1],user:r[2]})));
+  });
+
+  /* ---------- Init ---------- */
+  window.addEventListener('resize',()=>{ if(slides[i].id==='scaleSlide') drawScale(); if(slides[i].id==='areaSlide') drawArea(); });
+  show(0); // start
+})();
+</script>
+</body>
+</html>

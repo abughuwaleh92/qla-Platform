@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G8 • Unit 1 • Operations on Fractions — QLA (with Teacher Dashboard)</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX (robust auto-render) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  // Boot KaTeX and expose a rerender helper for dynamic content
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root=document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t=setInterval(()=>{ if(window.renderMathInElement){ clearInterval(t); run(); }},25);
+      setTimeout(()=>clearInterval(t),6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:110px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+
+  .grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+  @media (max-width:900px){.grid-two{grid-template-columns:1fr}}
+
+  /* ===== Teacher Dashboard (overlay) ===== */
+  #dashToggle{position:fixed;top:12px;left:12px;z-index:80}
+  #dashToggle button{background:var(--gold);color:#111;border:none;border-radius:999px;padding:.5rem .85rem;font-weight:800;box-shadow:0 6px 16px rgba(0,0,0,.25);cursor:pointer}
+  #dashToggle button:hover{filter:brightness(.98)}
+
+  #dashPanel{position:fixed;top:0;left:0;height:100vh;width:min(920px,92vw);transform:translateX(-102%);transition:transform .35s ease;background:#fff;border-right:3px solid var(--gold);box-shadow:0 14px 36px rgba(0,0,0,.35);z-index:90;overflow-y:auto}
+  #dashPanel.open{transform:translateX(0)}
+  #dashPanel header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+  #dashPanel section{padding:12px 16px}
+  .small{font-size:.85rem;color:#555}
+  .dstat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem}
+  .progress{height:8px;background:#eee;border-radius:999px;overflow:hidden}
+  .progress .bar{height:100%;background:var(--maroon);width:0%;transition:width .4s ease}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{padding:8px 10px;border-bottom:1px solid #eee;text-align:left}
+  .badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#f3f4f6}
+</style>
+</head>
+<body>
+
+<!-- ===== Dashboard Toggle & Panel (top of file; no server needed) ===== -->
+<div id="dashToggle"><button id="openDash">📊 Dashboard</button></div>
+
+<aside id="dashPanel" aria-label="Teacher Dashboard">
+  <header>
+    <div>
+      <div class="text-maroon font-extrabold text-xl">Teacher Dashboard</div>
+      <div class="small">Session: <span id="dSession">…</span> • Started: <span id="dStart">…</span></div>
+    </div>
+    <div class="flex gap-2">
+      <button id="closeDash" class="btn">Close</button>
+    </div>
+  </header>
+
+  <section>
+    <div class="grid-two">
+      <div class="card p-4">
+        <div class="font-bold text-maroon mb-1">Student Info</div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <label>Name: <input id="dStudent" class="border rounded px-2 py-1"/></label>
+          <label>Section: <input id="dSection" class="border rounded px-2 py-1"/></label>
+          <button id="dSaveInfo" class="btn">Save</button>
+          <span class="small">Saved locally only.</span>
+        </div>
+      </div>
+      <div class="card p-4">
+        <div class="font-bold text-maroon mb-1">Master Controls</div>
+        <div class="flex flex-wrap gap-2">
+          <button id="dExportCSV" class="btn">Export All CSV</button>
+          <button id="dExportJSON" class="btn">Export All JSON</button>
+          <button id="dPersist" class="btn">Save to Browser</button>
+          <button id="dLoad" class="btn">Load from Browser</button>
+          <button id="dReset" class="btn maroon">Reset Session</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card p-4">
+      <div class="font-bold text-maroon mb-2">Overall Summary</div>
+      <div class="dstat">
+        <div>Attempts<br><b id="sumAttempts">0</b></div>
+        <div>Correct<br><b id="sumCorrect">0</b></div>
+        <div>Accuracy<br><b id="sumAcc">0%</b></div>
+        <div>Best Streak<br><b id="sumStreak">0</b></div>
+      </div>
+      <div class="mt-2 progress"><div id="sumBar" class="bar"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card p-4">
+      <div class="font-bold text-maroon mb-2">By Activity</div>
+      <table class="table small">
+        <thead><tr><th>Activity</th><th>Attempts</th><th>Correct</th><th>Accuracy</th><th>Last</th></tr></thead>
+        <tbody id="byActivity"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="card p-4">
+      <div class="font-bold text-maroon mb-2">Recent Events</div>
+      <div id="recentEvents" class="small"></div>
+    </div>
+  </section>
+</aside>
+<!-- ===== End Dashboard ===== -->
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-20 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Operations on Fractions</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Add • Subtract • Multiply • Divide • Mixed Numbers • Complex Fractions</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Grade 8</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Builds on: number‑system overview, recurring decimals, rounding, BEDMAS, absolute value.</div>
+    </section>
+
+    <!-- 1 • Learning Outcomes & Keywords -->
+    <section class="slide" id="loSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Outcomes &amp; Keywords</h2>
+      <div class="grid-two text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Outcomes</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Compute \( \tfrac ab \pm \tfrac cd \) using common denominators; justify using equivalence.</li>
+            <li>Compute \( \tfrac ab \times \tfrac cd \) and \( \tfrac ab \div \tfrac cd \) using <b>cross‑cancellation</b> and reciprocals.</li>
+            <li>Convert between <b>improper fractions</b> and <b>mixed numbers</b>; operate with either form.</li>
+            <li>Simplify results; interpret negative signs correctly.</li>
+            <li>Evaluate expressions with several fraction operations (BEDMAS) and interpret solutions in context.</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="eqv">equivalent fractions</span>
+            <span class="chip" data-key="lcd">least common denominator (LCD)</span>
+            <span class="chip" data-key="simp">simplest form</span>
+            <span class="chip" data-key="recip">reciprocal</span>
+            <span class="chip" data-key="xcan">cross‑cancellation</span>
+            <span class="chip" data-key="mixed">mixed number</span>
+            <span class="chip" data-key="complex">complex fraction</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">Convention: denominators are positive. Negative signs may appear in numerators or out front.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Tap-to-reveal -->
+    <section class="slide" id="revealSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Tap to Reveal — Core Ideas</h2>
+      <div class="grid-two w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Addition &amp; Subtraction</h3>
+          <button class="chip rev" data-t="a1">Common denominator logic</button>
+          <button class="chip rev" data-t="a2">LCD vs any CD</button>
+          <button class="chip rev" data-t="a3">Negative signs</button>
+          <div id="revA" class="mt-3"></div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Multiplication &amp; Division</h3>
+          <button class="chip rev" data-t="m1">Multiply across</button>
+          <button class="chip rev" data-t="m2">Cross‑cancel first</button>
+          <button class="chip rev" data-t="m3">Divide = multiply by reciprocal</button>
+          <div id="revM" class="mt-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 • Explorer: Add/Sub with unlike denominators -->
+    <section class="slide" id="addExplore">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Explorer: Add/Subtract with Unlike Denominators</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="grid-two">
+          <div>
+            <div class="text-lg mb-1">Enter \( \dfrac{a}{b} \) and \( \dfrac{c}{d} \):</div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span>\(a\)=<input id="AA" class="border rounded px-2 py-1 w-16" value="3"></span>
+              <span>\(b\)=<input id="AB" class="border rounded px-2 py-1 w-16" value="8"></span>
+              <span>\(c\)=<input id="AC" class="border rounded px-2 py-1 w-16" value="5"></span>
+              <span>\(d\)=<input id="AD" class="border rounded px-2 py-1 w-16" value="12"></span>
+              <select id="AOp" class="border rounded px-2 py-1">
+                <option value="+">+</option><option value="-">−</option>
+              </select>
+              <button id="ARand" class="btn">Random</button>
+              <button id="AShow" class="btn maroon">Show LCD Steps</button>
+            </div>
+            <div id="ASteps" class="mt-3"></div>
+          </div>
+          <div>
+            <div class="text-lg mb-1">Your result (improper or mixed allowed):</div>
+            <input id="AAns" class="border rounded px-2 py-1 w-64" placeholder="e.g., -7/12 or -1 1/12">
+            <div class="mt-2 flex gap-2">
+              <button id="ACheck" class="btn maroon">Check</button>
+              <button id="AReset" class="btn">Reset</button>
+              <button id="AExportCSV" class="btn">Export CSV</button>
+              <button id="AExportJSON" class="btn">Export JSON</button>
+            </div>
+            <div id="AFb" class="mt-2 h-6 font-semibold"></div>
+          </div>
+        </div>
+        <div class="hint mt-3 text-sm">Idea: \( \frac ab = \frac{a\cdot k}{b\cdot k} \). Choose a common denominator (LCD is most efficient), convert both, then add/subtract numerators.</div>
+      </div>
+    </section>
+
+    <!-- 4 • Explorer: Multiply/Divide with cross‑cancellation -->
+    <section class="slide" id="mulExplore">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Explorer: Multiply/Divide with Cross‑Cancellation</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="grid-two">
+          <div>
+            <div class="text-lg mb-1">Enter \( \dfrac{a}{b} \) and \( \dfrac{c}{d} \):</div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span>\(a\)=<input id="MA" class="border rounded px-2 py-1 w-16" value="6"></span>
+              <span>\(b\)=<input id="MB" class="border rounded px-2 py-1 w-16" value="14"></span>
+              <span>\(c\)=<input id="MC" class="border rounded px-2 py-1 w-16" value="7"></span>
+              <span>\(d\)=<input id="MD" class="border rounded px-2 py-1 w-16" value="9"></span>
+              <select id="MOp" class="border rounded px-2 py-1">
+                <option value="×">×</option><option value="÷">÷</option>
+              </select>
+              <button id="MRand" class="btn">Random</button>
+              <button id="MCancel2" class="btn">Cancel 2</button>
+              <button id="MCancel3" class="btn">Cancel 3</button>
+              <button id="MCancel7" class="btn">Cancel 7</button>
+              <button id="MReset" class="btn">Reset cancels</button>
+            </div>
+            <div id="MSteps" class="mt-3"></div>
+          </div>
+          <div>
+            <div class="text-lg mb-1">Your result (simplified):</div>
+            <input id="MAns" class="border rounded px-2 py-1 w-64" placeholder="e.g., 1 1/2 or 3/2">
+            <div class="mt-2 flex gap-2">
+              <button id="MCheck" class="btn maroon">Check</button>
+              <button id="MExportCSV" class="btn">Export CSV</button>
+              <button id="MExportJSON" class="btn">Export JSON</button>
+            </div>
+            <div id="MFb" class="mt-2 h-6 font-semibold"></div>
+          </div>
+        </div>
+        <div class="hint mt-3 text-sm">Cancel common factors between any numerator and the opposite denominator <em>before</em> multiplying. For division, flip the second fraction first.</div>
+      </div>
+    </section>
+
+    <!-- 5 • Practice: Add/Sub Fractions -->
+    <section class="slide" id="addPractice">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice — Add/Subtract Fractions</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="APLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (like denominators)</option>
+            <option value="med" selected>medium (unlike denominators)</option>
+            <option value="hard">hard (negatives & mixed)</option>
+          </select>
+          <button id="APNew" class="btn">New set</button>
+          <button id="APExportCSV" class="btn">Export CSV</button>
+          <button id="APExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="APList" class="grid-two mt-3"></div>
+        <div class="mt-3">
+          <button id="APCheck" class="btn maroon">Check</button>
+          <div id="APFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 • Practice: Multiply/Divide Fractions -->
+    <section class="slide" id="mulPractice">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice — Multiply/Divide Fractions</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="MPLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (proper; small)</option>
+            <option value="med" selected>medium (improper & cancellations)</option>
+            <option value="hard">hard (negatives; division)</option>
+          </select>
+          <button id="MPNew" class="btn">New set</button>
+          <button id="MPExportCSV" class="btn">Export CSV</button>
+          <button id="MPExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="MPList" class="grid-two mt-3"></div>
+        <div class="mt-3">
+          <button id="MPCheck" class="btn maroon">Check</button>
+          <div id="MPFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 • Mixed Numbers & Complex Fractions -->
+    <section class="slide" id="mixedComplex">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Mixed Numbers &amp; Complex Fractions</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="MCLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (mixed → improper)</option>
+            <option value="med" selected>medium (operate with mixed)</option>
+            <option value="hard">hard (complex fractions; BEDMAS)</option>
+          </select>
+          <button id="MCNew" class="btn">New set</button>
+          <button id="MCExportCSV" class="btn">Export CSV</button>
+          <button id="MCExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="MCList" class="grid-two mt-3"></div>
+        <div class="mt-3">
+          <button id="MCCheck" class="btn maroon">Check</button>
+          <div id="MCFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 • Error Analysis -->
+    <section class="slide" id="errorSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Find the Mistake (Error Analysis)</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="ErrBox" class="text-lg"></div>
+        <div class="mt-2">
+          <input id="ErrAns" class="border rounded px-2 py-1 w-96" placeholder="Explain the mistake or enter the correct value">
+        </div>
+        <div class="mt-2 flex gap-2">
+          <button id="ErrNew" class="btn">New example</button>
+          <button id="ErrCheck" class="btn maroon">Check</button>
+          <button id="ErrExportCSV" class="btn">Export CSV</button>
+          <button id="ErrExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="ErrFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 9 • Real-World Practice -->
+    <section class="slide" id="realSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Real‑World Practice</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="RealList" class="grid-two"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="RealNew" class="btn">New set</button>
+          <button id="RealCheck" class="btn maroon">Check</button>
+          <button id="RealExportCSV" class="btn">Export CSV</button>
+          <button id="RealExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="RealFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 10 • Challenge Mode -->
+    <section class="slide" id="challengeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge Mode</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="ChLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard</option>
+          </select>
+          <button id="ChNew" class="btn">New question</button>
+          <span class="chip">Streak: <b id="StreakOut">0</b></span>
+          <button id="ChExportCSV" class="btn">Export CSV</button>
+          <button id="ChExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div class="mt-3 text-2xl">Task: <span id="ChText" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="ChAns" class="border rounded px-3 py-2 w-64" placeholder="answer (e.g., -7/6)">
+          <button id="ChCheck" class="btn maroon">Check</button>
+          <button id="ChHint" class="btn">Hint</button>
+        </div>
+        <div id="ChHintBox" class="mt-3 text-sm"></div>
+        <div id="ChFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 11 • Exit Ticket -->
+    <section class="slide" id="exitSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket &amp; Next Steps</h2>
+      <div class="grid-two text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 strategies for operating with fractions</li>
+            <li>2 common mistakes you can now avoid</li>
+            <li>1 real‑world situation where you’ll use fractions this week</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p><b>Rational Expressions (Grade‑8 extension)</b> — the same fraction logic, but with variables: simplify, add/subtract with LCDs, multiply/divide with factoring.</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[100px] banner rounded-md" style="background-image:url('qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 12</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* ======================= Helpers & Navigation ======================= */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G8_Operations_on_Fractions';
+  let i=0;
+
+  function id(x){return document.getElementById(x)}
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+  function rng(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+  function choice(arr){return arr[Math.floor(Math.random()*arr.length)]}
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<18;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    renderMath(slides[i]);
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  /* ---------------------- Glossary popover ----------------------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    eqv:'<strong>Equivalent fractions</strong>: \\(\\tfrac ab=\\tfrac{a\\cdot k}{b\\cdot k}\\) for any non‑zero k.',
+    lcd:'<strong>LCD</strong>: the least common multiple of denominators; most efficient common denominator.',
+    simp:'<strong>Simplest form</strong>: numerator & denominator share no common factor > 1.',
+    recip:'<strong>Reciprocal</strong>: \\(\\tfrac ab\\) → \\(\\tfrac ba\\) (a,b≠0).',
+    xcan:'<strong>Cross‑cancellation</strong>: divide numerator & opposite denominator by a common factor before multiplying.',
+    mixed:'<strong>Mixed number</strong>: \(w\\tfrac pq\) with \\(0<p<q\\); improper ↔ mixed by \(w=\\lfloor n/q\\rfloor\\).',
+    complex:'<strong>Complex fraction</strong>: a fraction with fractions in numerator or denominator.'
+  };
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(!el) return;
+    const key=el.dataset.key; if(!GLOS[key]) return;
+    POP_BODY.innerHTML=GLOS[key]; POP.style.display='block';
+    const r=el.getBoundingClientRect();
+    POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px';
+    POP.style.bottom=(window.innerHeight-r.top+10)+'px';
+    renderMath(POP_BODY);
+  });
+
+  /* ---------------------- Tap-to-reveal text --------------------- */
+  const TXT_A={
+    a1:'To add/subtract, make equivalent fractions with a common denominator, then combine numerators.',
+    a2:'Any common denominator works; the LCD keeps numbers smaller and reduces at the end.',
+    a3:'\\(-\\tfrac ab\\) can be written as \\(\\tfrac{-a}{b}\\) or \\( -\\tfrac ab \\). Keep the sign with the numerator when combining.'
+  };
+  const TXT_M={
+    m1:'Multiply across: \\(\\tfrac ab\\times\\tfrac cd=\\tfrac{ac}{bd}\\).',
+    m2:'Before multiplying, divide out common factors between a numerator and the opposite denominator (saves simplifying later).',
+    m3:'Divide by \\(\\tfrac cd\\) means multiply by its reciprocal: \\(\\tfrac ab\\div\\tfrac cd=\\tfrac ab\\times\\tfrac dc\\).'
+  };
+  document.addEventListener('click',e=>{
+    const r=e.target.closest('.rev'); if(!r) return;
+    const t=r.dataset.t; const box=(t.startsWith('a'))?id('revA'):id('revM');
+    box.innerHTML='<div class="hint">'+(TXT_A[t]||TXT_M[t])+'</div>';
+    renderMath(box);
+  });
+
+  /* ---------------------- Fraction utilities --------------------- */
+  const gcd=(a,b)=>{a=Math.trunc(Math.abs(a)); b=Math.trunc(Math.abs(b)); while(b){[a,b]=[b,a%b]} return a||1}
+  const lcm=(a,b)=>Math.abs(a*b)/gcd(a,b);
+  function toFrac(n,d){let g=gcd(n,d); if(d<0) g=-g; return [n/g,d/g]}
+  const addFrac=(A,B)=>toFrac(A[0]*B[1]+B[0]*A[1], A[1]*B[1]);
+  const subFrac=(A,B)=>toFrac(A[0]*B[1]-B[0]*A[1], A[1]*B[1]);
+  const mulFrac=(A,B)=>toFrac(A[0]*B[0], A[1]*B[1]);
+  const divFrac=(A,B)=>toFrac(A[0]*B[1], A[1]*B[0]);
+  const eqFrac=(A,B)=>A[0]*B[1]===B[0]*A[1];
+  const sFrac=([n,d])=> d===1? String(n) : `${n}/${d}`;
+  const texFrac=([n,d])=> d===1? String(n) : `\\dfrac{${n}}{${d}}`;
+
+  // parse "a b/c" or "a/b" or integer; allow unary minus; normalize
+  function parseRational(s){
+    if(typeof s==='number') return [s,1];
+    s=(s||'').toString().trim().replace('−','-');
+    if(!s) return null;
+    const m=s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/); // mixed
+    if(m){ const A=+m[1],B=+m[2],C=+m[3]; if(C===0) return null; const sign=A<0?-1:1; return toFrac(A*C+sign*B, C); }
+    const f=s.match(/^(-?\d+)\/(-?\d+)$/);
+    if(f){ let n=+f[1], d=+f[2]; if(d===0) return null; return toFrac(n,d); }
+    if(!isNaN(Number(s))) return toFrac(Number(s),1);
+    return null;
+  }
+  function toMixed([n,d]){
+    const sign = n<0?-1:1; n=Math.abs(n); const w=Math.floor(n/d); const r=n%d;
+    if(r===0) return `${sign*w}`;
+    return `${sign*w} ${r}/${d}`;
+  }
+
+  /* ====================== TEACHER DASHBOARD CORE ====================== */
+  // central logger + tallies; lives entirely client-side
+  const Dash={
+    deck: deckTitle,
+    sessionId: `${Date.now()}-${Math.floor(Math.random()*1e6)}`,
+    startedAt: new Date().toISOString(),
+    student: '',
+    section: '',
+    logs: [],
+    tallies: {
+      explore_add:   {attempts:0, correct:0, last:''},
+      explore_mul:   {attempts:0, correct:0, last:''},
+      practice_add:  {attempts:0, correct:0, sets:0, last:''},
+      practice_mul:  {attempts:0, correct:0, sets:0, last:''},
+      mixed_complex: {attempts:0, correct:0, sets:0, last:''},
+      error_analysis:{attempts:0, correct:0, last:''},
+      real_world:    {attempts:0, correct:0, last:''},
+      challenge:     {attempts:0, correct:0, bestStreak:0, last:''}
+    }
+  };
+  const ACT_LABEL={
+    explore_add:'Explorer: Add/Sub',
+    explore_mul:'Explorer: Mult/Div',
+    practice_add:'Practice: Add/Sub',
+    practice_mul:'Practice: Mult/Div',
+    mixed_complex:'Mixed & Complex',
+    error_analysis:'Error Analysis',
+    real_world:'Real‑World',
+    challenge:'Challenge Mode'
+  };
+  function dashRecord(activity, payload, counts={attempts:1, correct:0, total:1}){
+    const ts=new Date().toISOString();
+    Dash.logs.push({ts, activity, ...counts, payload});
+    const T=Dash.tallies[activity]; if(!T) return;
+    T.attempts += counts.attempts||0;
+    T.correct  += counts.correct||0;
+    if('sets' in T && counts.sets) T.sets += counts.sets;
+    if(activity==='challenge' && typeof payload?.streak==='number'){
+      T.bestStreak = Math.max(T.bestStreak||0, payload.streak);
+    }
+    T.last = ts;
+    dashRender();
+  }
+  function sumAttempts(){ return Object.values(Dash.tallies).reduce((s,t)=>s+(t.attempts||0),0); }
+  function sumCorrect(){ return Object.values(Dash.tallies).reduce((s,t)=>s+(t.correct||0),0); }
+  function toPct(n,d){ return (d>0)? Math.round(100*n/d):0; }
+
+  // persistence
+  const STORE_KEY=`${deckTitle}__TEACHER_DASH`;
+  function dashPersist(){ localStorage.setItem(STORE_KEY, JSON.stringify(Dash)); }
+  function dashLoad(){
+    const raw=localStorage.getItem(STORE_KEY);
+    if(!raw) return false;
+    try{
+      const obj=JSON.parse(raw);
+      // only import known keys
+      Dash.student=obj.student||'';
+      Dash.section=obj.section||'';
+      Dash.logs=obj.logs||[];
+      Dash.tallies=obj.tallies||Dash.tallies;
+      Dash.sessionId=obj.sessionId||Dash.sessionId;
+      Dash.startedAt=obj.startedAt||Dash.startedAt;
+      dashRender();
+      return true;
+    }catch(e){ return false; }
+  }
+  function dashReset(){
+    Dash.logs.length=0;
+    for(const k in Dash.tallies){
+      Dash.tallies[k]={attempts:0,correct:0,last:''};
+      if(k==='challenge') Dash.tallies[k].bestStreak=0;
+      if(['practice_add','practice_mul','mixed_complex'].includes(k)) Dash.tallies[k].sets=0;
+    }
+    Dash.sessionId=`${Date.now()}-${Math.floor(Math.random()*1e6)}`;
+    Dash.startedAt=new Date().toISOString();
+    dashRender();
+  }
+
+  // UI wiring for panel
+  const openBtn=id('openDash'), closeBtn=id('closeDash'), panel=id('dashPanel');
+  openBtn.addEventListener('click',()=>{ panel.classList.add('open'); dashRender(); });
+  closeBtn.addEventListener('click',()=>panel.classList.remove('open'));
+  id('dSaveInfo').addEventListener('click',()=>{
+    Dash.student=id('dStudent').value.trim();
+    Dash.section=id('dSection').value.trim();
+    dashRender();
+  });
+  id('dPersist').addEventListener('click',dashPersist);
+  id('dLoad').addEventListener('click',()=>dashLoad()||alert('No saved dashboard found in this browser.'));
+  id('dReset').addEventListener('click',()=>{ if(confirm('Reset session tallies & logs?')) dashReset(); });
+  id('dExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_dashboard.json`, Dash));
+  id('dExportCSV').addEventListener('click',()=>{
+    const rows=[['session','startedAt','student','section','ts','activity','attempts','correct','total','payload']];
+    Dash.logs.forEach(L=>rows.push([Dash.sessionId,Dash.startedAt,Dash.student,Dash.section,L.ts,L.activity,L.attempts||1,L.correct||0,L.total||1, JSON.stringify(L.payload)]));
+    downloadCSV(`${deckTitle}_dashboard_events.csv`, rows);
+  });
+
+  function dashRender(){
+    id('dSession').textContent=Dash.sessionId;
+    id('dStart').textContent=(new Date(Dash.startedAt)).toLocaleString();
+    id('dStudent').value=Dash.student||'';
+    id('dSection').value=Dash.section||'';
+    const att=sumAttempts(), cor=sumCorrect(), pct=toPct(cor,att);
+    id('sumAttempts').textContent=att;
+    id('sumCorrect').textContent=cor;
+    id('sumAcc').textContent=`${pct}%`;
+    id('sumStreak').textContent=Dash.tallies.challenge.bestStreak||0;
+    id('sumBar').style.width=`${pct}%`;
+    // table
+    const tbody=id('byActivity'); tbody.innerHTML='';
+    for(const key of ['explore_add','explore_mul','practice_add','practice_mul','mixed_complex','error_analysis','real_world','challenge']){
+      const t=Dash.tallies[key], acc=toPct(t.correct||0, t.attempts||0);
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${ACT_LABEL[key]}</td>
+                    <td>${t.attempts||0}${t.sets?` <span class="badge">sets ${t.sets}</span>`:''}</td>
+                    <td>${t.correct||0}</td>
+                    <td>${acc}%</td>
+                    <td class="small">${t.last?new Date(t.last).toLocaleTimeString():'—'}</td>`;
+      tbody.appendChild(tr);
+    }
+    // recent
+    const rev=id('recentEvents'); rev.innerHTML='';
+    Dash.logs.slice(-12).reverse().forEach(L=>{
+      const div=document.createElement('div');
+      const acc=toPct(L.correct||0, L.attempts||1);
+      div.innerHTML=`<span class="badge">${new Date(L.ts).toLocaleTimeString()}</span>
+                     <b>${ACT_LABEL[L.activity]||L.activity}</b>
+                     — attempts ${L.attempts||1}, correct ${L.correct||0} (${acc}%)
+                     <span class="small">| ${JSON.stringify(L.payload).slice(0,120)}${JSON.stringify(L.payload).length>120?'…':''}</span>`;
+      rev.appendChild(div);
+    });
+  }
+  // initialize panel header
+  dashRender();
+
+  /* =================== Explorer: Add/Sub (LCD) ==================== */
+  const AA=id('AA'), AB=id('AB'), AC=id('AC'), AD=id('AD'), AOp=id('AOp'), AAns=id('AAns');
+  function AShowSteps(){
+    const a=Number(AA.value), b=Number(AB.value), c=Number(AC.value), d=Number(AD.value);
+    if(!Number.isFinite(a*b*c*d) || b===0 || d===0){ id('ASteps').innerHTML='<span class="text-red-700">Enter integers; denominators ≠ 0.</span>'; return null;}
+    const L=lcm(b,d), k1=L/b, k2=L/d;
+    const A=[a*k1,L], B=[c*k2,L], op=AOp.value;
+    const res = op==='+'? addFrac(A,B) : subFrac(A,B);
+    id('ASteps').innerHTML = `
+      LCD = \\(${L}\\).<br>
+      \\(\\dfrac{${a}}{${b}}=\\dfrac{${a*k1}}{${L}}\\), \\(\\dfrac{${c}}{${d}}=\\dfrac{${c*k2}}{${L}}\\).<br>
+      ${op==='+'? 'Add' : 'Subtract'} numerators: \\(\\dfrac{${a*k1}${op}${c*k2}}{${L}}=\\dfrac{${res[0]}}{${res[1]}}\\) → \\(\\,${texFrac(res)}\\,\\) in simplest form.
+    `;
+    renderMath(id('addExplore'));
+    return res;
+  }
+  id('AShow').addEventListener('click',AShowSteps);
+  id('ARand').addEventListener('click',()=>{ AA.value=rng(-6,9); AB.value=rng(2,12); AC.value=rng(-6,9); AD.value=rng(2,12); AOp.value=choice(['+','-']); id('ASteps').innerHTML=''; AAns.value=''; });
+  id('AReset').addEventListener('click',()=>{AA.value=3;AB.value=8;AC.value=5;AD.value=12;AOp.value='+';id('ASteps').innerHTML='';AAns.value='';});
+  id('ACheck').addEventListener('click',()=>{
+    const want=AShowSteps(); if(!want) return;
+    const got=parseRational(AAns.value); if(!got){ id('AFb').textContent='Enter a valid fraction/mixed number.'; id('AFb').className='mt-2 h-6 font-semibold text-red-700'; return;}
+    const correct = eqFrac(got,want);
+    if(correct){ id('AFb').textContent=`✅ Correct! ${sFrac(want)} (${toMixed(want)})`; id('AFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); }
+    else { id('AFb').textContent=`❌ Expected ${sFrac(want)} (${toMixed(want)})`; id('AFb').className='mt-2 h-6 font-semibold text-red-700'; }
+    dashRecord('explore_add', {a:+AA.value,b:+AB.value,c:+AC.value,d:+AD.value,op:AOp.value,user:AAns.value,expected:sFrac(want),correct}, {attempts:1,correct:correct?1:0,total:1});
+  });
+  id('AExportCSV').addEventListener('click',()=>downloadCSV(`${deckTitle}_explore_add.csv`, [['a','b','op','c','d','user'], [AA.value,AB.value,AOp.value,AC.value,AD.value,AAns.value]]));
+  id('AExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_explore_add.json`, {a:+AA.value,b:+AB.value,op:AOp.value,c:+AC.value,d:+AD.value,user:AAns.value}));
+
+  /* ============== Explorer: Multiply/Divide (cancel) ============== */
+  let MCancelState={a:6,b:14,c:7,d:9,op:'×'};
+  function MRender(){
+    const {a,b,c,d,op}=MCancelState;
+    const display = op==='×'
+      ? `\\( \\dfrac{${a}}{${b}} \\times \\dfrac{${c}}{${d}} \\)`
+      : `\\( \\dfrac{${a}}{${b}} \\div \\dfrac{${c}}{${d}} = \\dfrac{${a}}{${b}} \\times \\dfrac{${d}}{${c}} \\)`;
+    const mulA=a, mulB=b, mulC= op==='×'? c : d, mulD= op==='×'? d : c;
+    const res = mulFrac([mulA,mulB],[mulC,mulD]);
+    id('MSteps').innerHTML = `${display}<br>Then multiply across → \\(\\dfrac{${mulA}\\cdot ${mulC}}{${mulB}\\cdot ${mulD}} = ${texFrac(res)}\\).`;
+    renderMath(id('mulExplore'));
+    return res;
+  }
+  function MSet(){
+    const a=Number(id('MA').value), b=Number(id('MB').value), c=Number(id('MC').value), d=Number(id('MD').value), op=id('MOp').value;
+    if(!Number.isFinite(a*b*c*d) || b===0 || d===0){ id('MSteps').innerHTML='<span class="text-red-700">Enter integers; denominators ≠ 0.</span>'; return;}
+    MCancelState={a,b,c,d,op};
+    MRender();
+  }
+  ['MA','MB','MC','MD','MOp'].forEach(k=>id(k).addEventListener('input',MSet));
+  id('MRand').addEventListener('click',()=>{ id('MA').value=rng(-9,9)||6; id('MB').value=rng(2,14); id('MC').value=rng(-9,9)||7; id('MD').value=rng(2,14); id('MOp').value=choice(['×','÷']); MSet(); });
+  id('MReset').addEventListener('click',()=>{ id('MA').value=6; id('MB').value=14; id('MC').value=7; id('MD').value=9; id('MOp').value='×'; MSet(); });
+
+  function tryCancel(k){
+    const {a,b,c,d,op}=MCancelState;
+    if(op==='×'){
+      let aa=a, bb=b, cc=c, dd=d;
+      if(aa%k===0 && dd%k===0){ aa/=k; dd/=k; }
+      else if(cc%k===0 && bb%k===0){ cc/=k; bb/=k; }
+      MCancelState={a:aa,b:bb,c:cc,d:dd,op}; MRender();
+    } else {
+      // a/b ÷ c/d = a/b × d/c
+      let aa=a, bb=b, cc=c, dd=d;
+      if(aa%k===0 && cc%k===0){ aa/=k; cc/=k; }
+      else if(dd%k===0 && bb%k===0){ dd/=k; bb/=k; }
+      MCancelState={a:aa,b:bb,c:cc,d:dd,op}; MRender();
+    }
+  }
+  id('MCancel2').addEventListener('click',()=>tryCancel(2));
+  id('MCancel3').addEventListener('click',()=>tryCancel(3));
+  id('MCancel7').addEventListener('click',()=>tryCancel(7));
+  id('MCheck').addEventListener('click',()=>{
+    const want=MRender(); const got=parseRational(id('MAns').value);
+    if(!got){ id('MFb').textContent='Enter a valid fraction/mixed number.'; id('MFb').className='mt-2 h-6 font-semibold text-red-700'; return;}
+    const correct=eqFrac(got,want);
+    if(correct){ id('MFb').textContent=`✅ Correct! ${sFrac(want)} (${toMixed(want)})`; id('MFb').className='mt-2 h-6 font-semibold text-green-700'; confetti();}
+    else { id('MFb').textContent=`❌ Expected ${sFrac(want)} (${toMixed(want)})`; id('MFb').className='mt-2 h-6 font-semibold text-red-700';}
+    dashRecord('explore_mul', {a:+id('MA').value,b:+id('MB').value,c:+id('MC').value,d:+id('MD').value,op:id('MOp').value,user:id('MAns').value,expected:sFrac(want),correct}, {attempts:1,correct:correct?1:0,total:1});
+  });
+  id('MExportCSV').addEventListener('click',()=>downloadCSV(`${deckTitle}_explore_mul.csv`, [['a','b','op','c','d','user'], [id('MA').value,id('MB').value,id('MOp').value,id('MC').value,id('MD').value,id('MAns').value]]));
+  id('MExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_explore_mul.json`, {a:+id('MA').value,b:+id('MB').value,op:id('MOp').value,c:+id('MC').value,d:+id('MD').value,user:id('MAns').value}));
+
+  /* ============== Practice: Add/Sub (sets & levels) ============== */
+  const APState={items:[]};
+  function newAPSet(){
+    const lv=id('APLevel').value; const items=[]; const box=id('APList'); box.innerHTML='';
+    for(let k=0;k<6;k++){
+      let b=choice([4,5,6,8,9,10,12]); let d= lv==='easy'? b : choice([4,5,6,7,8,9,10,12]);
+      let a=rng(-2*b+1,2*b-1), c=rng(-2*d+1,2*d-1);
+      let op=choice(['+','-']);
+      if(lv==='hard'){ const w1=rng(-2,2), w2=rng(-2,2); a=w1*b + rng(1,b-1); c=w2*d + rng(1,d-1); }
+      items.push({a,b,op,c,d});
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${k+1}</div>
+        <div class="text-xl mt-1">\\( \\dfrac{${a}}{${b}} ${op} \\dfrac{${c}}{${d}} = \\)
+          <input class="apans border rounded px-2 py-1 w-40" placeholder="e.g., -7/6 or -1 1/6">
+        </div>`;
+      box.appendChild(row);
+    }
+    APState.items=items; renderMath(id('addPractice'));
+  }
+  id('APNew').addEventListener('click',newAPSet); newAPSet();
+  id('APCheck').addEventListener('click',()=>{
+    let ok=0; const cards=[...document.querySelectorAll('#APList .card')];
+    cards.forEach((row,idx)=>{
+      const {a,b,op,c,d}=APState.items[idx];
+      const A=[a,b], B=[c,d];
+      const want = op==='+'? addFrac(A,B) : subFrac(A,B);
+      const got=parseRational(row.querySelector('.apans').value);
+      const good = got && eqFrac(got,want);
+      row.querySelector('.apans').style.borderColor=good?'#22c55e':'#ef4444';
+      if(good) ok++;
+    });
+    id('APFb').textContent = ok===cards.length? '✅ Great work!' : `Score: ${ok}/${cards.length}`;
+    if(ok===cards.length) confetti();
+    dashRecord('practice_add', {level:id('APLevel').value, set:APState.items}, {attempts:cards.length, correct:ok, total:cards.length, sets:1});
+  });
+  id('APExportCSV').addEventListener('click',()=>{
+    const rows=[['item','answer']]; APState.items.forEach(it=>rows.push([`${it.a}/${it.b} ${it.op} ${it.c}/${it.d}`, sFrac((it.op==='+')?addFrac([it.a,it.b],[it.c,it.d]):subFrac([it.a,it.b],[it.c,it.d]))])); downloadCSV(`${deckTitle}_practice_add.csv`, rows);
+  });
+  id('APExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_practice_add.json`, APState.items));
+
+  /* =========== Practice: Multiply/Divide (sets & levels) ========= */
+  const MPState={items:[]};
+  function newMPSet(){
+    const lv=id('MPLevel').value; const items=[]; const box=id('MPList'); box.innerHTML='';
+    for(let k=0;k<6;k++){
+      let b=choice([4,5,6,7,8,9,10,12]), d=choice([4,5,6,7,8,9,10,12]);
+      let a=rng(-2*b+1,2*b-1), c=rng(-2*d+1,2*d-1);
+      let op= choice(lv==='hard' ? ['×','÷','÷'] : ['×','×','÷']);
+      if(lv!=='easy'){ const t=choice([2,3,5]); a*=t; d*=t; }
+      if(lv==='hard'){ if(Math.random()<0.5) a*=-1; if(Math.random()<0.5) c*=-1; }
+      items.push({a,b,op,c,d});
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${k+1}</div>
+        <div class="text-xl mt-1">\\( \\dfrac{${a}}{${b}} ${op==='×'?'\\times':'\\div'} \\dfrac{${c}}{${d}} = \\)
+          <input class="mpans border rounded px-2 py-1 w-36" placeholder="e.g., 5/6">
+        </div>`;
+      box.appendChild(row);
+    }
+    MPState.items=items; renderMath(id('mulPractice'));
+  }
+  id('MPNew').addEventListener('click',newMPSet); newMPSet();
+  id('MPCheck').addEventListener('click',()=>{
+    let ok=0; const cards=[...document.querySelectorAll('#MPList .card')];
+    cards.forEach((row,idx)=>{
+      const {a,b,op,c,d}=MPState.items[idx];
+      const A=[a,b], B=[c,d];
+      const want = op==='×'? mulFrac(A,B) : divFrac(A,B);
+      const got=parseRational(row.querySelector('.mpans').value);
+      const good = got && eqFrac(got,want);
+      row.querySelector('.mpans').style.borderColor=good?'#22c55e':'#ef4444';
+      if(good) ok++;
+    });
+    id('MPFb').textContent = ok===cards.length? '✅ Excellent!' : `Score: ${ok}/${cards.length}`;
+    if(ok===cards.length) confetti();
+    dashRecord('practice_mul', {level:id('MPLevel').value, set:MPState.items}, {attempts:cards.length, correct:ok, total:cards.length, sets:1});
+  });
+  id('MPExportCSV').addEventListener('click',()=>{
+    const rows=[['item','answer']]; MPState.items.forEach(it=>rows.push([`${it.a}/${it.b} ${it.op} ${it.c}/${it.d}`, sFrac((it.op==='×')?mulFrac([it.a,it.b],[it.c,it.d]):divFrac([it.a,it.b],[it.c,it.d]))])); downloadCSV(`${deckTitle}_practice_mul.csv`, rows);
+  });
+  id('MPExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_practice_mul.json`, MPState.items));
+
+  /* ======= Mixed Numbers & Complex Fractions (levels/sets) ======= */
+  const MCState={items:[]};
+  function toImproper(w,p,q){ const s=w<0?-1:1; return [s*(Math.abs(w)*q+p), q]; }
+  function newMCSet(){
+    const lv=id('MCLevel').value; const items=[]; const box=id('MCList'); box.innerHTML='';
+    for(let k=0;k<6;k++){
+      if(lv==='easy'){
+        const w=rng(-3,3), q=choice([4,5,6,8,10]); const p=rng(1,q-1);
+        items.push({type:'convert', w,p,q});
+        const row=document.createElement('div'); row.className='card p-4';
+        row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${k+1} — Convert to improper</div>
+          <div class="text-xl mt-1">\\( ${w}\\tfrac{${p}}{${q}} = \\) <input class="micans border rounded px-2 py-1 w-32" placeholder="e.g., -13/5"></div>`;
+        box.appendChild(row);
+      } else if(lv==='med'){
+        const w1=rng(-3,3), q1=choice([4,5,6,8]), p1=rng(1,q1-1);
+        const w2=rng(-3,3), q2=choice([4,5,6,8]), p2=rng(1,q2-1);
+        const op=choice(['+','-']);
+        items.push({type:'mixop', w1,p1,q1,op,w2,p2,q2});
+        const row=document.createElement('div'); row.className='card p-4';
+        row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${k+1}</div>
+          <div class="text-xl mt-1">\\( ${w1}\\tfrac{${p1}}{${q1}} ${op} ${w2}\\tfrac{${p2}}{${q2}} = \\)
+            <input class="micans border rounded px-2 py-1 w-40" placeholder="e.g., 1 3/8 or 11/8"></div>`;
+        box.appendChild(row);
+      } else {
+        const a=rng(-9,9)||6, b=choice([4,5,6,8,10]), c=rng(-9,9)||3, d=choice([4,5,6,8,10]);
+        const plus=[rng(-6,6), choice([3,4,5,6])];
+        items.push({type:'complex', a,b,c,d,plus});
+        const row=document.createElement('div'); row.className='card p-4';
+        row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${k+1} — Simplify</div>
+          <div class="text-xl mt-1">\\( \\dfrac{\\dfrac{${a}}{${b}}}{\\dfrac{${c}}{${d}}} + \\dfrac{${plus[0]}}{${plus[1]}} = \\)
+            <input class="micans border rounded px-2 py-1 w-36" placeholder="e.g., -7/6"></div>`;
+        box.appendChild(row);
+      }
+    }
+    MCState.items=items; renderMath(id('mixedComplex'));
+  }
+  id('MCNew').addEventListener('click',newMCSet); newMCSet();
+  id('MCCheck').addEventListener('click',()=>{
+    let ok=0; const cards=[...document.querySelectorAll('#MCList .card')];
+    cards.forEach((row,idx)=>{
+      const it=MCState.items[idx]; const inp=row.querySelector('.micans'); const got=parseRational(inp.value);
+      let want=null;
+      if(it.type==='convert'){ want=toFrac(...toImproper(it.w,it.p,it.q)); }
+      else if(it.type==='mixop'){
+        const A=toImproper(it.w1,it.p1,it.q1), B=toImproper(it.w2,it.p2,it.q2);
+        want = (it.op==='+')? addFrac(A,B) : subFrac(A,B);
+      } else {
+        const A=[it.a,it.b], B=[it.c,it.d]; const term=divFrac(A,B); const extra=[it.plus[0],it.plus[1]];
+        want = addFrac(term, extra);
+      }
+      const good = got && eqFrac(got,want);
+      inp.style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('MCFb').textContent = ok===cards.length? '✅ Nicely done!' : `Score: ${ok}/${cards.length}`;
+    if(ok===cards.length) confetti();
+    dashRecord('mixed_complex', {level:id('MCLevel').value, set:MCState.items}, {attempts:cards.length, correct:ok, total:cards.length, sets:1});
+  });
+  id('MCExportCSV').addEventListener('click',()=>{
+    const rows=[['item','answer']]; MCState.items.forEach(it=>{
+      let ans='';
+      if(it.type==='convert'){ ans=sFrac(toFrac(...toImproper(it.w,it.p,it.q))); rows.push([`${it.w} ${it.p}/${it.q} -> ?`, ans]); }
+      else if(it.type==='mixop'){ const A=toImproper(it.w1,it.p1,it.q1), B=toImproper(it.w2,it.p2,it.q2); ans=sFrac((it.op==='+')?addFrac(A,B):subFrac(A,B)); rows.push([`${it.w1} ${it.p1}/${it.q1} ${it.op} ${it.w2} ${it.p2}/${it.q2}`, ans]); }
+      else { const ansFrac=addFrac(divFrac([it.a,it.b],[it.c,it.d]), [it.plus[0],it.plus[1]]); rows.push([`( ${it.a}/${it.b} ) / ( ${it.c}/${it.d} ) + ${it.plus[0]}/${it.plus[1]}`, sFrac(ansFrac)]); }
+    }); downloadCSV(`${deckTitle}_mixed_complex.csv`, rows);
+  });
+  id('MCExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_mixed_complex.json`, MCState.items));
+
+  /* ====================== Error Analysis ========================= */
+  const ErrState={cur:null, hist:[]};
+  const ERR_BANK=[
+    {work:'\\(\\tfrac{2}{3}+\\tfrac{1}{4}=\\tfrac{3}{7}\\)', why:'added numerators and denominators; must use a common denominator (12): \\(\\tfrac{8}{12}+\\tfrac{3}{12}=\\tfrac{11}{12}\\)'},
+    {work:'\\(\\tfrac{5}{6}-\\tfrac{1}{2}=\\tfrac{4}{4}=1\\)', why:'converted only one fraction correctly; with LCD 6: \\(\\tfrac{5}{6}-\\tfrac{3}{6}=\\tfrac{2}{6}=\\tfrac{1}{3}\\)'},
+    {work:'\\(\\tfrac{3}{10}\\div\\tfrac{9}{5}=\\tfrac{27}{50}\\)', why:'dividing is not multiplying across; multiply by reciprocal: \\(\\tfrac{3}{10}\\times\\tfrac{5}{9}=\\tfrac{15}{90}=\\tfrac{1}{6}\\)'},
+    {work:'\\(\\tfrac{-4}{9}\\times\\tfrac{3}{-8}=\\tfrac{-12}{-72}=\\tfrac{-1}{-6}=\\tfrac{-1}{6}\\)', why:'sign simplification: negatives cancel twice → result should be positive: \\(\\tfrac{1}{6}\\)'},
+    {work:'\\(1\\tfrac{1}{4}+2\\tfrac{1}{2}=3\\tfrac{2}{6}\\)', why:'added fractional parts without common denominator; use \\(\\tfrac{1}{4}+\\tfrac{1}{2}=\\tfrac{1}{4}+\\tfrac{2}{4}=\\tfrac{3}{4}\\) → \\(3\\tfrac{3}{4}\\)'}
+  ];
+  function errNew(){
+    ErrState.cur = choice(ERR_BANK);
+    id('ErrBox').innerHTML = `<div class="text-xl">Student work: ${ErrState.cur.work}</div><div class="text-sm text-gray-600 mt-1">What is wrong? State the rule and/or give the correct result.</div>`;
+    renderMath(id('errorSlide'));
+    id('ErrFb').textContent=''; id('ErrAns').value='';
+  }
+  id('ErrNew').addEventListener('click',errNew); errNew();
+  id('ErrCheck').addEventListener('click',()=>{
+    const t=id('ErrAns').value.trim().toLowerCase();
+    const good = t.includes('common denominator') || t.includes('reciprocal') || t.includes('multiply') || t.includes('sign') || t.includes('lcd') || t.includes('correct') || t.includes('added numerators') || t.includes('simplify');
+    id('ErrFb').textContent = good? `✅ Yes. Reason: ${ErrState.cur.why}` : '❌ Not yet. Name the rule that was broken.';
+    id('ErrFb').className='mt-2 h-6 font-semibold ' + (good?'text-green-700':'text-red-700'); if(good) confetti();
+    ErrState.hist.push({work:ErrState.cur.work, why:ErrState.cur.why, user:id('ErrAns').value});
+    dashRecord('error_analysis', {work:ErrState.cur.work, user:id('ErrAns').value, accepted:good}, {attempts:1, correct:good?1:0, total:1});
+  });
+  id('ErrExportCSV').addEventListener('click',()=>{
+    const rows=[['work','why','user']]; ErrState.hist.forEach(h=>rows.push([h.work,h.why,h.user])); downloadCSV(`${deckTitle}_error_analysis.csv`, rows);
+  });
+  id('ErrExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_error_analysis.json`, ErrState.hist));
+
+  /* ====================== Real‑World Practice ==================== */
+  const RealState={items:[]};
+  function realNew(){
+    const items=[];
+    items.push({q:`A recipe uses \\(\\tfrac{3}{4}\\) cup sugar. For \\(\\tfrac{5}{2}\\) batches, sugar needed = ?`, a:mulFrac([3,4],[5,2])});
+    items.push({q:`A jogger runs \\(\\tfrac{7}{8}\\) km per minute. In \\(\\tfrac{9}{4}\\) minutes, distance = ? (km)`, a:mulFrac([7,8],[9,4])});
+    items.push({q:`A tank is \\(\\tfrac{5}{6}\\) full. After using \\(\\tfrac{1}{4}\\) of the tank, fraction remaining = ?`, a:subFrac([5,6],[1,4])});
+    items.push({q:`You have \\(\\tfrac{2}{3}\\) of a job left. You complete \\(\\tfrac{5}{9}\\) of what remains. Fraction of the <em>whole job</em> completed now = ?`, a:mulFrac([5,9],[2,3])});
+    RealState.items=items;
+    const box=id('RealList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl">${o.q}</div>
+        <div class="mt-1">Answer: <input class="rwan border rounded px-2 py-1 w-32" placeholder="e.g., 5/6"></div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('realSlide'));
+  }
+  id('RealNew').addEventListener('click',realNew); realNew();
+  id('RealCheck').addEventListener('click',()=>{
+    let ok=0; const cards=[...document.querySelectorAll('#RealList .card')];
+    cards.forEach((row,idx)=>{
+      const want=RealState.items[idx].a; const got=parseRational(row.querySelector('.rwan').value); const good=got&&eqFrac(got,want);
+      row.querySelector('.rwan').style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('RealFb').textContent = ok===cards.length? '✅ Real‑world ready!' : `Score: ${ok}/${cards.length}`; if(ok===cards.length) confetti();
+    dashRecord('real_world', {set:RealState.items}, {attempts:cards.length, correct:ok, total:cards.length});
+  });
+  id('RealExportCSV').addEventListener('click',()=>{
+    const rows=[['question','answer']]; RealState.items.forEach(o=>rows.push([o.q, sFrac(o.a)])); downloadCSV(`${deckTitle}_realworld.csv`, rows);
+  });
+  id('RealExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_realworld.json`, RealState.items));
+
+  /* ====================== Challenge Mode ========================= */
+  const ChState={cur:null, streak:0, hist:[]};
+  function chNew(){
+    const lv=id('ChLevel').value; let prompt='', ans=null, hint='';
+    if(lv==='easy'){
+      const a=choice([['1','2'],['3','4'],['5','6']].map(([x,y])=>[+x,+y])); const b=choice([[1,3],[2,5],[3,7]]);
+      prompt=`Simplify \\( \\dfrac{${a[0]}}{${a[1]}} + \\dfrac{${b[0]}}{${b[1]}} \\)`; ans=addFrac(a,b); hint='Use LCD and simplify.';
+    } else if(lv==='med'){
+      const a=[rng(-9,9)||6, choice([4,5,6,8])], b=[rng(-9,9)||3, choice([4,5,6,8])];
+      prompt=`Compute \\( \\dfrac{${a[0]}}{${a[1]}} \\times \\dfrac{${b[0]}}{${b[1]}} \\)`; ans=mulFrac(a,b); hint='Cross‑cancel first if possible.';
+    } else {
+      const a=[rng(-9,9)||6, choice([4,5,6,8,10])], b=[rng(-9,9)||3, choice([4,5,6,8,10])], c=[rng(-9,9)||2, choice([3,4,5,6])];
+      prompt=`Evaluate \\( \\dfrac{${a[0]}}{${a[1]}} - \\dfrac{${b[0]}}{${b[1]}} + \\dfrac{${c[0]}}{${c[1]}} \\)`; ans=addFrac(subFrac(a,b),c); hint='Order: left to right for +/− after making common denominators for each step.';
+    }
+    ChState.cur={prompt, ans, hint}; id('ChText').innerHTML=prompt; id('ChAns').value=''; id('ChFb').textContent=''; id('ChHintBox').textContent=''; renderMath(id('challengeSlide'));
+  }
+  id('ChNew').addEventListener('click',chNew); chNew();
+  id('ChHint').addEventListener('click',()=>{ id('ChHintBox').innerHTML=`<div class="hint">${ChState.cur.hint}</div>`; });
+  id('ChCheck').addEventListener('click',()=>{
+    const got=parseRational(id('ChAns').value); const want=ChState.cur.ans; const ok=got&&eqFrac(got,want);
+    if(ok){ ChState.streak++; id('ChFb').textContent=`✅ Correct! ${sFrac(want)}`; id('ChFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); ChState.hist.push({prompt:ChState.cur.prompt, ans:sFrac(want), user:id('ChAns').value, correct:true}); chNew();}
+    else { ChState.streak=0; id('ChFb').textContent=`❌ Not quite. Expected ${sFrac(want)}`; id('ChFb').className='mt-2 h-6 font-semibold text-red-700'; ChState.hist.push({prompt:ChState.cur.prompt, ans:sFrac(want), user:id('ChAns').value, correct:false}); }
+    id('StreakOut').textContent=ChState.streak;
+    dashRecord('challenge', {prompt:ChState.cur.prompt, user:id('ChAns').value, expected:sFrac(want), correct:ok, streak:ChState.streak}, {attempts:1, correct:ok?1:0, total:1});
+  });
+  id('ChExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer','user','correct']]; ChState.hist.forEach(h=>rows.push([h.prompt,h.ans,h.user,h.correct])); downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('ChExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_challenge.json`, ChState.hist));
+
+  /* ----------------------- Init ----------------------- */
+  show(0);
+})();
+</script>
+</body>
+</html>

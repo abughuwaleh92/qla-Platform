@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Grade 8 • Unit 1 • Lesson 3 — Recurring Decimals → Fractions (QLA)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  #deckG8{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slidesG8{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:140px;background:#fff url('../assets/qla_banner.png') center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controlsG8{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:50;backdrop-filter:blur(6px)}
+  #controlsG8 button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controlsG8 button:hover{transform:scale(1.06)}
+  #counterG8{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progressG8{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:60;transition:width .35s ease}
+  #fsHintG8{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+  /* popover */
+  #popG8{position:fixed;inset:auto auto 20px 20px;max-width:min(560px,90vw);background:#fff;border:2px solid var(--gold);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding:14px 16px;z-index:70;display:none;text-align:left}
+  #popG8 strong{color:var(--maroon)} #popG8 .close{float:right;color:#666;cursor:pointer;font-weight:800}
+  /* recurring notation */
+  .overbar{ text-decoration: overline; text-decoration-thickness:2px; }
+  .repdot{ position:relative; padding:0 .12em; }
+  .repdot::before,.repdot::after{content:'•'; position:absolute; top:-0.8em; font-weight:900; line-height:1;}
+  .repdot::before{left:-.05em;} .repdot::after{right:-.05em;}
+  /* sortable + drag/drop */
+  .sortable li{user-select:none}
+  .sortable .dragging{opacity:.5}
+  .drop{min-height:44px;border:2px dashed #d1d5db;border-radius:10px;background:#fff}
+  .drag{cursor:grab}
+  /* confetti */
+  .confetti{position:fixed;pointer-events:none;z-index:80}
+</style>
+</head>
+<body>
+
+<div id="deckG8" aria-live="polite">
+  <div id="slidesG8" class="relative">
+    <div id="fsHintG8">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white">
+      <div class="w-full h-16 banner mb-6 rounded-md"></div>
+      <div class="flex items-center gap-8">
+        <img src="../assets/qla_logo.png" alt="QLA Logo" class="h-28 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Unit 1 — The Number System</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Lesson 3: Recurring Decimals → Fractions</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Mr. Mohammad Abu‑Ghuwaleh</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Member of Qatar Foundation</div>
+    </section>
+
+    <!-- 1 • LOs + Keywords -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Objectives & Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Objectives</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Explain why recurring decimals are <span class="chip" data-key="rational">rational numbers</span>.</li>
+            <li>Convert <span class="chip" data-key="pure">pure</span> and <span class="chip" data-key="mixed">mixed</span> repeats to **simplest fractions** using algebra.</li>
+            <li>Check and justify equivalence.</li>
+          </ul>
+          <p class="text-xs text-gray-500 mt-2">Matches Grade 8 plan (Unit 1: “Converting Recurring Decimals”) & AERO 7.NS.2d. </p>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Tap a Keyword</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="bar">bar notation</span>
+            <span class="chip" data-key="dots">dot notation</span>
+            <span class="chip" data-key="block">repeating block</span>
+            <span class="chip" data-key="nonrep">non‑repeating part</span>
+            <span class="chip" data-key="I">integer part</span>
+            <span class="chip" data-key="k">k</span>
+            <span class="chip" data-key="n">n</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Methods (Pure & Mixed) -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Two Methods — Clear Derivations</h2>
+      <div class="grid lg:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">1) Pure Repeating: 0.<span class="overbar">b</span></h3>
+          <p class="mt-2">Digits repeat immediately (no non‑repeating part). Let the repeating block have <em>n</em> digits.</p>
+          <div class="mt-2 space-y-2 text-sm bg-white rounded p-3 border">
+            <div><strong>Example A:</strong> Let x = 0.<span class="overbar">4</span></div>
+            <div>10x = 4.<span class="overbar">4</span></div>
+            <div>10x − x = 4 ⇒ <strong>9x = 4</strong> ⇒ x = <strong>4/9</strong></div>
+            <hr/>
+            <div><strong>Example B:</strong> Let x = 0.<span class="overbar">34</span></div>
+            <div>100x = 34.<span class="overbar">34</span></div>
+            <div>100x − x = 34 ⇒ <strong>99x = 34</strong> ⇒ x = <strong>34/99</strong></div>
+          </div>
+          <div class="mt-3 p-3 rounded bg-white border">
+            <div class="font-semibold">General formula:</div>
+            <div class="mt-1"><strong>x = b / (10<sup>n</sup> − 1)</strong></div>
+            <div class="text-xs text-gray-600 mt-1">Click <span class="chip" data-key="block">b</span> or <span class="chip" data-key="n">n</span> to recall meanings.</div>
+          </div>
+        </div>
+
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">2) Mixed Repeating: 0.a<span class="overbar">b</span> or I.a<span class="overbar">b</span></h3>
+          <p class="mt-2">Let <em>a</em> be the non‑repeating part (length <em>k</em>) and <em>b</em> the repeating block (length <em>n</em>), with integer part <em>I</em> (possibly 0).</p>
+          <div class="mt-2 space-y-2 text-sm bg-white rounded p-3 border">
+            <ol class="list-decimal list-inside space-y-1">
+              <li>Let x = I.a<span class="overbar">b</span>, where <strong>k = |a|</strong> and <strong>n = |b|</strong>.</li>
+              <li>Multiply by 10<sup>k</sup>: 10<sup>k</sup>x = (Ia) + 0.<span class="overbar">b</span></li>
+              <li>Multiply by 10<sup>k+n</sup>: 10<sup>k+n</sup>x = (Iab) + 0.<span class="overbar">b</span></li>
+              <li>Subtract: (10<sup>k+n</sup> − 10<sup>k</sup>)x = (Iab) − (Ia)</li>
+              <li><strong>Therefore</strong>  
+                <span class="bg-yellow-50 rounded px-1">
+                  x = [(Iab) − (Ia)] / (10<sup>k+n</sup> − 10<sup>k</sup>)
+                </span>, then simplify.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 • Quick Q: denominator for pure repeating -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Quick Question — Denominator (Pure Repeating)</h2>
+      <p class="text-gray-600 mb-3">For 0.<span class="overbar">b</span> with <em>n</em> repeating digits, the denominator is <strong>10<sup>n</sup> − 1</strong>. Fill in for each.</p>
+      <div class="grid md:grid-cols-2 gap-4 w-full max-w-4xl text-left">
+        <div class="card p-4"><div>0.<span class="overbar">4</span> → n=1 ⇒ <input class="denIn border rounded px-2 py-1 w-24" placeholder="10^n - 1" data-n="1"></div></div>
+        <div class="card p-4"><div>0.<span class="overbar">3</span> → n=1 ⇒ <input class="denIn border rounded px-2 py-1 w-24" placeholder="10^n - 1" data-n="1"></div></div>
+        <div class="card p-4"><div>0.<span class="overbar">12</span> → n=2 ⇒ <input class="denIn border rounded px-2 py-1 w-24" placeholder="10^n - 1" data-n="2"></div></div>
+        <div class="card p-4"><div>0.<span class="overbar">46</span> → n=2 ⇒ <input class="denIn border rounded px-2 py-1 w-24" placeholder="10^n - 1" data-n="2"></div></div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="denCheckG8" class="btn maroon">Check Q</button>
+        <button id="denResetG8" class="btn">Reset</button>
+      </div>
+      <div id="denFbG8" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 4 • Identify Pure/Mixed + Block -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Identify Type & Repeating Block</h2>
+      <p class="text-gray-600 mb-3">Choose Pure/Mixed and type the repeating block.</p>
+      <div id="idListG8" class="w-full max-w-4xl grid gap-2"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="idCheckG8" class="btn maroon">Check</button>
+        <button id="idNewG8" class="btn">New Set</button>
+      </div>
+      <div id="idFbG8" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 5 • Equation Builder (with steps) -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Equation Builder (bar or dots)</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <label class="font-semibold text-sm">Integer part</label>
+          <input id="ebIntG8" type="number" min="0" step="1" class="mt-1 w-full px-3 py-2 rounded border" placeholder="e.g., 0 or 1"/>
+          <label class="font-semibold text-sm mt-3 block">Non‑repeating digits (optional)</label>
+          <input id="ebNonG8" class="mt-1 w-full px-3 py-2 rounded border" placeholder="e.g., 2 in 1.2(3)"/>
+          <label class="font-semibold text-sm mt-3 block">Repeating block (required)</label>
+          <input id="ebRepG8" class="mt-1 w-full px-3 py-2 rounded border" placeholder="e.g., 34 or 3"/>
+          <div class="mt-3 flex items-center gap-4">
+            <span class="font-semibold text-sm">Show as:</span>
+            <label><input type="radio" name="reprG8" value="bar" checked> Bar</label>
+            <label><input type="radio" name="reprG8" value="dot"> Dots</label>
+          </div>
+          <div class="mt-2 flex gap-2">
+            <button id="buildEqG8" class="btn maroon">Build & Convert</button>
+            <button id="clearEqG8" class="btn">Clear</button>
+          </div>
+          <div class="mt-3"><span class="font-semibold">Preview:</span> <span id="decPreviewG8" class="text-xl font-extrabold"></span></div>
+          <div id="eqErrorG8" class="mt-2 text-red-700 font-semibold"></div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-1">Steps & Result</h3>
+          <div id="eqStepsG8" class="text-sm leading-6 max-h-64 overflow-auto bg-white rounded p-3 border" aria-live="polite"></div>
+          <div id="eqResultG8" class="mt-2 text-lg font-bold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 • Step Sorter -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Step Sorter — Put the Algebra in Order</h2>
+      <p class="text-gray-600 mb-3">Drag to order the steps to convert x = 0.<span class="overbar">12</span>.</p>
+      <ul id="sortStepsG8" class="sortable w-full max-w-4xl space-y-2"></ul>
+      <div class="mt-3 flex gap-2">
+        <button id="sortCheckG8" class="btn maroon">Check</button>
+        <button id="sortResetG8" class="btn">Reset</button>
+      </div>
+      <div id="sortFbG8" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 7 • Trainer -->
+    <section id="trainerSlideG8" class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Trainer — Convert the Set</h2>
+      <div class="mb-2 flex items-center gap-4">
+        <span class="font-semibold text-sm">Display style:</span>
+        <label><input type="radio" name="repr2G8" value="bar" checked> Bar</label>
+        <label><input type="radio" name="repr2G8" value="dot"> Dots</label>
+      </div>
+      <div id="trainListG8" class="w-full max-w-3xl grid gap-2"></div>
+      <div class="mt-3 flex gap-2">
+        <button id="checkTrainG8" class="btn maroon">Check</button>
+        <button id="resetTrainG8" class="btn">Reset</button>
+      </div>
+      <div id="trainFbG8" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 8 • Match Game -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Match Game — Decimal ⇄ Fraction</h2>
+      <div class="grid md:grid-cols-2 gap-6 w-full max-w-5xl">
+        <div>
+          <h3 class="text-lg font-bold text-maroon mb-1">Decimals</h3>
+          <div id="mgDecsG8" class="grid gap-2"></div>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-maroon mb-1">Fractions (drag)</h3>
+          <div id="mgFracsG8" class="grid gap-2"></div>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="mgCheckG8" class="btn maroon">Check</button>
+        <button id="mgNewG8" class="btn">New</button>
+      </div>
+      <div id="mgFbG8" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 9 • 1‑Minute Sprint -->
+    <section class="slide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">1‑Minute Sprint — Convert Fast!</h2>
+      <div class="card p-5 w-full max-w-2xl text-left">
+        <div class="flex items-center justify-between">
+          <div>Time: <span id="spTimeG8" class="font-bold">60</span> s</div>
+          <div>Score: <span id="spScoreG8" class="font-bold">0</span></div>
+        </div>
+        <div class="mt-3 text-2xl font-extrabold">x = <span id="spQG8"></span></div>
+        <input id="spAnsG8" class="mt-3 w-64 px-3 py-2 rounded border" placeholder="e.g., 34/99" />
+        <div class="mt-3 flex gap-2">
+          <button id="spStartG8" class="btn maroon">Start</button>
+          <button id="spStopG8" class="btn">Stop</button>
+        </div>
+        <div id="spFbG8" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 10 • Exit -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Reflect (3–2–1)</h3>
+          <ul class="list-disc list-inside">
+            <li>3 facts about recurring decimals</li>
+            <li>2 steps for mixed repeats</li>
+            <li>1 question you still have</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p>Rounding, squares/roots, and operations with rational numbers.</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[120px] banner rounded-md"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controlsG8" role="group" aria-label="Slideshow controls">
+  <button id="prevG8" title="Previous (←)">&laquo;</button>
+  <button id="fsG8" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counterG8">1 / 11</div>
+  <button id="nextG8" title="Next (→)">&raquo;</button>
+</div>
+<div id="progressG8"></div>
+
+<!-- Glossary popover -->
+<div id="popG8" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBodyG8"></div>
+</div>
+
+<script>
+(()=>{ // ----- keep everything scoped to this lesson (G8) -----
+  const $ = (id)=>document.getElementById(id);
+
+  /* NAV + FULLSCREEN */
+  const slides = [...document.querySelectorAll('#slidesG8 .slide')];
+  const prev = $('prevG8'), next = $('nextG8'), counter = $('counterG8'), progress = $('progressG8'), fsBtn = $('fsG8');
+  let i = 0;
+  function show(k){
+    i = (k + slides.length) % slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+    counter.textContent = (i+1) + ' / ' + slides.length;
+    progress.style.width = ((i+1)/slides.length*100) + '%';
+    if (slides[i].id === 'trainerSlideG8' && !window._trainerInitG8) buildTrainer();
+  }
+  prev.addEventListener('click', ()=>show(i-1));
+  next.addEventListener('click', ()=>show(i+1));
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el = $('slidesG8');
+    if (!document.fullscreenElement){
+      (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);
+    } else {
+      (document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);
+    }
+  }
+  fsBtn.addEventListener('click', toggleFS);
+
+  /* utilities */
+  const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}
+  const simp=(n,d)=>{ let g=gcd(n,d); d<0&&(g=-g); return [n/g,d/g]; }
+  const fracEq=(a,b,c,d)=> a*d===b*c;
+  const concatNum = (I,a,b='') => Number(String(I)+String(a||'')+String(b||''));
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<16;k++){
+      const div=document.createElement('div');
+      div.className='confetti'; div.style.left=x+'px'; div.style.top=y+'px';
+      div.style.width='8px'; div.style.height='8px';
+      div.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(div);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.2)*300, rot=(Math.random()*720);
+      div.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],{duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>div.remove();
+    }
+  }
+
+  /* glossary */
+  const GLOS = {
+    rational:'<strong>Rational numbers</strong> can be written as a fraction of integers. Their decimals terminate or repeat.',
+    pure:'<strong>Pure repeating</strong> means the digits repeat immediately (e.g., 0.<span class="overbar">34</span>).',
+    mixed:'<strong>Mixed repeating</strong> has a gap of non‑repeating digits then a repeating block (e.g., 0.1<span class="overbar">6</span>).',
+    bar:'<strong>Bar notation</strong>: an overline marks the repeating block, e.g., 0.<span class="overbar">46</span>.',
+    dots:'<strong>Dot notation</strong>: dots above the first and last repeating digits, e.g., 0.1<span class="repdot">6</span>.',
+    block:'<strong>b</strong> is the repeating block.',
+    nonrep:'<strong>a</strong> is the non‑repeating digits after the decimal; its length is <strong>k</strong>.',
+    I:'<strong>I</strong> is the integer part.',
+    k:'<strong>k</strong> = number of digits in a (non‑repeating part).',
+    n:'<strong>n</strong> = number of digits in b (repeating block).'
+  };
+  const POP = $('popG8'), POP_BODY = $('popBodyG8');
+  function showPop(html, anchor){
+    POP_BODY.innerHTML = html; POP.style.display='block';
+    if(anchor){
+      const r = anchor.getBoundingClientRect();
+      POP.style.left = Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px';
+      POP.style.bottom = (window.innerHeight - r.top + 10)+'px';
+    } else { POP.style.left='20px'; POP.style.bottom='20px';}
+  }
+  POP.querySelector('.close').addEventListener('click', ()=>POP.style.display='none');
+  document.addEventListener('click', (e)=>{
+    const el = e.target.closest('.chip[data-key]');
+    if(el){ const key = el.dataset.key; if(GLOS[key]) showPop(GLOS[key], el); }
+  });
+
+  /* rendering helpers for decimals */
+  function renderRecurringHTML(I, a, b, mode){
+    const safeA = a||'';
+    const core = (mode==='dot') ? `<span class="repdot">${b}</span>` : `<span class="overbar">${b}</span>`;
+    return `${I}.${safeA}${core}`;
+  }
+  function toFraction(I, a, b){
+    const k = (a||'').length, n = b.length;
+    const N = concatNum(I,a,b) - concatNum(I,a,'');
+    const D = 10**(k+n) - 10**k;
+    return simp(N, D);
+  }
+  function stepLines(I,a,b,mode){
+    const k=(a||'').length, n=b.length;
+    const Ia=concatNum(I,a,''), Iab=concatNum(I,a,b);
+    const sup=(n)=>`10<sup>${n}</sup>`;
+    let L=[];
+    if(k===0 && I===0){
+      L.push(`Let x = 0.${mode==='dot' ? '<span class="repdot">'+b+'</span>' : '<span class="overbar">'+b+'</span>'}`);
+      L.push(`${sup(n)}x = ${b}.${mode==='dot' ? '<span class="repdot">'+b+'</span>' : '<span class="overbar">'+b+'</span>'}`);
+      L.push(`Subtract: (${sup(n)} − 1)x = ${b}`);
+    }else{
+      L.push(`Let x = ${renderRecurringHTML(I,a,b,mode)}`);
+      L.push(`${sup(k)}x = ${Ia} + 0.${mode==='dot' ? '<span class="repdot">'+b+'</span>' : '<span class="overbar">'+b+'</span>'}`);
+      L.push(`${sup(k+n)}x = ${Iab} + 0.${mode==='dot' ? '<span class="repdot">'+b+'</span>' : '<span class="overbar">'+b+'</span>'}`);
+      L.push(`Subtract: (${sup(k+n)} − ${sup(k)})x = ${Iab} − ${Ia}`);
+    }
+    const [N,D]=toFraction(I,a,b);
+    L.push(`x = ${N}/${D}`);
+    return {L,N,D};
+  }
+
+  /* Quick denominator check */
+  $('denCheckG8').addEventListener('click', ()=>{
+    let ok=true;
+    document.querySelectorAll('.denIn').forEach(inp=>{
+      const n=+inp.dataset.n; const want = (10**n - 1).toString();
+      if((inp.value||'').replace(/\s+/g,'')===want){ inp.style.borderColor='#22c55e'; }
+      else{ inp.style.borderColor='#ef4444'; ok=false; }
+    });
+    $('denFbG8').textContent = ok ? '✅ Correct — denominator is 10^n − 1.' : '❌ Check the powers of 10.';
+    $('denFbG8').className = 'mt-2 h-6 font-semibold ' + (ok?'text-green-700':'text-red-700');
+    if(ok) confetti();
+  });
+  $('denResetG8').addEventListener('click', ()=>document.querySelectorAll('.denIn').forEach(i=>{i.value='';i.style.borderColor='#e5e7eb'}));
+
+  /* Identify Pure/Mixed */
+  const idSamples = [
+    {I:0,a:'',b:'4'}, {I:0,a:'',b:'34'}, {I:0,a:'1',b:'6'},
+    {I:1,a:'2',b:'3'}, {I:2,a:'',b:'7'}, {I:0,a:'23',b:'45'}
+  ];
+  function randomPick(arr,n){ return arr.slice().sort(()=>Math.random()-0.5).slice(0,n); }
+  function renderID(){
+    const list = $('idListG8'); list.innerHTML='';
+    list._items = randomPick(idSamples,5);
+    list._items.forEach((q, idx)=>{
+      const pure = (q.a==='' && q.I===0);
+      const row=document.createElement('div'); row.className='card p-3 flex items-center justify-between gap-3';
+      row.innerHTML = `<div class="font-semibold text-xl">${renderRecurringHTML(q.I,q.a,q.b,'bar')}</div>
+        <div class="flex items-center gap-2">
+          <select class="idTypeG8 border rounded px-2 py-1" data-i="${idx}">
+            <option>Pure</option><option>Mixed</option>
+          </select>
+          <input class="idBlkG8 px-2 py-1 rounded border w-24" data-i="${idx}" placeholder="block">
+        </div>`;
+      list.appendChild(row);
+      row.dataset.pure = pure? 'Pure':'Mixed';
+      row.dataset.block = q.b;
+    });
+  }
+  renderID();
+  $('idCheckG8').addEventListener('click', ()=>{
+    let ok=true;
+    $('idListG8').querySelectorAll('.card').forEach(row=>{
+      const type=row.querySelector('.idTypeG8'), blk=row.querySelector('.idBlkG8');
+      const rightT=row.dataset.pure, rightB=row.dataset.block;
+      if(type.value!==rightT){type.style.borderColor='#ef4444'; ok=false;} else type.style.borderColor='#22c55e';
+      if((blk.value||'').replace(/\s+/g,'')!==rightB){blk.style.borderColor='#ef4444'; ok=false;} else blk.style.borderColor='#22c55e';
+    });
+    $('idFbG8').textContent = ok? '✅ Nice identification!' : '❌ Recheck type/block';
+    $('idFbG8').className='mt-2 h-6 font-semibold ' + (ok?'text-green-700':'text-red-700');
+    if(ok) confetti();
+  });
+  $('idNewG8').addEventListener('click', renderID);
+
+  /* Equation Builder */
+  const ebInt=$('ebIntG8'), ebNon=$('ebNonG8'), ebRep=$('ebRepG8');
+  const buildEq=$('buildEqG8'), clearEq=$('clearEqG8'), eqSteps=$('eqStepsG8'), eqResult=$('eqResultG8'), eqError=$('eqErrorG8'), decPreview=$('decPreviewG8');
+  function previewEB(){
+    const I = Number(ebInt.value||0);
+    const a = (ebNon.value||'').replace(/\D/g,'');
+    const b = (ebRep.value||'').replace(/\D/g,'');
+    const mode = document.querySelector('input[name="reprG8"]:checked').value;
+    decPreview.innerHTML = (b? renderRecurringHTML(I,a,b,mode) : '');
+  }
+  ebInt.addEventListener('input', previewEB); ebNon.addEventListener('input', previewEB); ebRep.addEventListener('input', previewEB);
+  [...document.querySelectorAll('input[name="reprG8"]')].forEach(r=>r.addEventListener('change', previewEB));
+  buildEq.addEventListener('click', ()=>{
+    eqError.textContent=''; eqSteps.innerHTML=''; eqResult.textContent='';
+    const I = Number(ebInt.value||0);
+    const a = (ebNon.value||'').replace(/\D/g,'');
+    const b = (ebRep.value||'').replace(/\D/g,'');
+    if(!b){ eqError.textContent='Please type the repeating block (at least one digit).'; return; }
+    const mode = document.querySelector('input[name="reprG8"]:checked').value;
+    const {L,N,D}=stepLines(I,a,b,mode);
+    eqSteps.innerHTML = L.map(l=>`<div>• ${l}</div>`).join('');
+    eqResult.textContent = `Answer: ${N}/${D}`;
+    confetti();
+  });
+  clearEq.addEventListener('click', ()=>{eqError.textContent=''; eqSteps.innerHTML=''; eqResult.textContent=''; ebInt.value=''; ebNon.value=''; ebRep.value=''; decPreview.textContent='';});
+
+  /* Step Sorter */
+  const sorterRight = [
+    'Let x = 0.<span class="overbar">12</span>',
+    '100x = 12.<span class="overbar">12</span>',
+    '100x − x = 12',
+    '99x = 12',
+    'x = 12/99 = 4/33'
+  ];
+  const sortList=$('sortStepsG8');
+  function makeSortable(ul){
+    let dragEl=null;
+    ul.querySelectorAll('li').forEach(li=>{
+      li.addEventListener('dragstart',()=>{dragEl=li; li.classList.add('dragging');});
+      li.addEventListener('dragend',()=>{dragEl=null; li.classList.remove('dragging');});
+    });
+    ul.addEventListener('dragover',e=>{
+      e.preventDefault();
+      const els=[...ul.querySelectorAll('li:not(.dragging)')];
+      let after=null, closest=-1e9;
+      els.forEach(child=>{
+        const box=child.getBoundingClientRect(), offset=e.clientY-box.top-box.height/2;
+        if(offset<0 && offset>closest){closest=offset; after=child;}
+      });
+      after? ul.insertBefore(dragEl,after) : ul.appendChild(dragEl);
+    });
+  }
+  function renderSort(){
+    sortList.innerHTML='';
+    const mixed=sorterRight.slice().sort(()=>Math.random()-0.5);
+    mixed.forEach(s=>{
+      const li=document.createElement('li'); li.draggable=true;
+      li.className='bg-white border rounded-xl px-4 py-2 text-lg flex justify-between items-center';
+      li.innerHTML=`<span class="sv">${s}</span><span class="cursor-move">⋮⋮</span>`;
+      sortList.appendChild(li);
+    });
+    makeSortable(sortList);
+  }
+  renderSort();
+  $('sortCheckG8').addEventListener('click', ()=>{
+    const got=[...sortList.querySelectorAll('.sv')].map(e=>e.innerHTML);
+    const ok = JSON.stringify(got)===JSON.stringify(sorterRight);
+    $('sortFbG8').textContent = ok? '✅ Perfect order!' : '❌ Some steps are out of order';
+    $('sortFbG8').className='mt-2 h-6 font-semibold ' + (ok?'text-green-700':'text-red-700');
+    if(ok) confetti();
+  });
+  $('sortResetG8').addEventListener('click', renderSort);
+
+  /* Trainer (worksheet set) */
+  const trainerItems = [
+    {I:0, a:'', b:'4', N:4, D:9},
+    {I:0, a:'', b:'3', N:1, D:3},
+    {I:0, a:'', b:'12', N:12, D:99},
+    {I:0, a:'', b:'34', N:34, D:99},
+    {I:0, a:'', b:'46', N:46, D:99},
+  ];
+  window._trainerInitG8=false;
+  function buildTrainer(){ window._trainerInitG8=true; renderTrainer(); [...document.querySelectorAll('input[name="repr2G8"]')].forEach(r=>r.addEventListener('change', renderTrainer)); }
+  function renderTrainer(){
+    const mode = document.querySelector('input[name="repr2G8"]:checked').value;
+    const list=$('trainListG8'); list.innerHTML='';
+    trainerItems.forEach((q, i)=>{
+      const row=document.createElement('div'); row.className='card p-3 flex items-center justify-between gap-3';
+      row.innerHTML = `<div class="font-semibold text-xl">${renderRecurringHTML(q.I,q.a,q.b,mode)}</div>
+        <input class="trInG8 px-2 py-1 rounded border w-40" data-i="${i}" placeholder="fraction e.g., 34/99"/>`;
+      list.appendChild(row);
+    });
+  }
+  function parseFrac(s){
+    if(!s) return null;
+    s=s.replace(/\s+/g,'').replace('−','-');
+    const m=s.match(/^(-?\d+)\/(-?\d+)$/); if(!m) return null;
+    const a=+m[1], b=+m[2]; if(b===0) return null;
+    return simp(a,b);
+  }
+  $('checkTrainG8').addEventListener('click', ()=>{
+    const ins=[...document.querySelectorAll('.trInG8')]; let total=ins.length, correct=0;
+    ins.forEach(inp=>{
+      const i=+inp.dataset.i; const ans=trainerItems[i]; const given=parseFrac(inp.value);
+      if(given && fracEq(given[0],given[1],ans.N,ans.D)){ inp.style.borderColor='#22c55e'; correct++; }
+      else { inp.style.borderColor='#ef4444'; }
+    });
+    $('trainFbG8').textContent = correct===total ? '✅ All correct!' : `Score: ${correct}/${total}`;
+    $('trainFbG8').className='mt-2 h-6 font-semibold ' + (correct===total?'text-green-700':'text-red-700');
+    if(correct===total) confetti();
+  });
+  $('resetTrainG8').addEventListener('click', ()=>[...document.querySelectorAll('.trInG8')].forEach(i=>{i.value=''; i.style.borderColor='#e5e7eb'}));
+
+  /* Match Game */
+  function makeMG(){
+    const pick = trainerItems.slice().sort(()=>Math.random()-0.5).slice(0,4);
+    const decBox=$('mgDecsG8'), fracBox=$('mgFracsG8');
+    decBox.innerHTML=''; fracBox.innerHTML='';
+    pick.forEach((q, idx)=>{
+      const d=document.createElement('div'); d.className='card p-3 flex items-center justify-between gap-3 drop'; d.dataset.key=String(idx);
+      d.innerHTML=`<div class="font-semibold text-xl">${renderRecurringHTML(q.I,q.a,q.b,'bar')}</div><div class="text-sm text-gray-500">drop here</div>`;
+      d.addEventListener('dragover', e=>{e.preventDefault(); d.style.borderColor='#C7A34F';});
+      d.addEventListener('dragleave', ()=>{d.style.borderColor='#d1d5db';});
+      d.addEventListener('drop', e=>{
+        e.preventDefault(); d.style.borderColor='#22c55e';
+        const k = e.dataTransfer.getData('text/plain');
+        const card = document.querySelector(`.drag[data-key="${k}"]`);
+        if(card){ d.appendChild(card); }
+      });
+      decBox.appendChild(d);
+    });
+    pick.forEach((q, idx)=>{
+      const f=document.createElement('div'); f.className='card p-2 text-lg font-semibold drag'; f.textContent=`${q.N}/${q.D}`; f.draggable=true; f.dataset.key=String(idx);
+      f.addEventListener('dragstart', e=>{e.dataTransfer.setData('text/plain', f.dataset.key);});
+      fracBox.appendChild(f);
+    });
+    $('mgDecsG8')._set = pick;
+  }
+  makeMG();
+  $('mgNewG8').addEventListener('click', makeMG);
+  $('mgCheckG8').addEventListener('click', ()=>{
+    const decs=[...$('mgDecsG8').children];
+    let ok=true;
+    decs.forEach((box)=>{ const card = box.querySelector('.drag'); if(!card){ ok=false; return; } ok = ok && (card.dataset.key===box.dataset.key); });
+    $('mgFbG8').textContent = ok? '✅ All matches correct!' : '❌ Some matches are wrong or missing';
+    $('mgFbG8').className='mt-2 h-6 font-semibold ' + (ok?'text-green-700':'text-red-700');
+    if(ok) confetti();
+  });
+
+  /* Sprint */
+  let spTimer=null, spTime=60, spScore=0, spCurrent=null;
+  function randMixed(){
+    const I=Math.floor(Math.random()*2);
+    const nonLen = Math.random()<0.5 ? 0 : 1;
+    const repLen = Math.random()<0.5 ? 1 : 2;
+    const a = nonLen? String(Math.floor(Math.random()*9)) : '';
+    let b=''; for(let k=0;k<repLen;k++) b += String( Math.floor(Math.random()*9)+1 );
+    return {I,a,b};
+  }
+  function showSprintQ(){
+    spCurrent = randMixed();
+    $('spQG8').innerHTML = renderRecurringHTML(spCurrent.I, spCurrent.a, spCurrent.b, 'bar');
+    $('spAnsG8').value='';
+  }
+  function startSprint(){
+    if(spTimer) return;
+    spTime=60; spScore=0;
+    $('spTimeG8').textContent=spTime; $('spScoreG8').textContent=spScore; $('spFbG8').textContent='';
+    showSprintQ();
+    spTimer=setInterval(()=>{
+      spTime--; $('spTimeG8').textContent=spTime;
+      if(spTime<=0){ stopSprint(); $('spFbG8').textContent='⏰ Time! Final score: '+spScore; }
+    },1000);
+  }
+  function stopSprint(){ clearInterval(spTimer); spTimer=null; }
+  $('spStartG8').addEventListener('click', startSprint);
+  $('spStopG8').addEventListener('click', stopSprint);
+  $('spAnsG8').addEventListener('keydown', e=>{
+    if(e.key==='Enter'){
+      const g=(function parseFrac(s){ if(!s) return null; s=s.replace(/\s+/g,'').replace('−','-'); const m=s.match(/^(-?\d+)\/(-?\d+)$/); if(!m) return null; const a=+m[1], b=+m[2]; if(b===0) return null; return simp(a,b); })( $('spAnsG8').value );
+      const [N,D]=toFraction(spCurrent.I, spCurrent.a, spCurrent.b);
+      if(g && fracEq(g[0],g[1],N,D)){ spScore++; $('spScoreG8').textContent=spScore; confetti(); }
+      showSprintQ();
+    }
+  });
+
+  /* init */
+  show(0);
+})(); // end scope
+</script>
+</body>
+</html>
