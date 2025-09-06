@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G8 • Unit 1 • Lesson 4 • Rounding Numbers (QLA)</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX: CSS + JS (robust auto-render bootstrap) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  // Boot KaTeX and expose a global re-typeset helper
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root = document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t = setInterval(()=>{ if(window.renderMathInElement){ clearInterval(t); run();}}, 25);
+      setTimeout(()=>clearInterval(t), 6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  /* Stage */
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:110px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  /* Popover */
+  #pop{position:fixed;inset:auto auto 20px 20px;max-width:min(560px,90vw);background:#fff;border:2px solid var(--gold);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding:14px 16px;z-index:40;display:none;text-align:left}
+  #pop strong{color:var(--maroon)} #pop .close{float:right;color:#666;cursor:pointer;font-weight:800}
+
+  /* Number line */
+  .nl-wrap{width:100%;max-width:920px}
+  canvas.nline{width:100%;height:170px;border-radius:12px;background:linear-gradient(180deg,#fff,#fafafa);border:2px solid #ececec}
+
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+  .tok{display:inline-block;padding:.05rem .25rem;border-radius:6px}
+</style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white" id="titleSlide">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-20 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Unit 1 — Lesson 4: Rounding Numbers</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Grade 8 • Whole numbers • Decimals • Significant Figures • Bounds</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Mathematics</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Aligned to AERO 8.NS &amp; 8.EE readiness.</div>
+    </section>
+
+    <!-- 1 • Learning Objectives & Keywords -->
+    <section class="slide" id="loSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Objectives &amp; Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Objectives</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Round whole numbers and decimals to a specified place (nearest 10, 100, 0.1, 0.01, …) using the **half‑up** rule (symmetric for negatives).</li>
+            <li>Round to a given number of <strong>significant figures</strong> and in <strong>scientific notation</strong>.</li>
+            <li>Interpret a rounded value’s **bounds** (interval of possible true values).</li>
+            <li>Choose suitable rounding for **estimation** in real‑world contexts and justify reasonableness.</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap for quick defs)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="halfup">half‑up rounding</span>
+            <span class="chip" data-key="place">place value</span>
+            <span class="chip" data-key="dp">decimal places (dp)</span>
+            <span class="chip" data-key="sf">significant figures (s.f.)</span>
+            <span class="chip" data-key="sci">scientific notation</span>
+            <span class="chip" data-key="bounds">bounds / error interval</span>
+            <span class="chip" data-key="estimate">estimation</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">We use the **school standard** half‑up rule: a trailing 5 rounds **away from 0** (e.g., \(-1.5\to -2\)).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Warm‑up Quick Check -->
+    <section class="slide" id="warmSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Warm‑Up: Decide Fast!</h2>
+      <div class="grid md:grid-cols-3 gap-4 w-full max-w-5xl">
+        <div class="card p-4 text-left">
+          <div class="font-bold text-maroon mb-1">Nearest hundred</div>
+          <div class="text-xl">\( 12{,}649 \) → <input id="w1" class="border rounded px-2 py-1 w-32" placeholder="e.g., 12,600"></div>
+        </div>
+        <div class="card p-4 text-left">
+          <div class="font-bold text-maroon mb-1">1 decimal place</div>
+          <div class="text-xl">\( 7.45 \) → <input id="w2" class="border rounded px-2 py-1 w-24" placeholder="7.5"></div>
+        </div>
+        <div class="card p-4 text-left">
+          <div class="font-bold text-maroon mb-1">Nearest integer (negative)</div>
+          <div class="text-xl">\( -2.5 \) → <input id="w3" class="border rounded px-2 py-1 w-24" placeholder="-3"></div>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="warmCheck" class="btn maroon">Check</button>
+        <button id="warmReset" class="btn">Reset</button>
+      </div>
+      <div id="warmFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 3 • Place Value & Rule -->
+    <section class="slide" id="placeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Place Value &amp; The Rounding Rule</h2>
+      <div class="grid lg:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <p class="mb-2">Highlight the rounding digit and the next digit (to decide up/down).</p>
+          <div class="text-2xl" id="pvNumber"></div>
+          <div class="mt-2 flex items-center gap-3">
+            <label>Round to:</label>
+            <select id="pvPlace" class="border rounded px-2 py-1">
+              <option value="1">ones</option>
+              <option value="10">tens</option>
+              <option value="100">hundreds</option>
+              <option value="1000">thousands</option>
+              <option value="0.1">tenths (1 dp)</option>
+              <option value="0.01" selected>hundredths (2 dp)</option>
+              <option value="0.001">thousandths (3 dp)</option>
+            </select>
+            <button id="pvNew" class="btn">New number</button>
+          </div>
+          <div class="mt-2">Result: <span id="pvResult" class="font-bold"></span></div>
+          <div class="hint mt-3 text-sm">Rule: look at the digit **to the right**. If it’s 5–9, increase the rounding digit by 1; if 0–4, keep it the same. For negatives, “away from 0” at 5.</div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Examples</h3>
+          <div class="space-y-2 text-lg">
+            <div>\( 246.38 \) to 1 dp → \( 246.4 \)</div>
+            <div>\( 7{,}950 \) to nearest thousand → \( 8{,}000 \)</div>
+            <div>\( -12.5 \) to integer → \( -13 \)</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="pvExportCSV" class="btn">Export CSV</button>
+        <button id="pvExportJSON" class="btn">Export JSON</button>
+      </div>
+    </section>
+
+    <!-- 4 • Rounding Explorer (Number Line) -->
+    <section class="slide" id="lineSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Rounding Explorer (Number Line)</h2>
+      <p class="text-gray-600 mb-2">Choose a rounding unit. The number line shows cutoffs and the rounded value.</p>
+      <div class="nl-wrap"><canvas id="roundLine" class="nline" aria-label="Rounding number line"></canvas></div>
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+        <label class="chip">x = <input id="lineX" class="border rounded px-2 py-1 w-28" value="23.47"></label>
+        <label class="chip">unit = 
+          <select id="lineUnit" class="border rounded px-2 py-1">
+            <option value="1">1 (nearest integer)</option>
+            <option value="0.1" selected>0.1 (1 dp)</option>
+            <option value="0.01">0.01 (2 dp)</option>
+            <option value="10">10 (nearest 10)</option>
+            <option value="100">100 (nearest 100)</option>
+          </select>
+        </label>
+        <span class="chip">rounded = <b id="lineOut">23.5</b></span>
+        <button id="lineRand" class="btn">Randomize</button>
+        <button id="lineExportCSV" class="btn">Export CSV</button>
+        <button id="lineExportJSON" class="btn">Export JSON</button>
+      </div>
+    </section>
+
+    <!-- 5 • Practice Generator (by level) -->
+    <section class="slide" id="pracSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice Generator</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="prLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (nearest 10/100, 1 dp)</option>
+            <option value="med" selected>medium (−numbers, 2–3 dp)</option>
+            <option value="hard">hard (mixed places)</option>
+            <option value="expert">expert (mixed incl. sig figs)</option>
+          </select>
+          <button id="prNew" class="btn">New set</button>
+        </div>
+        <div id="prList" class="grid md:grid-cols-2 gap-3 mt-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="prCheck" class="btn maroon">Check</button>
+          <button id="prExportCSV" class="btn">Export CSV</button>
+          <button id="prExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="prFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 6 • Significant Figures: count & round -->
+    <section class="slide" id="sigSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Significant Figures</h2>
+      <div class="grid lg:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Count s.f.</h3>
+          <div id="sigCountList" class="grid gap-2"></div>
+          <div class="mt-3 flex gap-2">
+            <button id="sigCountNew" class="btn">New set</button>
+            <button id="sigCountCheck" class="btn maroon">Check</button>
+            <button id="sigCountCSV" class="btn">Export CSV</button>
+            <button id="sigCountJSON" class="btn">Export JSON</button>
+          </div>
+          <div id="sigCountFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Round to n s.f.</h3>
+          <div id="sigRoundList" class="grid gap-2"></div>
+          <div class="mt-3 flex gap-2">
+            <button id="sigRoundNew" class="btn">New set</button>
+            <button id="sigRoundCheck" class="btn maroon">Check</button>
+            <button id="sigRoundCSV" class="btn">Export CSV</button>
+            <button id="sigRoundJSON" class="btn">Export JSON</button>
+          </div>
+          <div id="sigRoundFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+      </div>
+      <div class="hint mt-3 text-sm">Rules: ignore **leading zeros**; zeros **between** non‑zeros count; **trailing zeros** count <em>only</em> if there’s a decimal point (e.g., \(1200\) has 2 s.f.; \(1200.\) has 4 s.f.).</div>
+    </section>
+
+    <!-- 7 • Scientific Notation Rounding -->
+    <section class="slide" id="sciSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Scientific Notation (Round Mantissa)</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="sciList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="sciNew" class="btn">New set</button>
+          <button id="sciCheck" class="btn maroon">Check</button>
+          <button id="sciCSV" class="btn">Export CSV</button>
+          <button id="sciJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="sciFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 8 • Bounds / Error Intervals -->
+    <section class="slide" id="boundSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Bounds (when a value is rounded)</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <p class="mb-2">If \( x \) rounds to \( r \) to the nearest unit \(u\), then the true value \(x\) is in the interval \( [\,r-\tfrac{u}{2},\; r+\tfrac{u}{2}\,) \).</p>
+        <div id="bdList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="bdNew" class="btn">New set</button>
+          <button id="bdCheck" class="btn maroon">Check</button>
+          <button id="bdCSV" class="btn">Export CSV</button>
+          <button id="bdJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="bdFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 9 • Real‑World Practice -->
+    <section class="slide" id="realSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Real‑World Practice</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="realList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="realNew" class="btn">New set</button>
+          <button id="realCheck" class="btn maroon">Check</button>
+          <button id="realCSV" class="btn">Export CSV</button>
+          <button id="realJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="realFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 10 • Challenge Mode -->
+    <section class="slide" id="challengeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge Mode</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="chLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard</option>
+            <option value="expert">expert</option>
+          </select>
+          <button id="chNew" class="btn">New question</button>
+          <span class="chip">Streak: <b id="streakOut">0</b></span>
+          <button id="chCSV" class="btn">Export CSV</button>
+          <button id="chJSON" class="btn">Export JSON</button>
+        </div>
+        <div class="mt-3 text-2xl">Task: <span id="chText" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="chAns" class="border rounded px-3 py-2 w-60" placeholder="answer"/>
+          <button id="chCheck" class="btn maroon">Check</button>
+          <button id="chHint" class="btn">Hint</button>
+        </div>
+        <div id="chHintBox" class="mt-3 text-sm"></div>
+        <div id="chFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 11 • Exit ticket -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 rounding skills you used (place, s.f., bounds)</li>
+            <li>2 contexts where rounding was helpful</li>
+            <li>1 mistake you will avoid next time</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p>Estimation in multi‑step calculations and percent error comparisons.</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[100px] banner rounded-md" style="background-image:url('qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 12</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* ------------------------- Core Helpers ------------------------- */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G8_Unit1_L4_Rounding_QLA';
+  let i=0;
+
+  function id(x){return document.getElementById(x)}
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<20;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+
+  // Export helpers
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  /* ---------- Navigation ---------- */
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    const sid=slides[i].id||'';
+    if(sid==='lineSlide') drawRoundLine();
+    if(sid==='placeSlide') renderPV();
+    renderMath(slides[i]);
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  /* ------------------------- Rounding Logic ------------------------- */
+  // Symmetric half-up rounding to nearest multiple of unit u
+  function roundHalfUpToUnit(x,u){
+    const q=x/u;
+    const s=q>=0?1:-1, a=Math.abs(q);
+    const k = Math.floor(a + 0.5);
+    return s*k*u;
+  }
+  function decPlacesFromUnit(u){
+    if(u>=1) return 0;
+    const p = Math.round(Math.log10(1/u)); // units are powers of 10
+    return Math.max(0,p);
+  }
+  function fmtToUnit(x,u){
+    const dp = decPlacesFromUnit(u);
+    return (Math.round((x+0)*10**dp)/10**dp).toFixed(dp); // normalize
+  }
+  function roundToDP(x,dp){ const u=10**(-dp); return roundHalfUpToUnit(x,u); }
+  function roundToPlace(x,placeUnit){ return roundHalfUpToUnit(x,placeUnit); }
+
+  // Significant figures
+  function roundToSig(x,n){
+    if(x===0) return 0;
+    const s = x<0? -1: 1;
+    const ax = Math.abs(x);
+    const k = Math.floor(Math.log10(ax));
+    const scale = 10**(k-n+1);
+    return s*roundHalfUpToUnit(ax, scale);
+  }
+  function countSigStr(s){
+    s = s.trim();
+    if(/^0*\.?0*$/.test(s)) return 1; // zero has 1 s.f.
+    const hasDot = s.includes('.');
+    // strip sign
+    s = s.replace(/^[-+]/,'');
+    let t = s;
+    if(!hasDot){
+      // no decimal: remove trailing zeros
+      t = t.replace(/0+$/,'');
+    }
+    // remove leading zeros and decimal point
+    t = t.replace(/^0+/,'').replace('.','');
+    return t.replace(/[^0-9]/g,'').length;
+  }
+
+  // Scientific notation rounding (mantissa in [1,10))
+  function sciRound(m,e,n){
+    let r = roundToSig(m, n);
+    if(Math.abs(r)>=10){ r = r/10; e += 1; }
+    return {m:r,e};
+  }
+
+  /* ------------------------- Glossary ------------------------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    halfup:'<strong>Half‑up rounding</strong>: 5–9 rounds away from 0; 0–4 round toward 0 (symmetric for negatives).',
+    place:'<strong>Place value</strong>: ones, tens, hundreds, tenths, hundredths, …',
+    dp:'<strong>Decimal places</strong>: digits to the right of the decimal point.',
+    sf:'<strong>Significant figures</strong>: digits that convey precision; leading zeros don’t count; trailing zeros count only with a decimal point.',
+    sci:'<strong>Scientific notation</strong>: \( a\\times 10^n \) with \(1\\le |a|&lt;10\).',
+    bounds:'<strong>Bounds</strong>: the interval of true values a rounded number could represent (± half a unit).',
+    estimate:'<strong>Estimation</strong>: rounding first to simplify a computation while keeping a reasonable approximation.'
+  };
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(el){const key=el.dataset.key; if(GLOS[key]){POP_BODY.innerHTML=GLOS[key]; POP.style.display='block'; const r=el.getBoundingClientRect(); POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px'; POP.style.bottom=(window.innerHeight-r.top+10)+'px';}}
+  });
+
+  /* ------------------------- Warm-up ------------------------- */
+  id('warmCheck').addEventListener('click',()=>{
+    const v1=id('w1').value.replace(/,/g,''); const ok1 = (Number(v1)===12600);
+    const ok2 = Math.abs(Number(id('w2').value)-7.5)<1e-10;
+    const ok3 = (Number(id('w3').value)===-3);
+    const score=(ok1?1:0)+(ok2?1:0)+(ok3?1:0);
+    id('warmFb').textContent = score===3 ? '✅ Great start!' : `Score: ${score}/3`;
+    id('w1').style.borderColor=ok1?'#22c55e':'#ef4444';
+    id('w2').style.borderColor=ok2?'#22c55e':'#ef4444';
+    id('w3').style.borderColor=ok3?'#22c55e':'#ef4444';
+    if(score===3) confetti();
+  });
+  id('warmReset').addEventListener('click',()=>{['w1','w2','w3'].forEach(x=>{id(x).value=''; id(x).style.borderColor='#e5e7eb'}); id('warmFb').textContent='';});
+
+  /* ------------------------- Place Value Lens ------------------------- */
+  const pvState={x:246.38,u:0.01};
+  function newPV(){
+    // random number with 3–5 integer digits and 1–3 decimals, maybe negative
+    const sign=Math.random()<0.2?-1:1;
+    const int = Math.floor(Math.random()*900)+100; // 100..999
+    const dp = Math.floor(Math.random()*3)+1;      // 1..3
+    const frac = Math.floor(Math.random()*(10**dp));
+    pvState.x = sign*(int + frac/10**dp);
+    renderPV();
+  }
+  function renderPV(){
+    const s = pvState.x.toString();
+    const [whole, frac=''] = Math.abs(pvState.x).toString().split('.');
+    const sign = pvState.x<0 ? '−' : '';
+    const u = Number(id('pvPlace').value);
+    pvState.u = u;
+    // where is the rounding digit index?
+    const dp = decPlacesFromUnit(u);
+    let roundingIndexFromRight; // counting including decimal for fractional places
+    let display='';
+    if(u>=1){
+      // e.g., tens -> index in whole part
+      const idx = whole.length - Math.log10(u) - 1; // rounding digit position in whole
+      const ridx = Math.round(idx);
+      for(let j=0;j<whole.length;j++){
+        const cls = (j===ridx)?'bg-yellow-200 tok':'tok';
+        display += `<span class="${cls}">${whole[j]}</span>`;
+      }
+      if(frac.length) display += `<span class="tok">.</span>${[...frac].map(c=>`<span class="tok">${c}</span>`).join('')}`;
+    }else{
+      // e.g., hundredths -> highlight in fractional digits
+      const need = decPlacesFromUnit(u); // e.g., 2 dp -> mark frac[1]
+      for(let j=0;j<whole.length;j++){ display += `<span class="tok">${whole[j]}</span>`}
+      if(frac.length || need>0){
+        display += `<span class="tok">.</span>`;
+        for(let j=0;j<Math.max(frac.length,need+1);j++){
+          const d = frac[j] || '0';
+          const cls = (j===need-1)?'bg-yellow-200 tok':'tok';
+          display += `<span class="${cls}">${d}</span>`;
+        }
+      }
+    }
+    id('pvNumber').innerHTML = `${sign}${display}`;
+    const y = roundHalfUpToUnit(pvState.x, u);
+    id('pvResult').textContent = fmtToUnit(y,u).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    renderMath(id('placeSlide'));
+  }
+  id('pvPlace').addEventListener('change',renderPV);
+  id('pvNew').addEventListener('click',newPV);
+  id('pvExportCSV').addEventListener('click',()=>downloadCSV(`${deckTitle}_placevalue.csv`, [['x','unit','result'], [pvState.x, pvState.u, fmtToUnit(roundHalfUpToUnit(pvState.x,pvState.u),pvState.u)]]));
+  id('pvExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_placevalue.json`, pvState));
+  newPV();
+
+  /* ------------------------- Rounding Explorer (Number Line) ------------------------- */
+  const cL=id('roundLine'); const lineX=id('lineX'), lineUnit=id('lineUnit'), lineOut=id('lineOut');
+  const lineState={x:23.47,u:0.1};
+  function drawRoundLine(){
+    const ctx=cL.getContext('2d'); cL.width=cL.clientWidth*devicePixelRatio; cL.height=cL.clientHeight*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+    const y=cL.clientHeight/2, m=28; ctx.clearRect(0,0,cL.clientWidth,cL.clientHeight);
+    ctx.lineWidth=2; ctx.strokeStyle='#6C1D45'; ctx.beginPath(); ctx.moveTo(m,y); ctx.lineTo(cL.clientWidth-m,y); ctx.stroke();
+    // ticks around nearest multiples of u
+    const u=lineState.u, x=lineState.x;
+    const r=roundHalfUpToUnit(x,u);
+    const left = Math.floor((x-4*u)/u)*u;
+    ctx.font='12px Inter'; ctx.fillStyle='#555';
+    for(let k=0;k<=10;k++){
+      const val = left + k*u;
+      const px = map(val);
+      ctx.beginPath(); ctx.moveTo(px,y-10); ctx.lineTo(px,y+10); ctx.stroke();
+      if(k%2===0){ ctx.fillText(fmtToUnit(val,u), px-12, y+26); }
+    }
+    // midpoint boundaries
+    const low = r - u/2, high = r + u/2;
+    ctx.strokeStyle='#C7A34F'; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(map(low),y-30); ctx.lineTo(map(low),y+30); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(map(high),y-30); ctx.lineTo(map(high),y+30); ctx.stroke(); ctx.setLineDash([]);
+    // x and rounded marker
+    ctx.fillStyle='#6C1D45'; ctx.beginPath(); ctx.arc(map(x),y,8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#C7A34F'; ctx.beginPath(); ctx.arc(map(r),y,9,0,Math.PI*2); ctx.fill();
+    lineOut.textContent = fmtToUnit(r,u);
+    function map(val){const W=cL.clientWidth;return m+(val-(left))*((W-2*m)/(10*u));}
+  }
+  lineX.addEventListener('input',()=>{ lineState.x=Number(lineX.value); drawRoundLine(); });
+  lineUnit.addEventListener('change',()=>{ lineState.u=Number(lineUnit.value); drawRoundLine(); });
+  id('lineRand').addEventListener('click',()=>{ lineState.x = +(Math.random()*200-100).toFixed(3); lineX.value=lineState.x; drawRoundLine(); });
+  id('lineExportCSV').addEventListener('click',()=>downloadCSV(`${deckTitle}_line.csv`, [['x','unit','rounded'], [lineState.x,lineState.u,fmtToUnit(roundHalfUpToUnit(lineState.x,lineState.u),lineState.u)]]));
+  id('lineExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_line.json`, {x:lineState.x,unit:lineState.u,rounded:roundHalfUpToUnit(lineState.x,lineState.u)}));
+  drawRoundLine();
+  window.addEventListener('resize',()=>{ if(slides[i].id==='lineSlide') drawRoundLine(); });
+
+  /* ------------------------- Practice Generator ------------------------- */
+  const prState={items:[]};
+  function prBuild(){
+    const lv=id('prLevel').value;
+    const list=[];
+    function task(x,unit,label){ return {type:'unit', prompt:`Round ${x} to ${label}`, x, unit, label, ans: roundHalfUpToUnit(x,unit), fmt:fmtToUnit(roundHalfUpToUnit(x,unit),unit)};}
+    function taskSig(x,n){const ans=roundToSig(x,n); return {type:'sig', prompt:`Round ${x} to ${n} s.f.`, x, n, ans, fmt:ans.toPrecision(n)};}
+    for(let k=0;k<4;k++){
+      if(lv==='easy'){
+        const a = Math.floor(Math.random()*900)+100;
+        const unit = Math.random()<0.5?10:100;
+        list.push(task(a,unit, unit===10?'nearest 10':'nearest 100'));
+      }else if(lv==='med'){
+        const x = +( (Math.random()*200-100).toFixed(Math.random()<0.5?1:2) );
+        const unit = Math.random()<0.5?0.1:0.01;
+        list.push(task(x,unit, unit===0.1?'1 dp':'2 dp'));
+      }else if(lv==='hard'){
+        const mix = Math.random();
+        if(mix<0.5){
+          const unit = [0.001,0.01,0.1,1,10,100][Math.floor(Math.random()*6)];
+          const x = +( (Math.random()*200-100).toFixed(unit<1?3:0) );
+          const lab = unit>=1? `nearest ${unit}` : `${decPlacesFromUnit(unit)} dp`;
+          list.push(task(x,unit,lab));
+        }else{
+          const x = +( (Math.random()*9000-4500).toFixed(3) );
+          const n = [2,3,4][Math.floor(Math.random()*3)];
+          list.push(taskSig(x,n));
+        }
+      }else{ // expert
+        if(Math.random()<0.5){
+          const x = +( (Math.random()*9000-4500).toFixed(4) );
+          const n = [2,3,4][Math.floor(Math.random()*3)];
+          list.push(taskSig(x,n));
+        }else{
+          const unit = [0.001,0.01,0.1,1,10,100,1000][Math.floor(Math.random()*7)];
+          const x = +( (Math.random()*50000-25000).toFixed(unit<1?3:0) );
+          const lab = unit>=1? `nearest ${unit}` : `${decPlacesFromUnit(unit)} dp`;
+          list.push(task(x,unit,lab));
+        }
+      }
+    }
+    prState.items=list;
+    const box=id('prList'); box.innerHTML='';
+    list.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">${o.prompt} = <input class="prin border rounded px-2 py-1 w-40" placeholder="answer"></div>`;
+      box.appendChild(row);
+    });
+  }
+  id('prNew').addEventListener('click',prBuild); prBuild();
+  id('prCheck').addEventListener('click',()=>{
+    let ok=0; id('prList').querySelectorAll('.card').forEach((row,idx)=>{
+      const inp=row.querySelector('.prin'); const item=prState.items[idx];
+      const v = Number(inp.value.replace(/,/g,'')); const want = item.ans;
+      const good = Math.abs(v-want)<1e-10;
+      inp.style.borderColor = good? '#22c55e':'#ef4444';
+      if(good) ok++;
+    });
+    id('prFb').textContent = ok===prState.items.length? '✅ All correct!' : `Score: ${ok}/${prState.items.length}`;
+    if(ok===prState.items.length) confetti();
+  });
+  id('prExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer']]; prState.items.forEach(o=>rows.push([o.prompt,o.fmt||o.ans])); downloadCSV(`${deckTitle}_practice.csv`, rows);
+  });
+  id('prExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_practice.json`, prState.items));
+
+  /* ------------------------- Significant Figures ------------------------- */
+  const sigCState={items:[]}, sigRState={items:[]};
+  function genSigCount(){
+    const pool=['0.00340','1200','1200.','5.060','0.0702','30007','2.90','0.0005','40','40.0'];
+    sigCState.items = pool.sort(()=>Math.random()-0.5).slice(0,4).map(s=>({s,ans:countSigStr(s)}));
+    const box=id('sigCountList'); box.innerHTML='';
+    sigCState.items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-3';
+      row.innerHTML=`<div class="text-xl">\\( ${o.s} \\) has <input class="scin border rounded px-2 py-1 w-20" placeholder="s.f."> s.f.</div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('sigSlide'));
+  }
+  function genSigRound(){
+    const items=[];
+    for(let k=0;k<4;k++){
+      const x = +( (Math.random()*9000-1000).toFixed(4) );
+      const n=[2,3,4][Math.floor(Math.random()*3)];
+      const ans = roundToSig(x,n);
+      items.push({x,n,ans,fmt:ans.toPrecision(n)});
+    }
+    sigRState.items=items;
+    const box=id('sigRoundList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-3';
+      row.innerHTML=`<div class="text-xl">Round \\( ${o.x} \\) to ${o.n} s.f. = <input class="srin border rounded px-2 py-1 w-40" placeholder="answer"></div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('sigSlide'));
+  }
+  id('sigCountNew').addEventListener('click',genSigCount);
+  id('sigRoundNew').addEventListener('click',genSigRound);
+  genSigCount(); genSigRound();
+  id('sigCountCheck').addEventListener('click',()=>{
+    let ok=0; id('sigCountList').querySelectorAll('.card').forEach((row,idx)=>{
+      const want=sigCState.items[idx].ans; const got=Number(row.querySelector('.scin').value);
+      const good = got===want; row.querySelector('.scin').style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('sigCountFb').textContent = ok===sigCState.items.length? '✅ Perfect!' : `Score: ${ok}/${sigCState.items.length}`;
+    if(ok===sigCState.items.length) confetti();
+  });
+  id('sigRoundCheck').addEventListener('click',()=>{
+    let ok=0; id('sigRoundList').querySelectorAll('.card').forEach((row,idx)=>{
+      const want=sigRState.items[idx].ans; const got=Number(row.querySelector('.srin').value);
+      const good=Math.abs(got-want)<1e-10; row.querySelector('.srin').style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('sigRoundFb').textContent = ok===sigRState.items.length? '✅ Excellent!' : `Score: ${ok}/${sigRState.items.length}`;
+    if(ok===sigRState.items.length) confetti();
+  });
+  id('sigCountCSV').addEventListener('click',()=>{
+    const rows=[['number','sig_figs']]; sigCState.items.forEach(o=>rows.push([o.s,o.ans])); downloadCSV(`${deckTitle}_sig_count.csv`, rows);
+  });
+  id('sigCountJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_sig_count.json`, sigCState.items));
+  id('sigRoundCSV').addEventListener('click',()=>{
+    const rows=[['x','n_sf','answer']]; sigRState.items.forEach(o=>rows.push([o.x,o.n,o.fmt])); downloadCSV(`${deckTitle}_sig_round.csv`, rows);
+  });
+  id('sigRoundJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_sig_round.json`, sigRState.items));
+
+  /* ------------------------- Scientific Notation ------------------------- */
+  const sciState={items:[]};
+  function sciNew(){
+    const list=[];
+    for(let k=0;k<4;k++){
+      const e = Math.floor(Math.random()*7)-3; // -3..3
+      const m = +( (Math.random()*9+1).toFixed(4) ); // 1..10
+      const n=[2,3,4][Math.floor(Math.random()*3)];
+      const r=sciRound(m,e,n);
+      list.push({m,e,n,ans:r});
+    }
+    sciState.items=list;
+    const box=id('sciList'); box.innerHTML='';
+    list.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl">Round \\( ${o.m}\\times 10^{${o.e}} \\) to ${o.n} s.f.: mantissa = <input class="sciin border rounded px-2 py-1 w-20" placeholder="m">, exponent = <input class="sciexp border rounded px-2 py-1 w-20" placeholder="e"></div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('sciSlide'));
+  }
+  id('sciNew').addEventListener('click',sciNew); sciNew();
+  id('sciCheck').addEventListener('click',()=>{
+    let ok=0; id('sciList').querySelectorAll('.card').forEach((row,idx)=>{
+      const item=sciState.items[idx]; const m=Number(row.querySelector('.sciin').value); const e=Number(row.querySelector('.sciexp').value);
+      const good= Math.abs(m-item.ans.m)<1e-10 && e===item.ans.e; row.querySelector('.sciin').style.borderColor=good?'#22c55e':'#ef4444'; row.querySelector('.sciexp').style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('sciFb').textContent = ok===sciState.items.length? '✅ Perfect!' : `Score: ${ok}/${sciState.items.length}`;
+    if(ok===sciState.items.length) confetti();
+  });
+  id('sciCSV').addEventListener('click',()=>{
+    const rows=[['m','e','n_sf','m_ans','e_ans']]; sciState.items.forEach(o=>rows.push([o.m,o.e,o.n,o.ans.m,o.ans.e])); downloadCSV(`${deckTitle}_scientific.csv`, rows);
+  });
+  id('sciJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_scientific.json`, sciState.items));
+
+  /* ------------------------- Bounds ------------------------- */
+  const bdState={items:[]};
+  function bdNew(){
+    const list=[];
+    for(let k=0;k<4;k++){
+      const unit=[0.001,0.01,0.1,1,10,100][Math.floor(Math.random()*6)];
+      const x = +( (Math.random()*1000-500).toFixed(unit<1?3:0) );
+      const r = roundHalfUpToUnit(x,unit);
+      const lb = r - unit/2, ub = r + unit/2;
+      const label = unit>=1? `nearest ${unit}` : `${decPlacesFromUnit(unit)} dp`;
+      list.push({r,unit,lb,ub,label});
+    }
+    bdState.items=list;
+    const box=id('bdList'); box.innerHTML='';
+    list.forEach((o,idx)=>{
+      const dp=decPlacesFromUnit(o.unit);
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="mt-1">A measurement is reported as <b>${fmtToUnit(o.r,o.unit)}</b> (${o.label}). Give the bounds for the true value \(x\):</div>
+        <div class="mt-1">Lower bound: <input class="bdlb border rounded px-2 py-1 w-32" placeholder="${(o.lb).toFixed(dp)}">, Upper bound: <input class="bdub border rounded px-2 py-1 w-32" placeholder="${(o.ub).toFixed(dp)}"></div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('boundSlide'));
+  }
+  id('bdNew').addEventListener('click',bdNew); bdNew();
+  id('bdCheck').addEventListener('click',()=>{
+    let ok=0; id('bdList').querySelectorAll('.card').forEach((row,idx)=>{
+      const item=bdState.items[idx]; const lb=Number(row.querySelector('.bdlb').value); const ub=Number(row.querySelector('.bdub').value);
+      const good = Math.abs(lb-item.lb)<1e-10 && Math.abs(ub-item.ub)<1e-10;
+      row.querySelector('.bdlb').style.borderColor=good?'#22c55e':'#ef4444';
+      row.querySelector('.bdub').style.borderColor=good?'#22c55e':'#ef4444';
+      if(good) ok++;
+    });
+    id('bdFb').textContent = ok===bdState.items.length? '✅ Excellent!' : `Score: ${ok}/${bdState.items.length}`;
+    if(ok===bdState.items.length) confetti();
+  });
+  id('bdCSV').addEventListener('click',()=>{
+    const rows=[['reported','unit','label','lower','upper']];
+    bdState.items.forEach(o=>rows.push([fmtToUnit(o.r,o.unit),o.unit,o.label,o.lb,o.ub]));
+    downloadCSV(`${deckTitle}_bounds.csv`, rows);
+  });
+  id('bdJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_bounds.json`, bdState.items));
+
+  /* ------------------------- Real-world ------------------------- */
+  const realState={items:[]};
+  function realNew(){
+    const list=[];
+    // Currency estimation
+    const price = +( (Math.random()*40+10).toFixed(2) );
+    const qty = Math.floor(Math.random()*7)+4; // 4..10
+    list.push({type:'est', prompt:`Estimate the total cost of ${qty} items at QAR ${price} each by rounding to the nearest riyal (QAR).`, ans: Math.round(price)*qty });
+    // Population rounding
+    const pop = Math.floor(Math.random()*7e6)+3e6;
+    list.push({type:'unit', prompt:`Round the population ${pop.toLocaleString()} to the nearest hundred thousand.`, unit:100000, ans: roundHalfUpToUnit(pop,100000)});
+    // Distance with dp
+    const dist = +( (Math.random()*150+5).toFixed(2) );
+    list.push({type:'unit', prompt:`Round the distance ${dist} km to 1 dp.`, unit:0.1, ans: roundHalfUpToUnit(dist,0.1)});
+    // Time rounding
+    const minutes = +( (Math.random()*180).toFixed(1) );
+    list.push({type:'unit', prompt:`Round the running time ${minutes} minutes to the nearest minute.`, unit:1, ans: roundHalfUpToUnit(minutes,1)});
+    realState.items=list;
+    const box=id('realList'); box.innerHTML='';
+    list.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-xl mt-1">${o.prompt} = <input class="rin border rounded px-2 py-1 w-40" placeholder="answer"></div>`;
+      box.appendChild(row);
+    });
+  }
+  id('realNew').addEventListener('click',realNew); realNew();
+  id('realCheck').addEventListener('click',()=>{
+    let ok=0; id('realList').querySelectorAll('.card').forEach((row,idx)=>{
+      const item=realState.items[idx]; const v=Number(row.querySelector('.rin').value);
+      const good=Math.abs(v-item.ans)<1e-10; row.querySelector('.rin').style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('realFb').textContent = ok===realState.items.length? '✅ Real‑world ready!' : `Score: ${ok}/${realState.items.length}`;
+    if(ok===realState.items.length) confetti();
+  });
+  id('realCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer']]; realState.items.forEach(o=>rows.push([o.prompt,o.ans])); downloadCSV(`${deckTitle}_realworld.csv`, rows);
+  });
+  id('realJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_realworld.json`, realState.items));
+
+  /* ------------------------- Challenge Mode ------------------------- */
+  const chState={cur:null, streak:0, history:[]};
+  function chNew(){
+    const lv=id('chLevel').value;
+    let prompt='', ans=null;
+    const r = Math.random();
+    if(lv==='easy'){
+      const x = Math.floor(Math.random()*900)+100, unit=10;
+      ans = roundHalfUpToUnit(x,unit);
+      prompt = `Round ${x} to the nearest 10`;
+    }else if(lv==='med'){
+      const x = +( (Math.random()*200-100).toFixed(2) ); const dp=1;
+      ans = roundToDP(x,dp); prompt=`Round ${x} to ${dp} dp`;
+    }else if(lv==='hard'){
+      if(r<0.5){ const x=+( (Math.random()*9000-3000).toFixed(3) ); const n=[2,3,4][Math.floor(Math.random()*3)]; ans=roundToSig(x,n); prompt=`Round ${x} to ${n} s.f.`; }
+      else { const unit=[0.01,0.1,1,10,100][Math.floor(Math.random()*5)]; const x=+( (Math.random()*2000-1000).toFixed(unit<1?2:0) ); ans=roundHalfUpToUnit(x,unit); prompt=`Round ${x} to ${unit>=1? 'nearest '+unit : decPlacesFromUnit(unit)+' dp'}`; }
+    }else{ // expert
+      if(r<0.33){ const e=Math.floor(Math.random()*7)-3; const m=+( (Math.random()*9+1).toFixed(4) ); const n=[2,3,4][Math.floor(Math.random()*3)]; const rr=sciRound(m,e,n); ans=rr.m*10**rr.e; prompt=`Round ${m}×10^${e} to ${n} s.f. (enter numeric value)`; }
+      else if(r<0.66){ const unit=[0.001,0.01,0.1,1,10,100][Math.floor(Math.random()*6)]; const r0=+( (Math.random()*1000-500).toFixed(unit<1?3:0) ); const rr=roundHalfUpToUnit(r0,unit); const lb=rr-unit/2, ub=rr+unit/2; ans=lb; prompt=`Given value rounded to ${unit>=1?'nearest '+unit: decPlacesFromUnit(unit)+' dp'} is ${fmtToUnit(rr,unit)}. Enter the <lower bound>.`; }
+      else { const x=+( (Math.random()*9000-1000).toFixed(4) ); const n=[2,3,4][Math.floor(Math.random()*3)]; ans=roundToSig(x,n); prompt=`Round ${x} to ${n} s.f.`; }
+    }
+    chState.cur={prompt,ans}; id('chText').textContent=prompt; id('chAns').value=''; id('chFb').textContent=''; id('chHintBox').textContent=''; renderMath(id('challengeSlide'));
+  }
+  id('chNew').addEventListener('click',chNew); chNew();
+  id('chHint').addEventListener('click',()=>{ id('chHintBox').innerHTML=`<div class="hint">Use half‑up rounding. For bounds: interval is \\([r-\\tfrac{u}{2},\\; r+\\tfrac{u}{2})\\).</div>`; renderMath(id('challengeSlide')); });
+  id('chCheck').addEventListener('click',()=>{
+    const got=Number(id('chAns').value), want=chState.cur.ans;
+    const ok = Math.abs(got-want)<1e-10;
+    if(ok){ chState.streak++; id('chFb').textContent='✅ Correct!'; id('chFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); chState.history.push({prompt:chState.cur.prompt, answer:want, correct:true}); chNew(); }
+    else { chState.streak=0; id('chFb').textContent='❌ Not quite. Expected '+want; id('chFb').className='mt-2 h-6 font-semibold text-red-700'; chState.history.push({prompt:chState.cur.prompt, answer:want, correct:false}); }
+    id('streakOut').textContent=chState.streak;
+  });
+  id('chCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer','correct']]; chState.history.forEach(h=>rows.push([h.prompt,h.answer,h.correct])); downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('chJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_challenge.json`, chState.history));
+
+  /* ------------------------- Init ------------------------- */
+  window.addEventListener('resize',()=>{ if(slides[i].id==='lineSlide') drawRoundLine(); });
+  show(0);
+
+})();
+</script>
+</body>
+</html>

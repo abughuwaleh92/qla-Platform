@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Grade 8 Mathematics — Orientation & Week 1 (QLA)</title>
+
+<!-- Tailwind & Chart.js -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Inter font -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+
+<style>
+  :root{ --maroon:#6C1D45; --gold:#C7A34F; --gray:#4D4D4F; --dark:#2C2C2E; --light:#F5F5F5; --accent:#E8D5B7; --success:#4CAF50; --info:#2196F3; }
+  html,body{height:100%}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;background:#111827;color:#111;overflow:hidden}
+
+  #stage{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+  #deck{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.35);overflow:hidden}
+
+  .slide{position:absolute;inset:0;padding:4%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+         opacity:0;transform:scale(.985);transition:opacity .45s ease,transform .45s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:scale(1);pointer-events:auto}
+
+  .bg-maroon{background:var(--maroon)} .text-maroon{color:var(--maroon)}
+  .text-gold{color:var(--gold)} .bg-gold{background:var(--gold)}
+  .bg-accent{background:var(--accent)} .text-accent{color:var(--accent)}
+  .bg-light{background:var(--light)}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .4s ease,transform .4s ease}
+  .slide.active .reveal{opacity:1;transform:none}
+  .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.40s}
+
+  #controls{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:.5rem;align-items:center;
+            background:rgba(17,24,39,.7);color:#fff;padding:.4rem .6rem;border-radius:999px;backdrop-filter:blur(6px);z-index:50}
+  #controls button{width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:#fff;color:#111;border:none;cursor:pointer;font-size:1.1rem}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{min-width:96px;text-align:center;font-weight:700}
+  #progress{position:fixed;left:0;bottom:0;height:5px;background:var(--gold);width:0%;transition:width .35s ease;z-index:40}
+
+  #overview{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:60}
+  #overview.show{display:block}
+  #overview .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;padding:24px;max-width:1600px;margin:0 auto}
+  .thumb{background:#fff;border-radius:10px;aspect-ratio:16/9;overflow:hidden;cursor:pointer;border:2px solid transparent;position:relative}
+  .thumb:hover{border-color:var(--gold)}
+  .thumb .label{position:absolute;top:6px;left:8px;background:rgba(0,0,0,.6);color:#fff;font-size:.75rem;padding:.15rem .4rem;border-radius:6px}
+
+  #timerPane{position:fixed;right:18px;bottom:18px;z-index:55;display:none}
+  #timerPane.show{display:block}
+  .timerCard{background:#111827;color:#E5E7EB;padding:.9rem;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.45);min-width:250px}
+  .timerCard button{background:#fff;color:#111;font-weight:700;border:none;border-radius:10px;padding:.45rem .7rem;cursor:pointer}
+  .timeText{font-variant-numeric:tabular-nums;font-size:2rem;letter-spacing:.5px}
+
+  .chip{display:inline-block;padding:.3rem .6rem;border-radius:999px;font-weight:700}
+  .tile{background:#F3F4F6;padding:.8rem .9rem;border-radius:12px;text-align:center;border:1px solid #E5E7EB}
+  .tile:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+  .card{background:#fff;padding:.6rem .9rem;border-radius:.8rem;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+
+  /* Step color tags for BIDMAS tracing */
+  .opBR{background:#f3f4f6}
+  .opEXP{background:#fde68a}   /* exponent */
+  .opMD{background:#c7a34f33}  /* × ÷ */
+  .opAS{background:#6c1d4514}  /* + − */
+  .opUN{background:#e5e7eb}    /* unary minus */
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="deck" role="region" aria-label="Grade 8 Orientation">
+
+    <!-- 1. Title -->
+    <section id="slide-1" class="slide active bg-maroon text-white"
+      style="background-image:
+         radial-gradient(900px 500px at 85% 25%, rgba(199,163,79,.12) 0%, transparent 55%),
+         radial-gradient(1200px 600px at 10% 70%, rgba(255,255,255,.06) 0%, transparent 60%);">
+      <div class="w-full flex items-center justify-between">
+        <img src="qla_logo.png" onerror="this.src='https://placehold.co/320x320/6C1D45/FFFFFF?text=QLA'"
+             alt="QLA logo" class="h-28 reveal"/>
+        <div class="text-right">
+          <div class="text-5xl sm:text-6xl font-extrabold reveal d1">Grade 8 Mathematics</div>
+          <div class="text-gold text-2xl sm:text-3xl mt-2 font-semibold reveal d2">Orientation & Week 1</div>
+          <div class="mt-4 reveal d3">Mr. Nizar Bani Omar
+</div>
+          <div class="text-accent reveal d3">Sunday, August 31, 2025</div>
+        </div>
+      </div>
+      <p class="absolute bottom-6 w-full text-center text-gray-200 text-sm reveal d4">
+        Qatar Leadership Academy — Member of Qatar Foundation
+      </p>
+    </section>
+
+    <!-- 2. About Your Teacher -->
+    <section id="slide-2" class="slide">
+      <div class="absolute top-0 left-0 w-full h-16 bg-white flex items-center justify-center">
+        <img src="../assets/qla_banner.png" class="max-h-full object-contain" alt="QLA Partner Banner"/>
+      </div>
+
+      <h2 class="text-4xl font-extrabold text-maroon mt-16 reveal">About Your Teacher</h2>
+
+      <div class="w-full mt-6 grid grid-cols-12 gap-8">
+        <div class="col-span-5 flex flex-col items-center">
+          <div class="w-56 h-56 rounded-full border-[10px] border-[color:var(--gold)] bg-light overflow-hidden shadow reveal d1">
+            <img src="../assets/teacher_parallel.jpg" alt="Teacher photo" class="w-full h-full object-cover"/>
+          </div>
+          <div class="mt-5 text-3xl font-extrabold text-gray-900">Mr. Nizar Bani Omar</div>
+          <div class="text-maroon font-semibold">Mr. Nizar</div>
+          <img src="../assets/qla_logo.png" onerror="this.src='https://placehold.co/160x160/6C1D45/FFFFFF?text=QLA'"
+               alt="QLA mini logo" class="h-14 mt-3"/>
+          <div class="mt-2"><button id="pickPhoto" class="px-3 py-1 rounded bg-gold">Use a different photo (P)</button></div>
+        </div>
+
+        <div class="col-span-7 text-left reveal d2">
+          <div class="bg-light border border-[color:var(--maroon)] rounded-lg p-5">
+            <div class="font-extrabold text-xl mb-2">Contact Information</div>
+            <ul class="space-y-2 text-lg">
+              <li>✉︎ <b>2hg662@qla.qfschools.qa</b></li>
+              <li>⏰ <b>Office Hours:</b> Sun–Thu 2:00–3:00 PM</li>
+              <li>🚪 <b>Room 09</b></li>
+            </ul>
+          </div>
+          <div class="text-center mt-5">
+            <span class="inline-block px-3 py-1 bg-gold/20 rounded-md font-bold">Our Core Values</span>
+            <div class="mt-3 inline-block border border-[color:var(--maroon)] rounded-md px-4 py-2 font-extrabold">
+              <span class="text-maroon">Respect</span> • <span class="text-gold">Effort</span> • <span class="text-green-600">Growth</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Digital Ecosystem -->
+    <section id="slide-3" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon absolute top-8 left-0 right-0 reveal">Our Digital Learning Ecosystem</h2>
+      <div class="relative w-full h-full flex items-center justify-center scale-90">
+        <div class="bg-gold/20 p-4 rounded-full shadow-lg reveal d1 flex items-center justify-center">
+          <img src="../assets/qla_logo.png" onerror="this.src='https://placehold.co/160x160/6C1D45/FFFFFF?text=QLA'" alt="QLA logo" class="h-20"/>
+        </div>
+        <div class="absolute top-1/2 left-1/2 w-96 h-96 -mt-48 -ml-48 border-2 border-dashed border-gold rounded-full reveal d1"></div>
+
+        <div class="reveal d2 card absolute" style="transform:translate(-17rem,0)">MS Teams</div>
+        <div class="reveal d3 card absolute" style="transform:translate(-12rem,10rem)">Portfolio</div>
+        <div class="reveal d4 card absolute" style="transform:translate(0,14rem)">Calculator</div>
+        <div class="reveal d5 card absolute" style="transform:translate(17rem,0)">MyiMaths</div>
+        <div class="reveal d4 card absolute" style="transform:translate(13rem,-10rem)">IXL Math</div>
+        <div class="reveal d3 card absolute" style="transform:translate(0,-14rem)">Google Classroom</div>
+      </div>
+      <p class="absolute bottom-8 text-lg text-white bg-maroon px-4 py-2 rounded reveal d5">
+        Join Code: <button id="copy-code" class="underline decoration-dotted">MATH8‑2025</button>
+        <span id="copy-msg" class="ml-2 text-accent hidden">Copied!</span>
+      </p>
+    </section>
+
+    <!-- 4. Week 1 at a Glance -->
+    <section id="slide-4" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2 reveal">Week 1 at a Glance (31 Aug – 4 Sep)</h2>
+      <div class="text-sm text-gray-500 -mt-1">Unit 1 — The Number System. (WAAG) :contentReference[oaicite:2]{index=2}</div>
+      <div class="grid grid-cols-4 gap-4 w-full mt-4">
+        <div class="border rounded-lg p-3 bg-white text-left">
+          <div class="font-extrabold text-maroon">Lesson 1</div>
+          <div class="text-sm mb-2">Intro & Expectations</div>
+          <ul class="list-disc list-inside text-sm">
+            <li>Meet teacher & cadets</li><li>Assessment policy & routines</li>
+          </ul>
+          <label class="mt-3 block text-sm"><input type="checkbox" class="w1"> Mark done</label>
+        </div>
+        <div class="border rounded-lg p-3 bg-white text-left">
+          <div class="font-extrabold text-maroon">Lesson 2</div>
+          <div class="text-sm mb-2">Review BIDMAS</div>
+          <ul class="list-disc list-inside text-sm">
+            <li>Whole‑class discussion & examples</li><li>Google Form practice</li><li><b>Textbook p.20</b></li>
+          </ul>
+          <label class="mt-3 block text-sm"><input type="checkbox" class="w1"> Mark done</label>
+        </div>
+        <div class="border rounded-lg p-3 bg-white text-left">
+          <div class="font-extrabold text-maroon">Lesson 3</div>
+          <div class="text-sm mb-2">Diagnostic Test</div>
+          <div class="text-sm">Baseline only (not graded)</div>
+          <label class="mt-3 block text-sm"><input type="checkbox" class="w1"> Mark done</label>
+        </div>
+        <div class="border rounded-lg p-3 bg-white text-left">
+          <div class="font-extrabold text-maroon">Lesson 4</div>
+          <div class="text-sm mb-2">Absolute Value</div>
+          <ul class="list-disc list-inside text-sm">
+            <li>Examples → Google Form</li><li><b>Textbook p.20</b>; Worksheet #1</li>
+          </ul>
+          <label class="mt-3 block text-sm"><input type="checkbox" class="w1"> Mark done</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ICE Breaker -->
+    <section id="slide-5" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">ICE Breaker — “My Numbers, My Story”</h2>
+      <p class="text-gray-600 mt-1 reveal d1">Introduce yourself with <b>three numbers</b> and a short <b>equation</b> that says something about you.</p>
+
+      <div class="grid md:grid-cols-2 gap-4 w-full mt-4">
+        <div class="text-left border rounded-lg p-4 bg-white reveal d2">
+          <div class="font-bold mb-2">How it works (6–8 minutes)</div>
+          <ol class="list-decimal list-inside space-y-1">
+            <li>Pick <b>3 numbers</b> about you (e.g., languages, siblings, birth month).</li>
+            <li>Write a quick <b>equation</b> using + − × ÷ ^ that equals one of them.</li>
+            <li>Share: “I’m <b>Ahmed</b>: <b>3</b> languages, <b>2</b> brothers, <b>2009</b> born; <i>(10−7)^2=9</i>.”</li>
+          </ol>
+          <div class="mt-3 text-sm text-gray-600">Tip: Group with parentheses; neat work counts.</div>
+        </div>
+
+        <!-- Live equation builder (fixed) -->
+        <div class="text-left border rounded-lg p-4 bg-light reveal d3">
+          <div class="font-bold mb-2">Equation Builder (live)</div>
+          <div class="grid gap-2">
+            <input id="ib-name" class="border rounded px-2 py-1" placeholder="Your name">
+            <input id="ib-nums" class="border rounded px-2 py-1" placeholder="3 numbers (comma‑separated), e.g., 3,2,2009">
+            <input id="ib-expr" class="border rounded px-2 py-1 font-mono" placeholder="Your equation, e.g., (10-7)^2">
+            <div class="flex items-center gap-2">
+              <button id="ib-check" class="px-3 py-1 rounded bg-gold">Check</button>
+              <span id="ib-msg" class="font-bold"></span>
+            </div>
+            <ol id="ib-steps" class="mt-1 text-sm bg-white border rounded p-2 h-28 overflow-auto"></ol>
+          </div>
+          <div class="text-xs text-gray-600 mt-2">Allowed: digits, ( ), ^, ×/*, ÷//:, +, −/-. Press **T** for a 5‑minute share timer.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Routines -->
+    <section id="slide-6" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">Our Daily Routines</h2>
+      <div class="w-full mt-6">
+        <div class="h-1 bg-maroon mx-10 rounded"></div>
+        <div class="flex justify-around items-start mt-6">
+          <div class="w-60 border-2 border-gold rounded-lg p-3"><div class="font-bold text-maroon">🚪 Entry (0–5)</div><div>Do‑Now</div></div>
+          <div class="w-60 border-2 border-gold rounded-lg p-3"><div class="font-bold text-maroon">🧑‍🏫 Lesson (5–40)</div><div>Explore</div></div>
+          <div class="w-60 border-2 border-gold rounded-lg p-3"><div class="font-bold text-maroon">🎟️ Exit (40–45)</div><div>Reflect</div></div>
+        </div>
+        <div class="mt-6 mx-auto max-w-4xl bg-accent rounded-lg p-3 border border-maroon">
+          <b>Collaborative Roles:</b> Facilitator • Recorder • Timekeeper • Resource Manager
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. BIDMAS meaning + examples -->
+    <section id="slide-7" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">BIDMAS — What & Why</h2>
+      <p class="text-gray-600 -mt-1 reveal d1">We evaluate expressions in this order:</p>
+      <div class="grid md:grid-cols-5 gap-2 w-full mt-3">
+        <div class="tile"><b>B</b><br>Brackets ( )</div>
+        <div class="tile"><b>I</b><br>Indices (powers)</div>
+        <div class="tile"><b>D</b><br>Division</div>
+        <div class="tile"><b>M</b><br>Multiplication</div>
+        <div class="tile"><b>A</b> / <b>S</b><br>Addition / Subtraction</div>
+      </div>
+
+      <div class="w-full max-w-5xl text-left mt-5 grid md:grid-cols-3 gap-3">
+        <div class="border rounded p-3">
+          <div class="font-bold">Example 1</div>
+          <div class="text-sm text-gray-600">3 + 6 × 2</div>
+          <button class="exRun px-2 py-1 mt-2 rounded bg-maroon text-white" data-expr="3+6*2">Show steps</button>
+          <ol class="exSteps list-decimal list-inside text-sm mt-2 h-28 overflow-auto"></ol>
+        </div>
+        <div class="border rounded p-3">
+          <div class="font-bold">Example 2</div>
+          <div class="text-sm text-gray-600">(3 + 6) × 2</div>
+          <button class="exRun px-2 py-1 mt-2 rounded bg-maroon text-white" data-expr="(3+6)*2">Show steps</button>
+          <ol class="exSteps list-decimal list-inside text-sm mt-2 h-28 overflow-auto"></ol>
+        </div>
+        <div class="border rounded p-3">
+          <div class="font-bold">Example 3</div>
+          <div class="text-sm text-gray-600">4^2 ÷ 2 + 1</div>
+          <button class="exRun px-2 py-1 mt-2 rounded bg-maroon text-white" data-expr="4^2/2+1">Show steps</button>
+          <ol class="exSteps list-decimal list-inside text-sm mt-2 h-28 overflow-auto"></ol>
+        </div>
+      </div>
+      <div class="text-xs text-gray-600 mt-2">Week‑1 L2 review matches WAAG. :contentReference[oaicite:3]{index=3}</div>
+    </section>
+
+    <!-- 8. Interactive BIDMAS Trainer (fixed) -->
+    <section id="slide-8" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">Interactive BIDMAS Trainer</h2>
+      <p class="text-gray-600 -mt-1">Type an expression. Get color‑coded steps and mistake checks.</p>
+
+      <div class="w-full max-w-4xl text-left mt-4 grid gap-3">
+        <div class="border rounded-lg p-3 bg-white">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="bid-new" class="px-3 py-1 rounded bg-gold">New example</button>
+            <span class="text-sm text-gray-600">Allowed: digits, ( ), ^, * × x, / ÷ :, +, - −, decimals.</span>
+          </div>
+          <div class="mt-3 grid md:grid-cols-[1fr_auto] gap-2">
+            <input id="bid-input" class="font-mono text-xl border rounded px-2 py-1" placeholder="e.g., (5+3)*2^2-4/2"/>
+            <div class="flex gap-2">
+              <button id="bid-steps" class="px-3 py-1 rounded bg-maroon text-white">Show steps</button>
+              <button id="bid-animate" class="px-3 py-1 rounded bg-green-700 text-white">Animate</button>
+            </div>
+          </div>
+          <div id="bid-msg" class="mt-2 text-sm font-bold"></div>
+          <div class="grid md:grid-cols-2 gap-3 mt-3">
+            <div>
+              <div class="text-sm font-bold text-maroon">Step‑by‑step</div>
+              <ol id="bid-steps-list" class="list-decimal list-inside text-sm bg-light p-2 rounded h-44 overflow-auto"></ol>
+            </div>
+            <div>
+              <div class="text-sm font-bold text-green-700">Common mistake check</div>
+              <ul id="bid-mistakes" class="list-disc list-inside text-sm bg-light p-2 rounded h-44 overflow-auto"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Interactive Number-Line Lab -->
+    <section id="slide-9" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">Interactive Number‑Line Lab</h2>
+      <p class="text-gray-600 mt-1 reveal d1">Drag A (gold) and B (maroon). Toggle visuals or try a challenge.</p>
+
+      <div id="interactive" class="w-full mt-3 flex flex-col items-center">
+        <div id="interactive-line" class="relative w-[92%] max-w-4xl h-44 select-none">
+          <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-[4px] bg-maroon rounded"></div>
+          <div id="interactive-ticks" class="absolute left-6 right-6 top-[calc(50%+2px)] -translate-y-1/2 h-24"></div>
+          <div id="absSeg"  class="absolute top-[calc(50%-16px)] h-2 bg-gold/80 rounded hidden"></div>
+          <div id="distSeg" class="absolute top-[calc(50%+16px)] h-2 bg-green-500/80 rounded hidden"></div>
+          <div id="ghostOpp" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-maroon/25 border border-maroon/50 hidden"></div>
+          <div id="handleA" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-gold border-2 border-dark cursor-grab shadow"></div>
+          <div id="handleB" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-maroon text-white border-2 border-dark cursor-grab shadow"></div>
+          <div class="absolute top-[calc(50%+30px)] left-0 right-0 text-xs text-center text-gray-600" id="legend"></div>
+        </div>
+
+        <div class="mt-3 text-sm">
+          <span class="chip bg-gold/30">A = <span id="valA">-3</span></span>
+          <span class="chip bg-maroon/20">B = <span id="valB">4</span></span>
+          <span class="chip bg-green-200">d(A,B) = <span id="valDist">7</span></span>
+          <span class="chip bg-blue-200">|A| = <span id="valAbsA">3</span></span>
+          <span class="chip bg-maroon/20">Opp(A) = <span id="valOppA">3</span></span>
+        </div>
+
+        <div class="mt-4 w-[92%] max-w-4xl grid md:grid-cols-2 gap-3 text-left">
+          <div class="border rounded-lg p-3">
+            <div class="font-bold mb-2">Explore Mode</div>
+            <label class="mr-3"><input type="checkbox" id="toggleOpp" checked> Show opposite of A</label>
+            <label class="mr-3"><input type="checkbox" id="toggleAbs" checked> Show |A|</label>
+            <label class="mr-3"><input type="checkbox" id="toggleDist" checked> Show distance d(A,B)</label>
+            <div class="mt-2 text-xs text-gray-600">Snap to integers (−10…10). Resize window if labels overlap.</div>
+          </div>
+          <div class="border rounded-lg p-3">
+            <div class="font-bold mb-2">Challenge Mode</div>
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="challengeType" class="border rounded px-2 py-1">
+                <option value="opposite">Place the opposite</option>
+                <option value="distance">Match a distance</option>
+                <option value="absolute">Match an absolute value</option>
+              </select>
+              <button id="newChallenge" class="px-2 py-1 rounded bg-gold">New</button>
+              <button id="checkChallenge" class="px-2 py-1 rounded bg-green-600 text-white">Check</button>
+              <button id="revealChallenge" class="px-2 py-1 rounded bg-gray-200">Reveal</button>
+              <button id="resetExplore" class="px-2 py-1 rounded bg-white border">Reset Explore</button>
+            </div>
+            <div id="challengeDesc" class="mt-2 text-sm"></div>
+            <div id="challengeFeedback" class="mt-2 text-sm font-bold"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Diagnostic -->
+    <section id="slide-10" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">Diagnostic Assessment</h2>
+      <div class="grid grid-cols-2 gap-8 w-full mt-6">
+        <div class="reveal d1">
+          <div class="relative w-72 h-72 mx-auto">
+            <div class="absolute inset-0 rounded-full border-[14px] border-green-300 grid place-items-center"><span class="text-gray-700 font-semibold">Learning</span></div>
+            <div class="absolute inset-6 rounded-full border-[14px] border-gold/60 grid place-items-center"><span class="text-gray-800 font-bold">Developing</span></div>
+            <div class="absolute inset-14 rounded-full border-[14px] border-maroon/65 grid place-items-center"><span class="text-white font-extrabold bg-maroon px-2 py-1 rounded">Mastery</span></div>
+          </div>
+        </div>
+        <div class="text-left space-y-3 reveal d2">
+          <div class="border border-info bg-blue-50 rounded-lg p-3">
+            <div class="font-bold mb-1">What it is</div>
+            <ul class="list-disc list-inside"><li>Not graded</li><li>Not on your record</li><li>Planning only</li></ul>
+          </div>
+          <div class="border border-green-600 bg-green-50 rounded-lg p-3">
+            <div class="font-bold mb-1">Why we do it</div>
+            <ul class="list-disc list-inside"><li>Identify review topics</li><li>Plan extensions</li><li>Form balanced groups</li><li>Personalize learning</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. Absolute Value quick practice -->
+    <section id="slide-11" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">Absolute Value — Quick Practice</h2>
+      <div class="mt-2 text-sm text-gray-600">Connect with Number‑Line Lab (|A| & distances).</div>
+      <div class="mt-4 border rounded-lg p-4 w-full max-w-xl text-left mx-auto">
+        <div class="flex items-center gap-2">
+          <button id="absNew" class="px-3 py-1 rounded bg-gold">New target</button>
+          <div>Target |x| = <b id="absTarget">5</b></div>
+        </div>
+        <div class="mt-3 flex items-center gap-2">
+          <label>Your x: <input id="absInput" type="number" class="border rounded px-2 py-1 w-28"/></label>
+          <button id="absCheck" class="px-3 py-1 rounded bg-green-700 text-white">Check</button>
+          <button id="absReveal" class="px-3 py-1 rounded bg-gray-200">Reveal</button>
+          <span id="absMsg" class="font-bold ml-2"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. Assessment structure -->
+    <section id="slide-12" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">Assessment Structure (editable)</h2>
+      <div class="flex w-full items-start justify-center gap-10 mt-4">
+        <div class="w-[46%]"><canvas id="gradingChart" width="420" height="420" aria-label="Assessment weights chart"></canvas></div>
+        <div class="w-[40%] text-left bg-light border border-maroon rounded-lg p-4">
+          <div class="font-bold mb-2">Weights (sum to 100)</div>
+          <div class="grid grid-cols-2 gap-2">
+            <label>Coursework <input class="wgt border rounded px-2 py-1 ml-2" data-key="Coursework" type="number" value="30"></label>
+            <label>Homework <input class="wgt border rounded px-2 py-1 ml-2" data-key="Homework" type="number" value="20"></label>
+            <label>Quizzes <input class="wgt border rounded px-2 py-1 ml-2" data-key="Quizzes" type="number" value="20"></label>
+            <label>Tests <input class="wgt border rounded px-2 py-1 ml-2" data-key="Tests" type="number" value="20"></label>
+            <label>Projects <input class="wgt border rounded px-2 py-1 ml-2" data-key="Projects" type="number" value="10"></label>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <button id="wgtApply" class="px-3 py-1 rounded bg-maroon text-white">Apply</button>
+            <span id="wgtMsg" class="text-sm font-bold"></span>
+          </div>
+          <div class="text-xs text-gray-600 mt-2">Adjust to match your policy (see Course Outline). :contentReference[oaicite:4]{index=4}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. Year at a Glance -->
+    <section id="slide-13" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon reveal">Year at a Glance — Grade 8</h2>
+      <div class="text-sm text-gray-600 -mt-1">From Course Outline & Scope–Sequence. </div>
+      <div class="mt-3">
+        <input id="unitSearch" class="border rounded px-3 py-1 w-[60%]" placeholder="Search units or subtopics (e.g., Pythagoras, percentages)…"/>
+      </div>
+      <div id="unitsGrid" class="grid grid-cols-2 gap-3 w-full mt-4 text-left"></div>
+    </section>
+
+    <!-- 14. Questions -->
+    <section id="slide-14" class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-4">Your Questions Matter!</h2>
+      <div class="grid grid-cols-2 gap-6 w-full">
+        <div class="rounded-2xl p-4 bg-maroon/15 border border-maroon">Homework?</div>
+        <div class="rounded-2xl p-4 bg-gold/20 border border-gold">Calculator?</div>
+        <div class="rounded-2xl p-4 bg-green-200 border border-green-600">Extra help?</div>
+        <div class="rounded-2xl p-4 bg-blue-100 border border-info">Projects?</div>
+      </div>
+      <div class="mt-6 px-6 py-3 rounded bg-white border-2 border-maroon shadow">
+        <b>No Question is Too Small!</b> Ask about policies, grading, routines, or anything else.
+      </div>
+    </section>
+
+    <!-- 15. Closing -->
+    <section id="slide-15" class="slide bg-maroon text-white">
+      <img src="../assets/qla_logo.png" onerror="this.src='https://placehold.co/200x200/6C1D45/FFFFFF?text=QLA'" alt="QLA Logo" class="h-16 mb-2"/>
+      <div class="text-5xl sm:text-6xl font-extrabold">Let’s Make Math Amazing!</div>
+      <div class="text-gold text-2xl font-bold mt-2">Together We’ll Discover, Learn, and Grow</div>
+      <div class="mt-6">✉︎ 2hg662@qla.qfschools.qa • 🚪 Room 09</div>
+      <div class="absolute bottom-4 w-full text-center text-gray-200 text-sm">Qatar Leadership Academy — Member of Qatar Foundation</div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="toolbar" aria-label="Slideshow controls">
+  <button id="btn-prev" title="Previous (←)">⟨</button>
+  <button id="btn-overview" title="Overview (O)">☰</button>
+  <div id="counter" aria-live="polite">1 / 15</div>
+  <button id="btn-timer" title="Timer (T)">⏱</button>
+  <button id="btn-full" title="Full screen (F)">⛶</button>
+  <button id="btn-next" title="Next (→)">⟩</button>
+</div>
+<div id="progress" aria-hidden="true"></div>
+
+<!-- Overview -->
+<div id="overview" aria-modal="true" role="dialog"><div class="grid" id="thumb-grid"></div></div>
+
+<!-- Timer -->
+<div id="timerPane">
+  <div class="timerCard">
+    <div class="flex items-center justify-between mb-2">
+      <strong>Timer</strong><button id="timer-close" title="Close">✕</button>
+    </div>
+    <div id="time" class="timeText text-center">00:00</div>
+    <div class="flex items-center justify-between gap-2 mt-3">
+      <button data-t="300">5:00</button><button data-t="600">10:00</button><button data-t="900">15:00</button>
+      <button id="timer-start">Start</button><button id="timer-pause" disabled>Pause</button><button id="timer-reset" disabled>Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help -->
+<div id="help" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:70;align-items:center;justify-content:center">
+  <div class="bg-white text-gray-800 rounded-xl p-6 shadow-2xl max-w-lg text-sm">
+    <h3 class="font-extrabold text-xl text-maroon mb-3">Keyboard</h3>
+    <ul class="grid grid-cols-2 gap-x-6 gap-y-2">
+      <li><b>→ / Space</b> Next</li><li><b>←</b> Previous</li>
+      <li><b>Home / End</b> First / Last</li><li><b>PgUp / PgDn</b> ±5 slides</li>
+      <li><b>O</b> Overview</li><li><b>F</b> Full screen</li>
+      <li><b>T</b> Timer</li><li><b>?</b> Help</li>
+      <li><b>P</b> Pick teacher photo</li><li></li>
+    </ul>
+    <div class="text-right mt-4"><button id="help-close" class="px-3 py-1 rounded bg-maroon text-white">Close</button></div>
+  </div>
+</div>
+
+<script>
+/* =============== helpers =============== */
+const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
+function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+function fmt(n){ if(!isFinite(n)) return String(n); const r=Math.round(n*1e10)/1e10; return (Math.abs(r-Math.round(r))<1e-10)?String(Math.round(r)):String(r); }
+function pretty(op){ return ({'*':'×','/':'÷','-':'−','^':'^'}[op]||op); }
+
+/* =============== slideshow core =============== */
+const slides=$$('.slide'), deck=$('#deck'), counter=$('#counter'), progress=$('#progress');
+const state={i:0, chart:null, timer:{id:null, remaining:0, running:false}, interactiveInit:false};
+
+function go(i,{pushHash=true}={}){
+  state.i=clamp(i,0,slides.length-1);
+  slides.forEach((s,idx)=>{ s.classList.toggle('active',idx===state.i); s.setAttribute('aria-hidden',idx===state.i?'false':'true'); });
+  counter.textContent=`${state.i+1} / ${slides.length}`;
+  progress.style.width=`${(state.i+1)/slides.length*100}%`;
+  const hash=`#slide-${state.i+1}`; if(pushHash && location.hash!==hash) history.replaceState(null,'',hash);
+
+  const chartCanvas = slides[state.i].querySelector('#gradingChart');
+  if (chartCanvas && !state.chart){ renderChart(chartCanvas); }
+
+  if (!state.interactiveInit && slides[state.i].querySelector('#interactive-line')) { initInteractiveLine(); state.interactiveInit=true; }
+
+  deck.focus();
+  localStorage.setItem('qla8_last', state.i);
+}
+function next(){go(state.i+1)} function prev(){go(state.i-1)} function jump(d){go(state.i+d)}
+window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.replace('#slide-',''),10); if(!isNaN(n)) go(n-1,{pushHash:false});});
+(function initStart(){
+  deck.setAttribute('tabindex','0'); slides.forEach((s,idx)=>s.setAttribute('aria-hidden',idx?true:false));
+  const saved=localStorage.getItem('qla8_last');
+  if(location.hash.startsWith('#slide-')){const n=parseInt(location.hash.replace('#slide-',''),10); go(isNaN(n)?0:n-1,{pushHash:false});}
+  else if(saved!==null){go(parseInt(saved,10));} else {go(0);}
+})();
+$('#btn-next').onclick=next; $('#btn-prev').onclick=prev;
+$('#btn-overview').onclick=()=>toggleOverview();
+$('#btn-full').onclick=toggleFull; $('#btn-timer').onclick=()=>toggleTimer();
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ') next();
+  else if(e.key==='ArrowLeft') prev();
+  else if(e.key==='Home') go(0);
+  else if(e.key==='End') go(slides.length-1);
+  else if(e.key==='PageDown') jump(+5);
+  else if(e.key==='PageUp') jump(-5);
+  else if(e.key.toLowerCase()==='o') toggleOverview();
+  else if(e.key.toLowerCase()==='f') toggleFull();
+  else if(e.key.toLowerCase()==='t') toggleTimer();
+  else if(e.key==='?') toggleHelp();
+  else if(e.key.toLowerCase()==='p') pickPhoto();
+  else if(e.key==='Escape'){ toggleOverview(false); toggleTimer(false); toggleHelp(false); }
+});
+deck.addEventListener('click',e=>{
+  if (e.target.closest('button, a, canvas, input, select, .interactive')) return;
+  next();
+});
+(function swipe(el){ let sx=null,sy=null;
+  el.addEventListener('touchstart',e=>{const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY;},{passive:true});
+  el.addEventListener('touchend',e=>{ if(sx===null) return; const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)) dx<0?next():prev(); sx=sy=null;},{passive:true});
+})(deck);
+
+/* Overview */
+const overview=$('#overview'), grid=$('#thumb-grid');
+function toggleOverview(force){ const on=typeof force==='boolean'?force:!overview.classList.contains('show');
+  overview.classList.toggle('show',on);
+  if(on){ grid.innerHTML=''; slides.forEach((s,idx)=>{ const t=document.createElement('div'); t.className='thumb';
+      t.innerHTML=`<div class="label">Slide ${idx+1}</div><div class="w-full h-full grid place-items-center text-xs text-gray-600 p-2">${(s.querySelector('h1,h2')?.textContent||'Slide')}</div>`;
+      t.onclick=()=>{toggleOverview(false); go(idx);} ; grid.appendChild(t); });
+  }
+}
+
+/* Timer */
+const pane=$('#timerPane'), tTxt=$('#time'), btnStart=$('#timer-start'), btnPause=$('#timer-pause'), btnReset=$('#timer-reset');
+function toggleTimer(force){ const on=typeof force==='boolean'?force:!pane.classList.contains('show'); pane.classList.toggle('show',on); }
+$('#timer-close').onclick=()=>toggleTimer(false);
+$('#timerPane').addEventListener('click',e=>{ if(e.target.id==='timerPane') toggleTimer(false); });
+$$('#timerPane [data-t]').forEach(b=>b.onclick=()=>setTimer(+b.dataset.t));
+btnStart.onclick=()=>startTimer(); btnPause.onclick=()=>pauseTimer(); btnReset.onclick=()=>resetTimer();
+function setTimer(s){state.timer.remaining=s; renderTime(); btnStart.disabled=false; btnPause.disabled=true; btnReset.disabled=true;}
+function renderTime(){const m=String(Math.floor(state.timer.remaining/60)).padStart(2,'0'); const s=String(state.timer.remaining%60).padStart(2,'0'); tTxt.textContent=`${m}:${s}`;}
+function tick(){ if(!state.timer.running) return; if(state.timer.remaining>0){ state.timer.remaining--; renderTime(); }
+  else { pauseTimer(); tTxt.parentElement.classList.add('text-red-400'); setTimeout(()=>tTxt.parentElement.classList.remove('text-red-400'),700); } }
+function startTimer(){ if(state.timer.running) return; if(!state.timer.remaining) setTimer(300); state.timer.running=true; state.timer.id=setInterval(tick,1000); btnPause.disabled=false; btnReset.disabled=false;}
+function pauseTimer(){ state.timer.running=false; clearInterval(state.timer.id); btnPause.disabled=true; }
+function resetTimer(){ pauseTimer(); state.timer.remaining=0; renderTime(); btnReset.disabled=true; btnStart.disabled=false; }
+renderTime();
+
+/* Fullscreen & Help */
+function toggleHelp(force){ const h=$('#help'); const on=typeof force==='boolean'?force:!(h.style.display==='flex'); h.style.display=on?'flex':'none'; }
+$('#help-close').onclick=()=>toggleHelp(false);
+function toggleFull(){ if(!document.fullscreenElement) deck.requestFullscreen?.(); else document.exitFullscreen?.(); }
+
+/* Copy code */
+$('#copy-code')?.addEventListener('click',e=>{
+  if(navigator.clipboard){ navigator.clipboard.writeText('MATH8-2025').then(()=>{
+    $('#copy-msg').classList.remove('hidden'); setTimeout(()=>$('#copy-msg').classList.add('hidden'),900);
+  });}
+  e.stopPropagation();
+});
+
+/* Chart.js editable */
+function renderChart(canvas){
+  const labels=['Coursework','Homework','Quizzes','Tests','Projects'];
+  const data=[30,20,20,20,10];
+  state.chart = new Chart(canvas.getContext('2d'),{
+    type:'doughnut',
+    data:{ labels, datasets:[{ data, backgroundColor:['#6C1D45','#8a3d64','#a86788','#C7A34F','#E8D5B7'], borderColor:'#fff', borderWidth:4, hoverOffset:8 }] },
+    options:{ plugins:{ legend:{ position:'right', labels:{ font:{ size:14 } } } }, animation:{ duration:600 }, responsive:true, maintainAspectRatio:true }
+  });
+  $('#wgtApply').onclick=()=>{
+    const inputs=$$('.wgt');
+    const vals=inputs.map(i=>({k:i.dataset.key, v:+i.value||0}));
+    const sum=vals.reduce((a,b)=>a+b.v,0);
+    const msg=$('#wgtMsg');
+    if(sum!==100){ msg.textContent=`Sum is ${sum}, must be 100.`; msg.style.color='crimson'; return; }
+    msg.textContent='Applied.'; msg.style.color='green';
+    state.chart.data.labels=vals.map(o=>o.k);
+    state.chart.data.datasets[0].data=vals.map(o=>o.v);
+    state.chart.update();
+  };
+}
+
+/* ========= Robust expression engine (tokens → steps) ========= */
+function sanitize(expr){
+  return (expr||'')
+    .replace(/\s+/g,'')
+    .replace(/[×xX·⋅]/g,'*')
+    .replace(/[÷:]/g,'/')
+    .replace(/[−–—]/g,'-');
+}
+function tokenize(expr){
+  expr=sanitize(expr);
+  const out=[]; let i=0;
+  while(i<expr.length){
+    const ch=expr[i];
+    if(/[0-9.]/.test(ch)){
+      let j=i+1; while(j<expr.length && /[0-9.]/.test(expr[j])) j++;
+      const num=expr.slice(i,j);
+      if((num.match(/\./g)||[]).length>1) return {error:'Number has multiple decimal points'};
+      out.push(num); i=j; continue;
+    }
+    if('()+-*/^'.includes(ch)){ out.push(ch); i++; continue; }
+    return {error:`Invalid character: "${ch}"`};
+  }
+  // mark unary minus
+  for(let k=0;k<out.length;k++){
+    if(out[k]==='-' && (k===0 || '()+-*/^'.includes(out[k-1]))){ out[k]='~'; }
+  }
+  return {tokens:out};
+}
+function isNum(t){ return /^-?\d+(\.\d+)?$/.test(t); }
+
+/* merge unary minus before numbers: ~~3 -> 3 (even) or -3 (odd) */
+function mergeUnary(tokens){
+  const res=[];
+  for(let i=0;i<tokens.length;i++){
+    if(tokens[i]==='~'){
+      let count=0;
+      while(tokens[i]==='~'){ count++; i++; }
+      if(i<tokens.length && isNum(tokens[i])){
+        const v=parseFloat(tokens[i]) * (count%2?-1:1);
+        res.push(String(v));
+      }else{
+        // unary before non-number (e.g., ~( ... )), keep the remaining '~'s (odd only)
+        if(count%2) res.push('~');
+        i--; // step back for next loop to read current token
+      }
+    }else{
+      res.push(tokens[i]);
+    }
+  }
+  return res;
+}
+
+function evalNoParen(tokens, steps){
+  // fold unary minus applied to numbers
+  tokens=mergeUnary(tokens);
+
+  // Exponentiation (right associative)
+  while(tokens.includes('^')){
+    let i=tokens.lastIndexOf('^');
+    if(i<=0 || i>=tokens.length-1 || !isNum(tokens[i-1]) || !isNum(tokens[i+1])) return {error:'Bad ^ placement'};
+    const a=parseFloat(tokens[i-1]), b=parseFloat(tokens[i+1]), r=Math.pow(a,b);
+    steps.push({kind:'EXP', text:`${fmt(a)} ^ ${fmt(b)} = ${fmt(r)}`});
+    tokens.splice(i-1,3,String(r));
+  }
+  // Multiplication & Division (left to right)
+  let idx;
+  while((idx=tokens.findIndex(t=>t==='*'||t==='/'))!==-1){
+    if(idx<=0 || idx>=tokens.length-1 || !isNum(tokens[idx-1]) || !isNum(tokens[idx+1])) return {error:'Bad × or ÷ placement'};
+    const a=parseFloat(tokens[idx-1]), b=parseFloat(tokens[idx+1]);
+    if(tokens[idx]==='/' && b===0) return {error:'Division by 0 is undefined'};
+    const r = tokens[idx]==='*' ? a*b : a/b;
+    steps.push({kind:'MD', text:`${fmt(a)} ${pretty(tokens[idx])} ${fmt(b)} = ${fmt(r)}`});
+    tokens.splice(idx-1,3,String(r));
+  }
+  // Addition & Subtraction (left to right)
+  while((idx=tokens.findIndex(t=>t==='+'||t==='-'))!==-1){
+    if(idx<=0 || idx>=tokens.length-1 || !isNum(tokens[idx-1]) || !isNum(tokens[idx+1])) return {error:'Bad + or − placement'};
+    const a=parseFloat(tokens[idx-1]), b=parseFloat(tokens[idx+1]);
+    const r = tokens[idx]==='+' ? a+b : a-b;
+    steps.push({kind:'AS', text:`${fmt(a)} ${pretty(tokens[idx])} ${fmt(b)} = ${fmt(r)}`});
+    tokens.splice(idx-1,3,String(r));
+  }
+  if(tokens.length!==1 || !isNum(tokens[0])) return {error:'Could not evaluate'};
+  return {value:parseFloat(tokens[0])};
+}
+
+function stepsFor(expr){
+  const tk=tokenize(expr); if(tk.error) return {error:tk.error};
+  let tokens=tk.tokens.slice();
+  const steps=[];
+
+  function evalSegment(arr){
+    // evaluate parentheses from inner to outer
+    while(arr.includes('(')){
+      const li = arr.lastIndexOf('(');
+      let ri=-1, depth=0;
+      for(let k=li;k<arr.length;k++){
+        if(arr[k]==='(') depth++;
+        else if(arr[k]===')'){ depth--; if(depth===0){ ri=k; break; } }
+      }
+      if(ri===-1) return {error:'Mismatched parentheses'};
+      const inner = arr.slice(li+1,ri);
+      const ev = evalSegment(inner);
+      if(ev.error) return ev;
+
+      // Log bracket reduction
+      steps.push({kind:'BR', text:`(${inner.join(' ')}) = ${fmt(ev.value)}`});
+
+      // Replace with value
+      arr.splice(li, ri-li+1, String(ev.value));
+
+      // Handle possible unary minus left of '(' (now at position li-1)
+      if(li-1>=0 && arr[li-1]==='~'){
+        const neg = -parseFloat(arr[li]);
+        steps.push({kind:'UN', text:`−(${fmt(ev.value)}) = ${fmt(neg)}`});
+        arr.splice(li-1,2,String(neg));
+      }
+    }
+    // Now no parentheses remain
+    return evalNoParen(arr, steps);
+  }
+
+  const res = evalSegment(tokens);
+  if(res.error) return {error:res.error};
+  return {value:res.value, steps};
+}
+
+/* ========= ICE Breaker — live builder ========= */
+$('#ib-check')?.addEventListener('click', ()=>{
+  const name=$('#ib-name')?.value?.trim() || $('#ib-name')?.value || $('#ib-name')?.value; // backward compat
+  const nm = $('#ib-name')?.value || $('#ib-name') || '';
+  const n=$('#ib-name')?.value?.trim() || 'Student';
+  const expr=$('#ib-expr').value||'';
+  const msg=$('#ib-msg'), list=$('#ib-steps'); list.innerHTML='';
+  const r=stepsFor(expr);
+  if(r.error){ msg.textContent=r.error; msg.style.color='crimson'; return; }
+  msg.textContent=`${n}'s expression evaluates to ${fmt(r.value)}.`; msg.style.color='green';
+  r.steps.forEach(s=>{ const li=document.createElement('li'); li.textContent=s.text; li.classList.add(stepClass(s.kind)); list.appendChild(li); });
+});
+
+/* ========= BIDMAS — guided examples ========= */
+function stepClass(kind){ return kind==='EXP'?'opEXP': kind==='MD'?'opMD': kind==='AS'?'opAS': kind==='UN'?'opUN':'opBR'; }
+$$('.exRun').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const expr=btn.dataset.expr;
+    const panel=btn.parentElement.querySelector('.exSteps'); panel.innerHTML='';
+    const res=stepsFor(expr);
+    if(res.error){ panel.innerHTML=`<li>${res.error}</li>`; return; }
+    res.steps.forEach(s=>{ const li=document.createElement('li'); li.textContent=s.text; li.classList.add(stepClass(s.kind)); panel.appendChild(li); });
+    const last=document.createElement('li'); last.innerHTML=`<b>Result = ${fmt(res.value)}</b>`; panel.appendChild(last);
+  });
+});
+
+/* ========= BIDMAS Trainer (fixed & animated) ========= */
+const bidInput=$('#bid-input'), bidMsg=$('#bid-msg'), bidList=$('#bid-steps-list'), bidMist=$('#bid-mistakes');
+function bidShow(expr){
+  bidList.innerHTML=''; bidMist.innerHTML=''; bidMsg.textContent='';
+  const res=stepsFor(expr);
+  if(res.error){ bidMsg.textContent=res.error; bidMsg.style.color='crimson'; return; }
+  res.steps.forEach((s)=>{ const li=document.createElement('li'); li.textContent=s.text; li.classList.add(stepClass(s.kind)); bidList.appendChild(li); });
+  const fin=document.createElement('li'); fin.innerHTML=`<b>Result = ${fmt(res.value)}</b>`; bidList.appendChild(fin);
+  // mistakes
+  const mistakes=[];
+  const nx=sanitize(expr);
+  if(/(\d)\(/.test(nx)||/\)(\d)/.test(nx)||/\)\(/.test(nx)) mistakes.push('Missing multiplication near parentheses (insert *).');
+  if(/[\*\/\^\+\-]{2,}/.test(nx.replace(/\^\-/g,'^'))) mistakes.push('Two operators in a row — add a number or parentheses.');
+  if((nx.match(/\(/g)||[]).length!==(nx.match(/\)/g)||[]).length) mistakes.push('Mismatched parentheses.');
+  if(/\/0(?!\.)/.test(nx)) mistakes.push('Division by 0 is undefined.');
+  if(!mistakes.length) mistakes.push('No common mistakes detected. ✔');
+  mistakes.forEach(m=>{ const li=document.createElement('li'); li.textContent=m; bidMist.appendChild(li); });
+}
+$('#bid-steps').onclick=()=>bidShow(bidInput.value||'(5+3)*2^2-4/2');
+$('#bid-animate').onclick=()=>{
+  const res=stepsFor(bidInput.value||'(5+3)*2^2-4/2'); if(res.error){bidMsg.textContent=res.error; bidMsg.style.color='crimson'; return;}
+  bidList.innerHTML=''; bidMist.innerHTML=''; bidMsg.textContent='';
+  let k=0; function tick(){ if(k<res.steps.length){ const s=res.steps[k++]; const li=document.createElement('li'); li.textContent=s.text; li.classList.add(stepClass(s.kind)); bidList.appendChild(li); setTimeout(tick,650); }
+    else { const fin=document.createElement('li'); fin.innerHTML=`<b>Result = ${fmt(res.value)}</b>`; bidList.appendChild(fin); } }
+  tick();
+};
+function randomExpr(){
+  const num=()=>String(2+Math.floor(Math.random()*8));
+  const ops=['+','-','*','/','^'];
+  const pick=()=>ops[Math.floor(Math.random()*ops.length)];
+  let e = `${num()} ${pick()} ${num()} ${pick()} ${num()} ${pick()} ${num()}`;
+  if(Math.random()<0.6){
+    const arr=e.split(' ');
+    const pos=[0,2,4,6]; const a=pos[Math.floor(Math.random()*pos.length)], b=pos[Math.floor(Math.random()*pos.length)];
+    const L=Math.min(a,b), R=Math.max(a,b);
+    arr[L]='('+arr[L]; arr[R]=arr[R]+')';
+    e=arr.join(' ');
+  }
+  return e;
+}
+$('#bid-new').onclick=()=>{ const e=randomExpr(); bidInput.value=e; bidMsg.textContent=''; bidList.innerHTML=''; bidMist.innerHTML=''; };
+
+/* ========= Interactive Number-Line Lab ========= */
+function initInteractiveLine(){
+  const pad=24, min=-10, max=10, range=max-min;
+  const line=$('#interactive-line'), ticksEl=$('#interactive-ticks');
+  const handleA=$('#handleA'), handleB=$('#handleB');
+  const absSeg=$('#absSeg'), distSeg=$('#distSeg'), ghostOpp=$('#ghostOpp');
+  const valA=$('#valA'), valB=$('#valB'), valAbsA=$('#valAbsA'), valOppA=$('#valOppA'), valDist=$('#valDist');
+  const legend=$('#legend');
+
+  const toggleOpp=$('#toggleOpp'), toggleAbs=$('#toggleAbs'), toggleDist=$('#toggleDist');
+  const chType=$('#challengeType'), chNew=$('#newChallenge'), chCheck=$('#checkChallenge'),
+        chReveal=$('#revealChallenge'), chReset=$('#resetExplore'),
+        chDesc=$('#challengeDesc'), chFB=$('#challengeFeedback');
+
+  const s={A:-3,B:4,showOpp:true,showAbs:true,showDist:true,lockA:false,lockB:false};
+
+  function rect(){ return line.getBoundingClientRect(); }
+  function valueToX(v){ const r=rect(); const w=r.width-2*pad; return pad + ((v-min)/range)*w; }
+  function xToValue(px){ const r=rect(); const w=r.width-2*pad; const v=min + ((px-pad)/w)*range; return Math.round(Math.max(min,Math.min(max,v))); }
+
+  function renderTicks(){
+    ticksEl.innerHTML='';
+    for(let x=min;x<=max;x++){
+      const p=document.createElement('div');
+      p.style.position='absolute'; p.style.left = `${valueToX(x)}px`; p.style.transform='translateX(-50%)'; p.style.top='0';
+      p.innerHTML = `<div style="width:2px;height:18px;background:var(--maroon)"></div><div class="text-[10px] text-gray-700 mt-1 text-center">${x}</div>`;
+      ticksEl.appendChild(p);
+    }
+    legend.textContent='−10  −9  …  −1   0   1  …  9   10';
+  }
+
+  function setHandle(el,v){ el.style.left = valueToX(v)+'px'; }
+  function update(){
+    setHandle(handleA,s.A); setHandle(handleB,s.B);
+    valA.textContent=s.A; valB.textContent=s.B;
+    valAbsA.textContent=Math.abs(s.A);
+    valOppA.textContent=(-s.A);
+    valDist.textContent=Math.abs(s.B - s.A);
+
+    const gx=valueToX(-s.A); ghostOpp.style.left=gx+'px'; ghostOpp.style.display=s.showOpp?'':'none';
+
+    const zx=valueToX(0), ax=valueToX(s.A);
+    absSeg.style.left=Math.min(zx,ax)+'px'; absSeg.style.width=Math.abs(ax-zx)+'px'; absSeg.style.display=s.showAbs?'':'none';
+
+    const bx=valueToX(s.B);
+    distSeg.style.left=Math.min(ax,bx)+'px'; distSeg.style.width=Math.abs(bx-ax)+'px'; distSeg.style.display=s.showDist?'':'none';
+  }
+
+  function attachDrag(el,key){
+    el.addEventListener('pointerdown',e=>{ if((key==='A'&&s.lockA)||(key==='B'&&s.lockB)) return; el.setPointerCapture(e.pointerId); el.style.cursor='grabbing'; });
+    el.addEventListener('pointermove',e=>{ if(!el.hasPointerCapture(e.pointerId)) return; const r=rect(); const px=e.clientX - r.left; s[key]=xToValue(px); update(); });
+    el.addEventListener('pointerup',e=>{ if(el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId); el.style.cursor='grab'; });
+  }
+
+  renderTicks(); attachDrag(handleA,'A'); attachDrag(handleB,'B'); update();
+  window.addEventListener('resize', ()=>{ renderTicks(); update(); });
+
+  toggleOpp.onchange=()=>{ s.showOpp=toggleOpp.checked; update(); };
+  toggleAbs.onchange=()=>{ s.showAbs=toggleAbs.checked; update(); };
+  toggleDist.onchange=()=>{ s.showDist=toggleDist.checked; update(); };
+
+  function newOpposite(){
+    const a = rnd(-9,9,[0]); s.A=a; s.B=0; s.lockA=true; s.lockB=false;
+    s.showOpp=false; s.showAbs=true; s.showDist=false;
+    chDesc.innerHTML=`<b>Opposite:</b> A is fixed at <b>${a}</b>. Drag <b>B</b> to <b>−A</b>.`; chFB.textContent=''; update();
+  }
+  function checkOpposite(){ const ok=(s.B===-s.A); chFB.textContent=ok?'✅ Correct: B = −A':'❌ Not yet. Mirror across 0.'; return ok; }
+
+  function newDistance(){
+    const a=rnd(-8,8,[]), k=rnd(2,8,[]);
+    s.A=a; s.B=a; s.lockA=true; s.lockB=false; s.showOpp=false; s.showAbs=false; s.showDist=true;
+    chDesc.innerHTML=`<b>Distance:</b> A is <b>${a}</b>. Move <b>B</b> so that <b>d(A,B) = ${k}</b>.`; chFB.dataset.k=k; chFB.textContent=''; update();
+  }
+  function checkDistance(){ const k=parseInt(chFB.dataset.k,10); const ok=(Math.abs(s.B - s.A)===k); chFB.textContent=ok?`✅ Correct: d(A,B) = ${k}`:'❌ Try again. Two positions work.'; return ok; }
+
+  function newAbsolute(){
+    const m=rnd(1,9,[]);
+    s.A=0; s.B=0; s.lockA=false; s.lockB=true; s.showOpp=false; s.showAbs=true; s.showDist=false;
+    chDesc.innerHTML=`<b>Absolute Value:</b> Place <b>A</b> so that <b>|A| = ${m}</b>.`; chFB.dataset.m=m; chFB.textContent=''; update();
+  }
+  function checkAbsolute(){ const m=parseInt(chFB.dataset.m,10); const ok=(Math.abs(s.A)===m); chFB.textContent=ok?`✅ Correct: |A| = ${m}`:'❌ Not yet. Distance from 0.'; return ok; }
+
+  function reveal(){
+    if(chType.value==='opposite'){ s.B=-s.A; }
+    else if(chType.value==='distance'){ const k=parseInt(chFB.dataset.k,10); const cand=[s.A+k,s.A-k].filter(x=>x>=min&&x<=max); s.B=cand[0]; }
+    else{ const m=parseInt(chFB.dataset.m,10); s.A=Math.random()<.5?m:-m; }
+    update();
+  }
+  function resetExplore(){ s.A=-3; s.B=4; s.lockA=false; s.lockB=false; toggleOpp.checked=s.showOpp=true; toggleAbs.checked=s.showAbs=true; toggleDist.checked=s.showDist=true; chDesc.textContent=''; chFB.textContent=''; update(); }
+  function rnd(lo,hi,exclude){ let v; do{ v=lo+Math.floor(Math.random()*(hi-lo+1)); } while(exclude.includes(v)); return v; }
+
+  function newChallenge(){ if(chType.value==='opposite') newOpposite(); else if(chType.value==='distance') newDistance(); else newAbsolute(); }
+  function checkChallenge(){ if(chType.value==='opposite') checkOpposite(); else if(chType.value==='distance') checkDistance(); else checkAbsolute(); }
+
+  chNew.onclick=newChallenge; chCheck.onclick=checkChallenge; chReveal.onclick=reveal; chReset.onclick=resetExplore;
+  newOpposite();
+}
+
+/* Units (searchable) — from Course Outline & Scope */
+const UNITS=[
+  { name:"Unit 1 — The Number System", duration:"4–5 weeks", topics:[
+    "Review BIDMAS + Absolute value (p.16–20) — 3 lessons",
+    "Converting recurring decimals — 2 lessons",
+    "Rounding numbers — 2 lessons",
+    "Squares & Roots (p.21) — 2 lessons",
+    "Operations on fractions (p.53) — 2 lessons"
+  ], src:"Course Outline & Scope" },
+  { name:"Unit 2 — The Geometry of Polygons", duration:"5 weeks", topics:[
+    "Supplementary, complementary, vertical, adjacent angles (p.171)",
+    "Angles in triangles (p.173), isosceles triangle (p.177)",
+    "Angles of quadrilaterals (p.180)",
+    "Algebraic equations in geometry (W/S)",
+    "Parallel lines (W/S); angles in polygons (sum, interior & exterior)"
+  ], src:"Course Outline & Scope" },
+  { name:"Unit 3 — Geometry (Transformations & Congruence)", duration:"4 weeks", topics:[
+    "Translations, rotations, reflections, enlargements",
+    "Congruence & similarity via sequences of transformations",
+    "Coordinate effects of transformations"
+  ], src:"Scope & Sequence" },
+  { name:"Unit 4 — Statistics", duration:"3 weeks", topics:[
+    "Pie charts; histograms",
+    "Scatter plots, linear association, line fit (slope/intercept)"
+  ], src:"Scope & Sequence" },
+  { name:"Unit 5 — Pythagorean Theorem", duration:"3 weeks", topics:[
+    "Theorem & converse; solve for sides",
+    "Distance in coordinate plane; 3D extensions",
+    "Volume (cones/cylinders/spheres)"
+  ], src:"Scope & Sequence" },
+  { name:"Unit 6 — Expressions & Equations (Systems)", duration:"5 weeks", topics:[
+    "Solve linear equations; one/infinitely many/no solutions",
+    "Systems by elimination, substitution, equating; meaning of intersection"
+  ], src:"Scope & Sequence" },
+  { name:"Unit 7 — Geometry Measurement", duration:"4 weeks", topics:[
+    "Metric conversions; circle parts; circumference & area",
+    "Perimeter/area of polygons; composite shapes",
+    "Volumes of cuboids, prisms, cylinders"
+  ], src:"Course Outline" },
+  { name:"Unit 8 — Statistics & Probability (Compound)", duration:"1 week", topics:[
+    "Compound events; sample spaces; trees; simulation"
+  ], src:"Scope & Sequence" },
+  { name:"Unit 9 — Congruence & Similarity (Constructions)", duration:"2 weeks", topics:[
+    "Construct triangles: ASA, SAS, SSS"
+  ], src:"Scope & Sequence" },
+  { name:"Unit 10 — Percentages", duration:"~5 weeks", topics:[
+    "Number forms; decimals ↔ percentages",
+    "One quantity as % of another; % increase/decrease; % change"
+  ], src:"Course Outline" }
+];
+function renderUnits(filter=''){
+  const grid=$('#unitsGrid'); grid.innerHTML='';
+  const q=filter.trim().toLowerCase();
+  for(const u of UNITS){
+    const hit=!q || u.name.toLowerCase().includes(q) || u.topics.some(t=>t.toLowerCase().includes(q));
+    if(!hit) continue;
+    const card=document.createElement('div'); card.className='border rounded-lg p-3 bg-white';
+    card.innerHTML=`
+      <div class="flex items-center justify-between">
+        <div><div class="font-extrabold text-maroon">${u.name}</div>
+        <div class="text-xs text-gray-600">${u.duration}</div></div>
+        <button class="px-2 py-1 rounded bg-gold">Details</button>
+      </div>
+      <ul class="list-disc list-inside mt-2 hidden"></ul>
+      <div class="text-[10px] text-gray-500 mt-1">Source: ${u.src}</div>
+    `;
+    const btn=card.querySelector('button'); const ul=card.querySelector('ul');
+    u.topics.forEach(t=>{ const li=document.createElement('li'); li.textContent=t; ul.appendChild(li); });
+    btn.onclick=()=>{ ul.classList.toggle('hidden'); };
+    grid.appendChild(card);
+  }
+}
+renderUnits();
+$('#unitSearch').addEventListener('input', e=>renderUnits(e.target.value));
+
+/* Week‑1 checkboxes persist */
+$$('.w1').forEach((cb,idx)=>{
+  const k='w1_'+idx; cb.checked = localStorage.getItem(k)==='1';
+  cb.addEventListener('change',()=>localStorage.setItem(k, cb.checked?'1':'0'));
+});
+
+/* Seeds */
+$('#bid-input').value="(5+3)*2^2-4/2";
+
+/* Teacher photo picker & persistence */
+const picker = document.createElement('input'); picker.type='file'; picker.accept='image/*'; picker.style.display='none'; document.body.appendChild(picker);
+function pickPhoto(){ picker.click(); }
+$('#pickPhoto').onclick=(e)=>{ e.stopPropagation(); pickPhoto(); };
+picker.addEventListener('change', (e)=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=()=>{ localStorage.setItem('qla_teacher_photo', reader.result);
+    const img=document.querySelector('#slide-2 img[alt="Teacher photo"]'); if(img) img.src=reader.result; };
+  reader.readAsDataURL(f);
+});
+document.addEventListener('DOMContentLoaded', ()=>{
+  const stored=localStorage.getItem('qla_teacher_photo');
+  if(stored){ const img=document.querySelector('#slide-2 img[alt="Teacher photo"]'); if(img) img.src=stored; }
+});
+</script>
+</body>
+</html>

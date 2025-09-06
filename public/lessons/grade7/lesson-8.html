@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G7 • Unit 1 • Applications & Word Problems (Rationals)</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX (robust auto-render) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root = document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t = setInterval(() => { if (window.renderMathInElement) { clearInterval(t); run(); } }, 25);
+      setTimeout(() => clearInterval(t), 6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  /* Stage */
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:120px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+
+  .photo{width:100%;height:150px;background:#eee center/cover no-repeat;border-radius:10px;border:1px solid #e5e7eb}
+  .iconbox{width:100%;height:150px;border-radius:10px;border:1px dashed #cbd5e1;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff,#fafafa)}
+  .pill{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #e5e7eb;border-radius:999px;padding:.35rem .75rem;background:#fff;cursor:pointer}
+  .pill.active{border-color:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.15)}
+</style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-24 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Unit 1 — Numbers; Properties of Numbers &amp; Fractions</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Lesson: Applications &amp; Word Problems (Rational Numbers)</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Grade 7</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Aligned to AERO 7.NS &amp; 7.EE (models, operations, multi‑step problems). Member of Qatar Foundation.</div>
+    </section>
+
+    <!-- 1 • Learning Outcomes & Keywords -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Outcomes &amp; Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Outcomes</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Translate real‑world situations into mathematical expressions using rational numbers.</li>
+            <li>Choose and justify operations (add, subtract, multiply, divide, absolute difference) based on context.</li>
+            <li>Compute with integers, decimals, and fractions; evaluate units and reasonableness.</li>
+            <li>Solve multi‑step word problems (including unit rate, scaling, and HCF/LCM contexts).</li>
+            <li>Explain solution steps with clear representations and vocabulary.</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap for definitions)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="context">context</span>
+            <span class="chip" data-key="net">net change</span>
+            <span class="chip" data-key="absdiff">absolute difference</span>
+            <span class="chip" data-key="unit">unit rate</span>
+            <span class="chip" data-key="scale">scale factor</span>
+            <span class="chip" data-key="hcf">HCF / GCF</span>
+            <span class="chip" data-key="lcm">LCM</span>
+            <span class="chip" data-key="model">model (equation)</span>
+            <span class="chip" data-key="rational">rational number</span>
+          </div>
+          <div class="text-xs text-gray-500 mt-3">These contexts connect to previous lessons: operations on rationals, absolute value, factorization.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Warm‑Up: Operation Classifier -->
+    <section class="slide" id="opWarmSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Warm‑Up: Which Operation Fits?</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Level:</span>
+        <select id="opLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="opNew" class="btn">New set</button>
+        <button id="opCheck" class="btn maroon">Check</button>
+        <button id="opExportCSV" class="btn">Export CSV</button>
+        <button id="opExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="grid lg:grid-cols-2 gap-3" id="opWarmList"></div>
+      </div>
+      <div id="opFb" class="mt-2 h-6 font-semibold"></div>
+      <div class="hint mt-3 text-sm max-w-4xl text-left">
+        Tip: <em>net change</em> suggests +/−; repeated equal groups or scaling → ×/÷; difference “how far apart?” → \( |a-b| \).
+      </div>
+    </section>
+
+    <!-- 3 • Worked Examples (before practice) -->
+    <section class="slide" id="wkExSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Worked Examples (Step by Step)</h2>
+      <div class="grid lg:grid-cols-4 gap-4 w-full max-w-6xl text-left">
+        <div class="card p-4"><h3 class="font-bold text-maroon">Net Change</h3><div id="exNet" class="text-lg"></div><button id="exNetNext" class="btn mt-2">Another</button></div>
+        <div class="card p-4"><h3 class="font-bold text-maroon">Absolute Difference</h3><div id="exAbs" class="text-lg"></div><button id="exAbsNext" class="btn mt-2">Another</button></div>
+        <div class="card p-4"><h3 class="font-bold text-maroon">Unit Rate</h3><div id="exRate" class="text-lg"></div><button id="exRateNext" class="btn mt-2">Another</button></div>
+        <div class="card p-4"><h3 class="font-bold text-maroon">Scaling</h3><div id="exScale" class="text-lg"></div><button id="exScaleNext" class="btn mt-2">Another</button></div>
+      </div>
+    </section>
+
+    <!-- 4 • Practice A: Net Change & Absolute Difference -->
+    <section class="slide" id="netDiffSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice A — Net Change &amp; Absolute Difference</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Level:</span>
+        <select id="ndLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="ndNew" class="btn">New set</button>
+        <button id="ndCheck" class="btn maroon">Check</button>
+        <button id="ndExportCSV" class="btn">Export CSV</button>
+        <button id="ndExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="ndList" class="grid md:grid-cols-2 gap-3 w-full max-w-5xl"></div>
+      <div id="ndFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 5 • Practice B: Rates & Unit Rates -->
+    <section class="slide" id="rateSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice B — Rates &amp; Unit Rates</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Level:</span>
+        <select id="rtLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="rtNew" class="btn">New set</button>
+        <button id="rtCheck" class="btn maroon">Check</button>
+        <button id="rtExportCSV" class="btn">Export CSV</button>
+        <button id="rtExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="rtList" class="grid md:grid-cols-2 gap-3 w-full max-w-5xl"></div>
+      <div id="rtFb" class="mt-2 h-6 font-semibold"></div>
+      <div class="hint mt-3 text-left text-sm">Strategy: compute a <em>per‑1</em> rate (divide) then scale (multiply), or set up a proportion.</div>
+    </section>
+
+    <!-- 6 • Practice C: Recipe & Map Scaling -->
+    <section class="slide" id="scaleSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice C — Scaling (Recipes &amp; Maps)</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Level:</span>
+        <select id="scLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="scNew" class="btn">New set</button>
+        <button id="scCheck" class="btn maroon">Check</button>
+        <button id="scExportCSV" class="btn">Export CSV</button>
+        <button id="scExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="scList" class="grid md:grid-cols-2 gap-3 w-full max-w-5xl"></div>
+      <div id="scFb" class="mt-2 h-6 font-semibold"></div>
+      <div class="hint mt-3 text-left text-sm">Use the scale factor \(k=\frac{\text{new}}{\text{original}}\). Multiply all quantities by \(k\).</div>
+    </section>
+
+    <!-- 7 • Practice D: Combined Operations in Context (BEDMAS) -->
+    <section class="slide" id="bedmasSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice D — Combined Operations in Context</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Level:</span>
+        <select id="bmLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="bmNew" class="btn">New set</button>
+        <button id="bmCheck" class="btn maroon">Check</button>
+        <button id="bmHint" class="btn">Hint</button>
+        <button id="bmExportCSV" class="btn">Export CSV</button>
+        <button id="bmExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="bmList" class="grid md:grid-cols-2 gap-3 w-full max-w-5xl"></div>
+      <div id="bmHintBox" class="mt-2 text-sm"></div>
+      <div id="bmFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 8 • HCF/LCM Applications (friendly numbers) -->
+    <section class="slide" id="hclSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Practice E — HCF/GCF &amp; LCM Applications</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Level:</span>
+        <select id="hcLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="hcNew" class="btn">New set</button>
+        <button id="hcCheck" class="btn maroon">Check</button>
+        <button id="hcExportCSV" class="btn">Export CSV</button>
+        <button id="hcExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="hcList" class="grid md:grid-cols-2 gap-3 w-full max-w-5xl"></div>
+      <div id="hcFb" class="mt-2 h-6 font-semibold"></div>
+      <div class="hint mt-3 text-left text-sm">LCM → “line up again”; GCF → “largest equal groups”. Use prime factors if stuck.</div>
+    </section>
+
+    <!-- 9 • Image‑Based Word Problems -->
+    <section class="slide" id="imgSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Image‑Based Word Problems</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Images:</span>
+        <span class="pill" id="imgIcons" role="button" aria-pressed="true">SVG Icons</span>
+        <span class="pill" id="imgPhotos" role="button" aria-pressed="false">Photos (online)</span>
+        <span class="ml-4">Level:</span>
+        <select id="imLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="imNew" class="btn">New set</button>
+        <button id="imCheck" class="btn maroon">Check</button>
+        <button id="imExportCSV" class="btn">Export CSV</button>
+        <button id="imExportJSON" class="btn">Export JSON</button>
+      </div>
+      <div id="imList" class="grid md:grid-cols-2 gap-3 w-full max-w-5xl"></div>
+      <div id="imFb" class="mt-2 h-6 font-semibold"></div>
+    </section>
+
+    <!-- 10 • Challenge Scenarios (multi‑step) -->
+    <section class="slide" id="challengeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge: Multi‑Step Scenarios</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="chList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="chNew" class="btn">New set</button>
+          <button id="chCheck" class="btn maroon">Check</button>
+          <button id="chHint" class="btn">Hints</button>
+          <button id="chExportCSV" class="btn">Export CSV</button>
+          <button id="chExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="chHintBox" class="mt-2 text-sm"></div>
+        <div id="chFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 11 • Error Analysis (applications) -->
+    <section class="slide" id="errSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Error Analysis (Applications)</h2>
+      <div class="flex items-center gap-3 mb-2">
+        <span>Level:</span>
+        <select id="errLevel" class="border rounded px-2 py-1">
+          <option value="easy" selected>easy</option>
+          <option value="med">medium</option>
+          <option value="hard">hard</option>
+        </select>
+        <button id="errNew" class="btn">New example</button>
+        <button id="errReveal" class="btn">Reveal correct work</button>
+      </div>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="errBox" class="text-lg"></div>
+        <div class="mt-2">
+          <label class="mr-2"><input type="radio" name="errChoice" value="A"> Wrong operation chosen</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="B"> Unit/rate misused</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="C"> Fraction/decimal error</label><br/>
+          <label class="mr-2"><input type="radio" name="errChoice" value="D"> Step order (BEDMAS) error</label>
+        </div>
+        <div class="mt-2 flex gap-2">
+          <button id="errCheck" class="btn maroon">Check</button>
+          <button id="errExportCSV" class="btn">Export CSV</button>
+          <button id="errExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="errFb" class="mt-2 h-6 font-semibold"></div>
+        <div id="errRevealBox" class="mt-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- 12 • Mixed Generator (varied applications) -->
+    <section class="slide" id="mixSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Mixed Applications Generator</h2>
+      <div class="card p-5 w-full max-w-3xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="mixLevel" class="border rounded px-2 py-1">
+            <option value="easy" selected>easy</option>
+            <option value="med">medium</option>
+            <option value="hard">hard</option>
+          </select>
+          <button id="mixNew" class="btn">New question</button>
+        </div>
+        <div class="mt-3 text-2xl">Task: <span id="mixQ" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="mixAns" class="border rounded px-3 py-2 w-80" placeholder="enter your answer (number/fraction)">
+          <button id="mixCheck" class="btn maroon">Check</button>
+          <button id="mixHint" class="btn">Hint</button>
+          <button id="mixExportCSV" class="btn">Export CSV</button>
+          <button id="mixExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="mixHintBox" class="mt-3 text-sm"></div>
+        <div id="mixFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 13 • Exit Ticket -->
+    <section class="slide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 clues you now use to pick the right operation in a context</li>
+            <li>2 strategies (diagram/equation; unit rate; table)</li>
+            <li>1 context from your life where you’ll apply rational numbers</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p>Transition to **Unit 2**: expressions and equations with rational coefficients.</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[110px] banner rounded-md" style="background-image:url('qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 14</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* --------------------- Core shell & utilities --------------------- */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G7_U1_Applications_Word_Problems';
+  let i=0;
+
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    renderMath(slides[i]);
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(el);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  function id(x){return document.getElementById(x)}
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<18;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  /* ---------- Glossary ---------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    context:'<strong>Context</strong>: the real‑world situation the math describes.',
+    net:'<strong>Net change</strong>: total change after gains and losses (add/subtract).',
+    absdiff:'<strong>Absolute difference</strong> \\(|a-b|\\): distance between two values.',
+    unit:'<strong>Unit rate</strong>: quantity per 1 unit (e.g., QAR per item, km per hour).',
+    scale:'<strong>Scale factor</strong>: multiplicative change from original to new.',
+    hcf:'<strong>HCF/GCF</strong>: greatest common factor (largest equal group size).',
+    lcm:'<strong>LCM</strong>: least common multiple (first time events align).',
+    model:'<strong>Model</strong>: an equation representing the situation.',
+    rational:'<strong>Rational number</strong>: a number that can be written as a fraction of integers (terminating or repeating decimal).'
+  };
+  function showPop(html,anchor){
+    POP_BODY.innerHTML=html; POP.style.display='block';
+    const r=anchor?anchor.getBoundingClientRect():{left:20,top:window.innerHeight-120};
+    POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px';
+    POP.style.bottom=(window.innerHeight - r.top + 10)+'px';
+  }
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(el){const key=el.dataset.key; if(GLOS[key]) showPop(GLOS[key], el);}
+  });
+
+  /* ---------- Number & fraction helpers ---------- */
+  const gcd=(a,b)=>{a=Math.trunc(Math.abs(a));b=Math.trunc(Math.abs(b));while(b){[a,b]=[b,a%b]}return a||1};
+  const lcm=(a,b)=>Math.abs(a*b)/gcd(a,b);
+  function parseRational(s){
+    if(typeof s==='number') return [Math.trunc(s*1000),1000];
+    if(!s) return null; s=s.toString().trim().replace('−','-');
+    const mix=s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/);
+    if(mix){const A=+mix[1],B=+mix[2],C=+mix[3]; if(C===0) return null; const sign=A<0?-1:1; return [A*C+sign*B, C];}
+    const f=s.match(/^(-?\d+)\/(-?\d+)$/);
+    if(f){let n=+f[1],d=+f[2]; if(d===0) return null; let g=gcd(n,d); d<0&&(g=-g); return [n/g,d/g];}
+    if(!isNaN(Number(s))){
+      const parts=s.split('.'); if(parts.length===1) return [Number(s),1];
+      const k=parts[1].length; const n=Math.round(Number(s)*10**k); const d=10**k; let g=gcd(n,d); return [n/g,d/g];
+    }
+    return null;
+  }
+  function toFrac(n,d){let g=gcd(n,d); d<0&&(g=-g); return [n/g,d/g]}
+  const addFrac=(a,b)=>toFrac(a[0]*b[1]+b[0]*a[1], a[1]*b[1]);
+  const subFrac=(a,b)=>toFrac(a[0]*b[1]-b[0]*a[1], a[1]*b[1]);
+  const mulFrac=(a,b)=>toFrac(a[0]*b[0], a[1]*b[1]);
+  const divFrac=(a,b)=>toFrac(a[0]*b[1], a[1]*b[0]);
+  const fracEq=(a,b)=>a[0]*b[1]===b[0]*a[1];
+  const sFrac=([n,d])=> d===1? String(n) : `${n}/${d}`;
+  const asNumber=([n,d])=> n/d;
+  const approxEq=(x,y)=>Math.abs(x-y)<1e-10;
+
+  function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function choice(arr){ return arr[rand(0,arr.length-1)] }
+
+  /* -------------------- Slide 2: Warm‑Up Op Classifier -------------------- */
+  const opBank = {
+    easy: () => {
+      const a=rand(-9,9), b=rand(1,9), c=rand(1,5);
+      return [
+        {text:`Temperature drops ${b}°C from ${a}°C. Final?`, op:'sub'},
+        {text:`Deposit QAR ${b} into QAR ${rand(20,60)}. New balance?`, op:'add'},
+        {text:`You buy ${c} packs, each ${b} kg. Total mass?`, op:'mul'},
+        {text:`Share \\( ${b} \\) pizzas equally among ${c} friends. Each gets?`, op:'div'},
+        {text:`Homes at \\(${a}\\) m and \\(${a+b}\\) m. Height difference?`, op:'abs'}
+      ];
+    },
+    med: () => {
+      const p=+(Math.round((Math.random()*18+12))/10).toFixed(1);
+      const q=+(Math.round((Math.random()*12+8))/10).toFixed(1);
+      const d=[4,5,6,8][rand(0,3)], n=rand(1,d-1);
+      return [
+        {text:`Price rises by QAR ${q} from QAR ${p}. New price?`, op:'add'},
+        {text:`A hiker descends ${q} m then climbs ${p} m. Net change?`, op:'add'},
+        {text:`\\( ${n}/${d} \\) of a liter in each bottle; ${rand(2,5)} bottles total liters?`, op:'mul'},
+        {text:`Distance between \\(-${n}/${d}\\) km and \\(${n}/${d}\\) km?`, op:'abs'},
+        {text:`QAR ${p} for ${rand(3,6)} items. Price per item?`, op:'div'}
+      ];
+    },
+    hard: () => {
+      const d1=[3,4,5,6,8,10][rand(0,5)], d2=[4,5,6,8,10,12][rand(0,5)];
+      const n1=rand(1,d1-1), n2=rand(1,d2-1);
+      return [
+        {text:`Balance changes by \\(-\\tfrac{${n1}}{${d1}}\\) then by \\(+\\tfrac{${n2}}{${d2}}\\). Net change?`, op:'add'},
+        {text:`A car travels \\(\\tfrac{${n1*10}}{${d1}}\\) km in \\(\\tfrac{${n2}}{${d2}}\\) h. Speed?`, op:'div'},
+        {text:`Recipe needs \\(\\tfrac{${n1}}{${d1}}\\) cup per batch. For ${rand(3,6)} batches use?`, op:'mul'},
+        {text:`Temperatures: \\(-\\tfrac{${n1}}{${d1}}\\)°C and \\(\\tfrac{${n2}}{${d2}}\\)°C. How far apart?`, op:'abs'},
+        {text:`You had QAR ${rand(20,40)} then spent QAR ${rand(10,25)}. Remaining?`, op:'sub'}
+      ];
+    }
+  };
+  const opLabels = {add:'Addition (+)', sub:'Subtraction (−)', mul:'Multiplication (×)', div:'Division (÷)', abs:'Absolute difference (|a−b|)'};
+  const opWarmState={items:[]};
+  function opWarmNew(){
+    const lvl=id('opLevel').value; const box=id('opWarmList'); box.innerHTML=''; opWarmState.items=[];
+    const items = opBank[lvl]();
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-lg mb-1">${o.text}</div>
+        <select class="opsel border rounded px-2 py-1">
+          <option value="">— choose —</option>
+          ${Object.entries(opLabels).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
+        </select>`;
+      row.dataset.op=o.op; box.appendChild(row);
+      opWarmState.items.push(o);
+    });
+    renderMath(id('opWarmSlide'));
+  }
+  id('opNew').addEventListener('click',opWarmNew); opWarmNew();
+  id('opCheck').addEventListener('click',()=>{
+    let total=0,ok=0; [...id('opWarmList').children].forEach(row=>{
+      total++; const sel=row.querySelector('.opsel'); const good=sel.value && sel.value===row.dataset.op;
+      sel.style.borderColor = good? '#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('opFb').textContent = ok===total? '✅ Sharp! All classified correctly.' : 'Score: '+ok+'/'+total;
+    if(ok===total) confetti();
+  });
+  id('opExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']];
+    [...id('opWarmList').children].forEach(row=>rows.push([row.querySelector('div').textContent.trim(), row.dataset.op, row.querySelector('.opsel').value||'']));
+    downloadCSV(`${deckTitle}_warmup_ops.csv`, rows);
+  });
+  id('opExportJSON').addEventListener('click',()=>{
+    const data=[...id('opWarmList').children].map(row=>({prompt:row.querySelector('div').textContent.trim(), correct:row.dataset.op, user:row.querySelector('.opsel').value||''}));
+    downloadJSON(`${deckTitle}_warmup_ops.json`, data);
+  });
+
+  /* -------------------- Slide 3: Worked Examples -------------------- */
+  function exNet(){ // net change
+    const a=rand(-6,10), d=rand(-6,6);
+    id('exNet').innerHTML = `
+      Start: \\(${a}\\). Change \\(${d}\\). Net: \\( ${a} + (${d}) = ${a+d} \\).<br/>
+      <span class="text-sm text-gray-600">A drop is negative; a gain is positive.</span>`;
+    renderMath(id('wkExSlide'));
+  }
+  function exAbs(){
+    const a=+(Math.round((Math.random()*20-10)*10)/10).toFixed(1), b=+(Math.round((Math.random()*20-10)*10)/10).toFixed(1);
+    const diff=(Math.abs(a-b)).toFixed(1).replace(/\.0$/,'');
+    id('exAbs').innerHTML = `Distance: \\(|${a} - ${b}| = ${diff}\\).<br/><span class="text-sm text-gray-600">Distance ignores direction.</span>`;
+    renderMath(id('wkExSlide'));
+  }
+  function exRate(){
+    const cost=rand(30,72), n=choice([3,4,6,8]);
+    id('exRate').innerHTML = `
+      Cost QAR ${cost} for ${n} items → unit price = \\(\\dfrac{${cost}}{${n}}=\\) QAR ${(cost/n).toFixed(2)}.<br/>
+      <span class="text-sm text-gray-600">Divide to get “per 1”.</span>`;
+    renderMath(id('wkExSlide'));
+  }
+  function exScale(){
+    const den=choice([3,4,5,6,8]), num=rand(1,den-1), serv0=choice([2,4,5]), serv1=serv0*choice([2,3]);
+    const k=[serv1,serv0]; const n=num*k[0], d=den*k[1]; const g=gcd(n,d); const ans=[n/g,d/g];
+    id('exScale').innerHTML = `
+      Recipe: \\(\\tfrac{${num}}{${den}}\\) cup per ${serv0} servings. For ${serv1} servings, factor \\(k=\\tfrac{${serv1}}{${serv0}}\\).<br/>
+      Amount = \\(\\tfrac{${num}}{${den}}\\cdot\\tfrac{${serv1}}{${serv0}}=\\tfrac{${n}}{${d}}=\\tfrac{${ans[0]}}{${ans[1]}}\\).`;
+    renderMath(id('wkExSlide'));
+  }
+  id('exNetNext').addEventListener('click',exNet); exNet();
+  id('exAbsNext').addEventListener('click',exAbs); exAbs();
+  id('exRateNext').addEventListener('click',exRate); exRate();
+  id('exScaleNext').addEventListener('click',exScale); exScale();
+
+  /* -------------------- Slide 4: Net Change & |a−b| -------------------- */
+  const ndState={items:[]};
+  function ndNew(){
+    const lvl=id('ndLevel').value; const box=id('ndList'); box.innerHTML=''; ndState.items=[];
+    function itNet(){ // net change
+      if(lvl==='easy'){ const s=rand(-10,10), c=rand(-6,6); return {type:'net', text:`Score starts at ${s}, changes by ${c}. Final score =`, ans:[s+c,1], suffix:''}; }
+      if(lvl==='med'){ const s=+(Math.round((Math.random()*20-10)*10)/10).toFixed(1), c=+(Math.round((Math.random()*14-7)*10)/10).toFixed(1); const A=parseRational(s), C=parseRational(c); return {type:'net', text:`Temperature ${s}°C then changes by ${c}°C. Final =`, ans:addFrac(A,C), suffix:'°C'}; }
+      // hard: fractions
+      const d1=choice([4,5,6,8,10,12]), d2=choice([3,4,6,8,9,12]);
+      const a=[rand(-d1+1,d1-1), d1], c=[rand(-d2+1,d2-1), d2]; return {type:'net', text:`Elevation ${sFrac(a)} m then change ${sFrac(c)} m. Final =`, ans:addFrac(a,c), suffix:'m'};
+    }
+    function itAbs(){
+      if(lvl==='easy'){ const a=rand(-10,10), b=rand(-10,10); return {type:'abs', text:`Distance between ${a} and ${b}: |a−b| =`, ans:toFrac(Math.abs(a-b),1), suffix:''}; }
+      if(lvl==='med'){ const a=+(Math.round((Math.random()*18-9)*10)/10).toFixed(1), b=+(Math.round((Math.random()*18-9)*10)/10).toFixed(1); const A=parseRational(a), B=parseRational(b); const diff=subFrac(A,B); return {type:'abs', text:`Distance between ${a} km and ${b} km: |a−b| =`, ans:toFrac(Math.abs(diff[0]), diff[1]), suffix:'km'}; }
+      const d1=choice([3,4,5,6,8,10]), d2=choice([4,5,6,8,9,12]); const a=[rand(-d1+1,d1-1), d1], b=[rand(-d2+1,d2-1), d2];
+      const diff=subFrac(a,b); return {type:'abs', text:`Distance between ${sFrac(a)} and ${sFrac(b)}: |a−b| =`, ans:[Math.abs(diff[0]), diff[1]], suffix:''};
+    }
+    const items=[itNet(), itAbs(), itNet(), itAbs(), itNet(), itAbs()];
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML = `<div class="text-lg">${o.text} <input class="ndin border rounded px-2 py-1 w-32" placeholder="e.g., 3/4 or 1.5"> ${o.suffix||''}</div>`;
+      box.appendChild(row); ndState.items.push(o);
+    });
+    renderMath(id('netDiffSlide'));
+  }
+  id('ndNew').addEventListener('click',ndNew); ndNew();
+  id('ndCheck').addEventListener('click',()=>{
+    let ok=0; [...id('ndList').children].forEach((row,idx)=>{
+      const got=parseRational(row.querySelector('.ndin').value); const want=ndState.items[idx].ans;
+      if(got && fracEq(toFrac(got[0],got[1]), toFrac(want[0],want[1]))){ row.querySelector('.ndin').style.borderColor='#22c55e'; ok++; }
+      else row.querySelector('.ndin').style.borderColor='#ef4444';
+    });
+    const total=ndState.items.length; id('ndFb').textContent = ok===total? '✅ Excellent!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('ndExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']]; [...id('ndList').children].forEach((row,idx)=>rows.push([row.innerText.replace(/\s+/g,' ').trim(), sFrac(ndState.items[idx].ans), row.querySelector('.ndin').value||'']));
+    downloadCSV(`${deckTitle}_net_abs.csv`, rows);
+  });
+  id('ndExportJSON').addEventListener('click',()=>{
+    const data=[...id('ndList').children].map((row,idx)=>({prompt:row.innerText.replace(/\s+/g,' ').trim(), correct:sFrac(ndState.items[idx].ans), user:row.querySelector('.ndin').value||''}));
+    downloadJSON(`${deckTitle}_net_abs.json`, data);
+  });
+
+  /* -------------------- Slide 5: Rates & Unit Rates -------------------- */
+  const rtState={items:[]};
+  function rtNew(){
+    const lvl=id('rtLevel').value; const box=id('rtList'); box.innerHTML=''; rtState.items=[];
+    function unitCost(){
+      if(lvl==='easy'){ const cost=choice([24,30,36,45,54,60]), n=choice([3,4,6,8]); return {text:`QAR ${cost} for ${n} notebooks. Price each =`, ans:toFrac(cost,n), suffix:'QAR'}; }
+      if(lvl==='med'){ const cost=rand(25,75), n=choice([5,8,10,12]); return {text:`QAR ${cost} for ${n} items. Unit price =`, ans:toFrac(cost,n), suffix:'QAR'}; }
+      const a=[rand(1,3),choice([3,4,5,6,8])], n=choice([3,5,7,9]); return {text:`QAR ${sFrac(a)} per item. Cost for ${n} items =`, ans:mulFrac(a,[n,1]), suffix:'QAR'};
+    }
+    function speed(){
+      if(lvl==='easy'){ const d=choice([30,40,60,90]), t=choice([1,2,3]); return {text:`Distance ${d} km in ${t} h. Speed =`, ans:toFrac(d,t), suffix:'km/h'}; }
+      if(lvl==='med'){ const d=choice([45,75,120]), t=[choice([30,45,90]),60]; return {text:`Distance ${d} km in ${t[0]} min. Speed =`, ans:mulFrac(toFrac(d,1), toFrac(60, t[0])), suffix:'km/h'}; }
+      const d=[rand(3,9),choice([4,5,6,8,10])], t=[choice([1,2,3,4]),choice([3,4,5,6])]; return {text:`Distance ${sFrac(d)} km in ${sFrac(t)} h. Speed =`, ans:divFrac(d,t), suffix:'km/h'};
+    }
+    function flow(){
+      if(lvl==='easy'){ const rate=choice([2,3,4]), time=choice([3,4,5]); return {text:`Fountain flows ${rate} L/min for ${time} min. Volume =`, ans:toFrac(rate*time,1), suffix:'L'}; }
+      if(lvl==='med'){ const r=[choice([1,3]),choice([2,4])], t=choice([5,8,10]); return {text:`Flow ${sFrac(r)} L/min for ${t} min. Volume =`, ans:mulFrac(r,[t,1]), suffix:'L'}; }
+      const r=[rand(1,4),choice([4,5,6,8,10])], t=[choice([3,4,5,6]),choice([2,3,4])]; return {text:`Flow ${sFrac(r)} L/min for ${sFrac(t)} min. Volume =`, ans:mulFrac(r,t), suffix:'L'};
+    }
+    const items=[unitCost(), speed(), flow(), unitCost(), speed(), flow()];
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-lg">${o.text} <input class="rtin border rounded px-2 py-1 w-32" placeholder="e.g., 3/4 or 1.5"> ${o.suffix||''}</div>`;
+      box.appendChild(row); rtState.items.push(o);
+    });
+    renderMath(id('rateSlide'));
+  }
+  id('rtNew').addEventListener('click',rtNew); rtNew();
+  id('rtCheck').addEventListener('click',()=>{
+    let ok=0; [...id('rtList').children].forEach((row,idx)=>{
+      const got=parseRational(row.querySelector('.rtin').value); const want=rtState.items[idx].ans;
+      if(got && fracEq(toFrac(got[0],got[1]), toFrac(want[0],want[1]))){ row.querySelector('.rtin').style.borderColor='#22c55e'; ok++; }
+      else row.querySelector('.rtin').style.borderColor='#ef4444';
+    });
+    const total=rtState.items.length; id('rtFb').textContent = ok===total? '✅ Great work!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('rtExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']]; [...id('rtList').children].forEach((row,idx)=>rows.push([row.innerText.replace(/\s+/g,' ').trim(), sFrac(rtState.items[idx].ans), row.querySelector('.rtin').value||'']));
+    downloadCSV(`${deckTitle}_rates.csv`, rows);
+  });
+  id('rtExportJSON').addEventListener('click',()=>{
+    const data=[...id('rtList').children].map((row,idx)=>({prompt:row.innerText.replace(/\s+/g,' ').trim(), correct:sFrac(rtState.items[idx].ans), user:row.querySelector('.rtin').value||''}));
+    downloadJSON(`${deckTitle}_rates.json`, data);
+  });
+
+  /* -------------------- Slide 6: Scaling -------------------- */
+  const scState={items:[]};
+  function scNew(){
+    const lvl=id('scLevel').value; const box=id('scList'); box.innerHTML=''; scState.items=[];
+    function recipe(){
+      const d=choice([3,4,5,6,8,10]), n=rand(1,d-1), s0=choice([2,4,5,6]), s1 = s0*choice([2,3]);
+      const ans=mulFrac([n,d],[s1,s0]); return {text:`Recipe uses \\(\\tfrac{${n}}{${d}}\\) cup sugar for ${s0} servings. For ${s1} servings:`, ans, suffix:'cups'};
+    }
+    function map(){
+      if(lvl==='easy'){ const scale=choice([2,5,10]), dist=choice([3,4,6,8]); return {text:`Map scale 1:${scale}. On map: ${dist} cm. Real distance =`, ans:toFrac(scale*dist,1), suffix:'cm'}; }
+      if(lvl==='med'){ const s=[choice([1,3]),choice([2,4,5])], d=choice([3,4,6,8]); return {text:`Scale \\(${sFrac(s)}\\) : 1 (cm). On map: ${d} cm. Real =`, ans:mulFrac(s,[d,1]), suffix:'cm'}; }
+      const s=[choice([1,2,3]),choice([4,5,6,8,10])], d=[choice([2,3,4,5]),choice([3,4,5,6])]; return {text:`Scale \\(${sFrac(s)}\\) : 1. Map distance \\(${sFrac(d)}\\) cm. Real =`, ans:mulFrac(s,d), suffix:'cm'};
+    }
+    const items = [recipe(), map(), recipe(), map()];
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-lg">${o.text} <input class="scin border rounded px-2 py-1 w-32" placeholder="e.g., 3/4 or 1.5"> ${o.suffix||''}</div>`;
+      box.appendChild(row); scState.items.push(o);
+    });
+    renderMath(id('scaleSlide'));
+  }
+  id('scNew').addEventListener('click',scNew); scNew();
+  id('scCheck').addEventListener('click',()=>{
+    let ok=0; [...id('scList').children].forEach((row,idx)=>{
+      const got=parseRational(row.querySelector('.scin').value); const want=scState.items[idx].ans;
+      if(got && fracEq(toFrac(got[0],got[1]), toFrac(want[0],want[1]))){ row.querySelector('.scin').style.borderColor='#22c55e'; ok++; }
+      else row.querySelector('.scin').style.borderColor='#ef4444';
+    });
+    const total=scState.items.length; id('scFb').textContent = ok===total? '✅ Spot on!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('scExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']]; [...id('scList').children].forEach((row,idx)=>rows.push([row.innerText.replace(/\s+/g,' ').trim(), sFrac(scState.items[idx].ans), row.querySelector('.scin').value||'']));
+    downloadCSV(`${deckTitle}_scaling.csv`, rows);
+  });
+  id('scExportJSON').addEventListener('click',()=>{
+    const data=[...id('scList').children].map((row,idx)=>({prompt:row.innerText.replace(/\s+/g,' ').trim(), correct:sFrac(scState.items[idx].ans), user:row.querySelector('.scin').value||''}));
+    downloadJSON(`${deckTitle}_scaling.json`, data);
+  });
+
+  /* -------------------- Slide 7: BEDMAS in context -------------------- */
+  const bmState={items:[]};
+  function bmNew(){
+    const lvl=id('bmLevel').value; const box=id('bmList'); box.innerHTML=''; bmState.items=[];
+    function build(){
+      if(lvl==='easy'){
+        const start=rand(-5,10), g=rand(-3,5), times=choice([2,3]), fee=choice([2,4]);
+        const expr = `${start} + (${g}) × ${times} − ${fee}`;
+        const ans = start + g*times - fee; return {story:`Start at ${start}. Change by ${g} repeated ${times} times, then subtract a fee of ${fee}. Compute:`, expr, ans:[ans,1]};
+      }
+      if(lvl==='med'){
+        const start=+(Math.round((Math.random()*16-6)*10)/10).toFixed(1), g=+(Math.round((Math.random()*10-5)*10)/10).toFixed(1), t=choice([2,3,4]), div=choice([2,4]);
+        const expr=`(${start} + ${g}×${t}) ÷ ${div}`;
+        const A=parseRational(start), G=parseRational(g); const sum=addFrac(A, mulFrac(G,[t,1])); const ans=divFrac(sum,[div,1]);
+        return {story:`Start at ${start}. Add ${g} repeated ${t} times, then divide equally among ${div} people. Compute:`, expr, ans};
+      }
+      // hard with fractions
+      const d1=choice([4,5,6,8,10]), d2=choice([3,4,5,6,8,12]), n1=rand(-d1+1,d1-1), n2=rand(-d2+1,d2-1);
+      const t=choice([2,3,4]), div=choice([2,5]); const A=[n1,d1], G=[n2,d2];
+      const expr=`\\(\\big(${sFrac(A)} + ${sFrac(G)}\\times ${t}\\big)\\div ${div}\\)`;
+      const ans=divFrac(addFrac(A, mulFrac(G,[t,1])), [div,1]); return {story:`Combine and share:`, expr, ans};
+    }
+    for(let k=0;k<4;k++){
+      const o=build(); const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left"><div class="text-sm text-gray-600">${o.story}</div>
+        <div class="text-xl mt-1">\\( ${o.expr} \\) = <input class="bmin border rounded px-2 py-1 w-40" placeholder="number/fraction"></div></div>`;
+      box.appendChild(row); bmState.items.push(o);
+    }
+    renderMath(id('bedmasSlide'));
+  }
+  id('bmNew').addEventListener('click',bmNew); bmNew();
+  id('bmHint').addEventListener('click',()=>{
+    id('bmHintBox').innerHTML='<div class="hint">Order: Parentheses → Multiply/Divide → Add/Subtract. Convert decimals to fractions if needed for exact comparison.</div>';
+  });
+  id('bmCheck').addEventListener('click',()=>{
+    let ok=0; [...id('bmList').children].forEach((row,idx)=>{
+      const got=parseRational(row.querySelector('.bmin').value); const want=bmState.items[idx].ans;
+      if(got && fracEq(toFrac(got[0],got[1]), toFrac(want[0],want[1]))){ row.querySelector('.bmin').style.borderColor='#22c55e'; ok++; }
+      else row.querySelector('.bmin').style.borderColor='#ef4444';
+    });
+    const total=bmState.items.length; id('bmFb').textContent = ok===total? '✅ Nicely executed!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('bmExportCSV').addEventListener('click',()=>{
+    const rows=[['expression','correct','user']]; bmState.items.forEach((o,idx)=>rows.push([o.expr, sFrac(o.ans), id('bmList').children[idx].querySelector('.bmin').value||'']));
+    downloadCSV(`${deckTitle}_bedmas_context.csv`, rows);
+  });
+  id('bmExportJSON').addEventListener('click',()=>{
+    const data=bmState.items.map((o,idx)=>({expr:o.expr, correct:sFrac(o.ans), user:id('bmList').children[idx].querySelector('.bmin').value||''}));
+    downloadJSON(`${deckTitle}_bedmas_context.json`, data);
+  });
+
+  /* -------------------- Slide 8: HCF/LCM Applications -------------------- */
+  const hcState={items:[]};
+  function hcNew(){
+    const lvl=id('hcLevel').value; const box=id('hcList'); box.innerHTML=''; hcState.items=[];
+    function fireworks(){
+      // LCM problem
+      const a = lvl==='easy'? choice([3,4,6,8]) : lvl==='med'? choice([6,8,9,10,12]) : choice([9,10,12,14,15]);
+      const b = lvl==='easy'? choice([4,6,9]) : lvl==='med'? choice([8,12,15]) : choice([12,14,18]);
+      return {type:'lcm', text:`Two beacons flash every ${a}s and ${b}s. Next simultaneous flash in =`, ans:lcm(a,b), suffix:'s'};
+    }
+    function packing(){
+      // GCF problem
+      const r = lvl==='easy'? rand(12,36) : lvl==='med'? rand(24,60) : rand(36,96);
+      const b = lvl==='easy'? rand(12,36) : lvl==='med'? rand(24,60) : rand(36,96);
+      const g=gcd(r,b); return {type:'gcf', text:`Pack ${r} red and ${b} blue candies into equal bags with no leftovers. Max bags =`, ans:g, suffix:''};
+    }
+    const items=[fireworks(), packing(), fireworks(), packing()];
+    items.forEach(o=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-lg">${o.text} <input class="hcin border rounded px-2 py-1 w-28" placeholder="integer"> ${o.suffix||''}</div>`;
+      box.appendChild(row); hcState.items.push(o);
+    });
+  }
+  id('hcNew').addEventListener('click',hcNew); hcNew();
+  id('hcCheck').addEventListener('click',()=>{
+    let ok=0; [...id('hcList').children].forEach((row,idx)=>{
+      const got=Number(row.querySelector('.hcin').value); const want=hcState.items[idx].ans;
+      if(approxEq(got,want)){ row.querySelector('.hcin').style.borderColor='#22c55e'; ok++; }
+      else row.querySelector('.hcin').style.borderColor='#ef4444';
+    });
+    const total=hcState.items.length; id('hcFb').textContent = ok===total? '✅ Perfect!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('hcExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']]; [...id('hcList').children].forEach((row,idx)=>rows.push([row.innerText.replace(/\s+/g,' ').trim(), hcState.items[idx].ans, row.querySelector('.hcin').value||'']));
+    downloadCSV(`${deckTitle}_hcf_lcm.csv`, rows);
+  });
+  id('hcExportJSON').addEventListener('click',()=>{
+    const data=[...id('hcList').children].map((row,idx)=>({prompt:row.innerText.replace(/\s+/g,' ').trim(), correct:hcState.items[idx].ans, user:row.querySelector('.hcin').value||''}));
+    downloadJSON(`${deckTitle}_hcf_lcm.json`, data);
+  });
+
+  /* -------------------- Slide 9: Image‑Based Word Problems -------------------- */
+  let imageMode='icons';
+  id('imgIcons').classList.add('active');
+  id('imgIcons').addEventListener('click',()=>{imageMode='icons'; id('imgIcons').classList.add('active'); id('imgPhotos').classList.remove('active'); imNew();});
+  id('imgPhotos').addEventListener('click',()=>{imageMode='photos'; id('imgPhotos').classList.add('active'); id('imgIcons').classList.remove('active'); imNew();});
+
+  function svgIcon(kind){
+    const sz=100, stroke='#6C1D45', fill='#C7A34F';
+    if(kind==='thermo'){
+      return `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" aria-label="thermometer" role="img">
+        <rect x="45" y="10" width="10" height="55" rx="5" stroke="${stroke}" fill="none" stroke-width="3"/>
+        <circle cx="50" cy="80" r="15" stroke="${stroke}" fill="${fill}" stroke-width="3"/>
+        <rect x="47" y="45" width="6" height="20" fill="${fill}"/>
+      </svg>`;
+    }
+    if(kind==='mount'){
+      return `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" aria-label="mountain" role="img">
+        <polygon points="10,80 40,30 70,80" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+        <polygon points="35,80 55,45 85,80" fill="none" stroke="${stroke}" stroke-width="3"/>
+      </svg>`;
+    }
+    if(kind==='cart'){
+      return `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" aria-label="shopping cart" role="img">
+        <circle cx="35" cy="80" r="6" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+        <circle cx="70" cy="80" r="6" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+        <polyline points="10,20 25,20 35,60 80,60 85,35 28,35" fill="none" stroke="${stroke}" stroke-width="3"/>
+      </svg>`;
+    }
+    if(kind==='clock'){
+      return `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" aria-label="clock" role="img">
+        <circle cx="50" cy="50" r="35" fill="none" stroke="${stroke}" stroke-width="3"/>
+        <line x1="50" y1="50" x2="50" y2="30" stroke="${stroke}" stroke-width="3"/>
+        <line x1="50" y1="50" x2="70" y2="50" stroke="${stroke}" stroke-width="3"/>
+      </svg>`;
+    }
+    if(kind==='bottle'){
+      return `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" aria-label="bottle" role="img">
+        <rect x="40" y="20" width="20" height="50" rx="6" stroke="${stroke}" fill="none" stroke-width="3"/>
+        <rect x="45" y="15" width="10" height="5" fill="${fill}"/>
+        <rect x="42" y="50" width="16" height="18" fill="${fill}"/>
+      </svg>`;
+    }
+    return '';
+  }
+  function photoURL(kind){
+    // Stable picsum IDs (generic illustrative photos)
+    const base='https://picsum.photos';
+    const size='400/240';
+    const ids={thermo: 1060, mount: 1016, cart: 1059, clock: 1044, bottle: 102, map: 1011};
+    return `${base}/id/${ids[kind]}/${size}`;
+  }
+  const imState={items:[]};
+  function imNew(){
+    const lvl=id('imLevel').value; const box=id('imList'); box.innerHTML=''; imState.items=[];
+    function card(kind, prompt, ans, suffix){
+      const el=document.createElement('div'); el.className='card p-4 text-left';
+      const media = imageMode==='icons' ? `<div class="iconbox mb-2">${svgIcon(kind)}</div>` : `<div class="photo mb-2" style="background-image:url('${photoURL(kind)}')"></div>`;
+      el.innerHTML = `
+        ${media}
+        <div class="text-lg">${prompt}</div>
+        <div class="mt-2">Answer: <input class="imin border rounded px-2 py-1 w-36" placeholder="e.g., 3/4 or 1.5"> ${suffix||''}</div>`;
+      el.dataset.ans = JSON.stringify(ans); box.appendChild(el); imState.items.push({prompt, ans, suffix});
+    }
+    // Build 4 cards
+    if(lvl==='easy'){
+      const a=rand(-5,10), d=rand(1,6); card('thermo', `Temperature ${a}°C then drops ${d}°C. Final =`, toFrac(a-d,1), '°C');
+      card('cart', `QAR 36 for 6 bottles. Unit price =`, toFrac(36,6), 'QAR');
+      card('mount', `Heights −3 m and 4 m. Distance = |a−b| =`, toFrac(Math.abs(-3-4),1), 'm');
+      card('clock', `Walk 3 km in 0.5 h. Speed =`, toFrac(3,0.5), 'km/h');
+    } else if(lvl==='med'){
+      const p=+(Math.round((Math.random()*18+12))/10).toFixed(1), q=choice([3,4,6]); card('cart', `QAR ${p*q} for ${q} notebooks. Price each =`, toFrac(p*q,q), 'QAR');
+      card('thermo', `From −1.5°C to 2.0°C: change =`, toFrac(3.5,1), '°C');
+      const d=[3,4,5,6][rand(0,3)], n=rand(1,d-1), b=rand(2,5); card('bottle', `${b} bottles each ${n}/${d} L. Volume =`, mulFrac([n,d],[b,1]), 'L');
+      card('clock', `12 km in 30 min. Speed =`, toFrac(12*60,30), 'km/h');
+    } else {
+      const d1=choice([4,5,6,8,10]), d2=choice([3,4,5,6,9,12]); const n1=rand(1,d1-1), n2=rand(1,d2-1);
+      card('mount', `Elevations ${sFrac([-n1,d1])} m and ${sFrac([n2,d2])} m. Distance =`, toFrac(Math.abs((-n1*d2)-(n2*d1)), d1*d2), 'm');
+      const cost=[n1,d1], items=rand(3,7); card('cart', `Cost ${sFrac(cost)} QAR per item. Cost for ${items} items =`, mulFrac(cost,[items,1]), 'QAR');
+      card('bottle', `Flow ${sFrac([n1,d1])} L/min for ${sFrac([n2,d2])} min. Volume =`, mulFrac([n1,d1],[n2,d2]), 'L');
+      card('clock', `Trip: ${sFrac([n1*10,d1])} km in ${sFrac([n2,d2])} h. Speed =`, divFrac([n1*10,d1],[n2,d2]), 'km/h');
+    }
+    renderMath(id('imgSlide'));
+  }
+  id('imNew').addEventListener('click',imNew); imNew();
+  id('imCheck').addEventListener('click',()=>{
+    let ok=0; [...id('imList').children].forEach((row)=>{
+      const want=JSON.parse(row.dataset.ans); const got=parseRational(row.querySelector('.imin').value);
+      if(got && fracEq(toFrac(got[0],got[1]), toFrac(want[0],want[1]))){ row.querySelector('.imin').style.borderColor='#22c55e'; ok++; }
+      else row.querySelector('.imin').style.borderColor='#ef4444';
+    });
+    const total=id('imList').children.length; id('imFb').textContent = ok===total? '✅ Picture perfect!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('imExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']]; [...id('imList').children].forEach((row)=>rows.push([row.querySelector('.text-lg').textContent.trim(), sFrac(JSON.parse(row.dataset.ans)), row.querySelector('.imin').value||'']));
+    downloadCSV(`${deckTitle}_image_problems.csv`, rows);
+  });
+  id('imExportJSON').addEventListener('click',()=>{
+    const data=[...id('imList').children].map((row)=>({prompt:row.querySelector('.text-lg').textContent.trim(), correct:sFrac(JSON.parse(row.dataset.ans)), user:row.querySelector('.imin').value||''}));
+    downloadJSON(`${deckTitle}_image_problems.json`, data);
+  });
+
+  /* -------------------- Slide 10: Challenge scenarios -------------------- */
+  const chState={items:[]};
+  function chNew(){
+    const box=id('chList'); box.innerHTML=''; chState.items=[];
+    // Scenario 1: Metro card
+    const start=rand(30,60), rides=choice([3,4,5]), cost=[choice([3,4,5]),1], bonus=[1,5]; // discount 1/5 off one ride
+    const baseCost=mulFrac(cost,[rides,1]); const disc=mulFrac(cost,bonus); const ans1=subFrac(subFrac([start,1], baseCost), toFrac(disc[0], disc[1])); // start - rides*cost - discount
+    const s1=document.createElement('div'); s1.className='card p-4';
+    s1.innerHTML=`<div class="text-lg">Metro card starts with QAR ${start}. ${rides} rides cost ${sFrac(cost)} QAR each. You have a discount of ${sFrac(bonus)} of one ride. Balance after rides = <input class="chin border rounded px-2 py-1 w-36" placeholder="number"> QAR</div>`;
+    s1.dataset.ans=JSON.stringify(ans1); box.appendChild(s1); chState.items.push({ans:ans1});
+
+    // Scenario 2: Hike up & down with fractional steps
+    const up=[choice([1,2,3]),choice([3,4,6])], down=[choice([1,2]),choice([4,5,6])], repeats=choice([2,3]);
+    const netStep=subFrac(up,down); const ans2=mulFrac(netStep,[repeats,1]);
+    const s2=document.createElement('div'); s2.className='card p-4';
+    s2.innerHTML=`<div class="text-lg">A hiker gains ${sFrac(up)} km then descends ${sFrac(down)} km, repeating this pattern ${repeats} times. Net change in elevation (km) = <input class="chin border rounded px-2 py-1 w-36" placeholder="fraction"></div>`;
+    s2.dataset.ans=JSON.stringify(ans2); box.appendChild(s2); chState.items.push({ans:ans2});
+
+    // Scenario 3: Recipe batching & sharing
+    const perBatch=[choice([1,3,5]),choice([4,6,8,10])], batches=choice([3,4,5]), people=choice([2,4,5]);
+    const total=mulFrac(perBatch,[batches,1]); const share=divFrac(total,[people,1]);
+    const s3=document.createElement('div'); s3.className='card p-4';
+    s3.innerHTML=`<div class="text-lg">A recipe uses ${sFrac(perBatch)} kg flour per batch. You bake ${batches} batches and share equally among ${people} people. Each person gets = <input class="chin border rounded px-2 py-1 w-36" placeholder="fraction"> kg</div>`;
+    s3.dataset.ans=JSON.stringify(share); box.appendChild(s3); chState.items.push({ans:share});
+
+    renderMath(id('challengeSlide'));
+  }
+  id('chNew').addEventListener('click',chNew); chNew();
+  id('chHint').addEventListener('click',()=>{
+    id('chHintBox').innerHTML=`<div class="hint">
+      <ul class="list-disc list-inside">
+        <li><strong>Metro:</strong> Balance − (rides × cost) − (discount × cost).</li>
+        <li><strong>Hike:</strong> One cycle = up − down; multiply by repeats.</li>
+        <li><strong>Recipe:</strong> Total = per‑batch × batches; share = total ÷ people.</li>
+      </ul>
+    </div>`;
+  });
+  id('chCheck').addEventListener('click',()=>{
+    let ok=0; [...id('chList').children].forEach((row,idx)=>{
+      const want=JSON.parse(row.dataset.ans); const got=parseRational(row.querySelector('.chin').value);
+      if(got && fracEq(toFrac(got[0],got[1]), toFrac(want[0],want[1]))){ row.querySelector('.chin').style.borderColor='#22c55e'; ok++; }
+      else row.querySelector('.chin').style.borderColor='#ef4444';
+    });
+    const total=id('chList').children.length; id('chFb').textContent = ok===total? '✅ Challenge conquered!' : 'Score: '+ok+'/'+total; if(ok===total) confetti();
+  });
+  id('chExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','correct','user']]; [...id('chList').children].forEach((row)=>rows.push([row.querySelector('.text-lg').textContent.trim(), sFrac(JSON.parse(row.dataset.ans)), row.querySelector('.chin').value||'']));
+    downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('chExportJSON').addEventListener('click',()=>{
+    const data=[...id('chList').children].map((row)=>({prompt:row.querySelector('.text-lg').textContent.trim(), correct:sFrac(JSON.parse(row.dataset.ans)), user:row.querySelector('.chin').value||''}));
+    downloadJSON(`${deckTitle}_challenge.json`, data);
+  });
+
+  /* -------------------- Slide 11: Error analysis -------------------- */
+  function errBank(level){
+    const easy=[
+      {work:'“Price per item” for 24 QAR and 6 items is \\(24+6=30\\).', correct:'Unit price uses division: \\(24\\div 6=4\\) QAR.', key:'B'},
+      {work:'Change from 5 to 2 is \\(2-5=-3\\), so the distance is \\(-3\\).', correct:'Absolute difference is non‑negative: \\(|2-5|=3\\).', key:'C'},
+      {work:'Pack 18 red and 24 blue into equal bags: choose 8 bags because 24 has 8 as a factor.', correct:'Use GCF of 18 and 24 which is 6; 8 is not a common factor of 18.', key:'A'}
+    ];
+    const med=[
+      {work:'Speed from 12 km in 30 min: \\(12\\times 30=360\\) km/h.', correct:'Convert 30 min = 0.5 h, then \\(12\\div 0.5=24\\) km/h.', key:'B'},
+      {work:'\\( (3+2)\\times 4 - 2 = 3+(2\\times 4)-2 \\)', correct:'Order of operations violated; compute inside parentheses fully first.', key:'D'}
+    ];
+    const hard=[
+      {work:'Recipe scaling: \\(\\tfrac{3}{4}\\) cup for 4 servings → for 10 servings “add 6 more cups”.', correct:'Scale multiplicatively: factor \\(10/4\\); amount \\(=\\tfrac{3}{4}\\cdot\\tfrac{10}{4}=\\tfrac{30}{16}=\\tfrac{15}{8}\\) cups.', key:'A'},
+      {work:'Distance between \\(-\\tfrac{2}{3}\\) and \\(\\tfrac{1}{6}\\) is \\(-\\tfrac{2}{3}-\\tfrac{1}{6}=-\\tfrac{5}{6}\\).', correct:'Take absolute value of the difference: \\(|-\\tfrac{2}{3}-\\tfrac{1}{6}|=| -\\tfrac{5}{6} |=\\tfrac{5}{6}\\).', key:'C'}
+    ];
+    return level==='easy'? easy : level==='med'? med : hard;
+  }
+  const errState={item:null};
+  function errNew(){
+    const bank=errBank(id('errLevel').value); errState.item=choice(bank);
+    id('errBox').innerHTML=`Student work:<br/><div class="mt-1 text-maroon">${errState.item.work}</div>`;
+    id('errFb').textContent=''; id('errRevealBox').textContent=''; renderMath(id('errSlide'));
+  }
+  id('errNew').addEventListener('click',errNew); errNew();
+  id('errCheck').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    if(!sel){ id('errFb').textContent='Choose a diagnosis.'; return; }
+    if(sel.value===errState.item.key){ id('errFb').textContent='✅ Correct diagnosis.'; confetti(); }
+    else { id('errFb').textContent='❌ Not quite. Try again or reveal the correct work.'; }
+  });
+  id('errReveal').addEventListener('click',()=>{ id('errRevealBox').innerHTML=`<div class="hint">${errState.item.correct}</div>`; renderMath(id('errSlide')); });
+  id('errExportCSV').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    downloadCSV(`${deckTitle}_error_analysis.csv`, [['incorrect_work','correct_explanation','answer_key','user_choice'], [id('errBox').innerText.trim(), errState.item.correct, errState.item.key, sel?sel.value:'']]);
+  });
+  id('errExportJSON').addEventListener('click',()=>{
+    const sel=[...document.querySelectorAll('input[name="errChoice"]')].find(x=>x.checked);
+    downloadJSON(`${deckTitle}_error_analysis.json`, {incorrect:id('errBox').innerText.trim(), correct:errState.item.correct, key:errState.item.key, user: sel?sel.value:''});
+  });
+
+  /* -------------------- Slide 12: Mixed generator -------------------- */
+  const mixState={cur:null};
+  function mixNew(){
+    const lvl=id('mixLevel').value; let task, ans;
+    const t=rand(0,5);
+    if(t===0){ // unit price
+      const cost=choice([24,30,36,42]), n=choice([3,6,7]); task=`Unit price for QAR ${cost} and ${n} items.`; ans=toFrac(cost,n);
+    } else if(t===1){ // distance
+      const a=rand(-10,10), b=rand(-10,10); task=`Distance between ${a} and ${b}: |a−b|.`; ans=toFrac(Math.abs(a-b),1);
+    } else if(t===2){ // speed
+      const d=choice([15,20,30]), m=choice([30,45,60]); task=`Speed for ${d} km in ${m} minutes.`; ans=toFrac(d*60,m);
+    } else if(t===3){ // scaling fraction
+      const d=choice([3,4,5,6,8,10]), n=rand(1,d-1), s0=choice([2,4,5]), s1=s0*choice([2,3]); task=`${sFrac([n,d])} cup per ${s0} servings. Amount for ${s1} servings.`; ans=mulFrac([n,d],[s1,s0]);
+    } else if(t===4){ // combined
+      const start=rand(-5,5), g=rand(-3,3), times=choice([2,3,4]); task=`Compute: ${start} + (${g})×${times}.`; ans=toFrac(start + g*times,1);
+    } else { // GCF/LCM
+      if(Math.random()<0.5){ const a=choice([6,8,9,10,12,14]), b=choice([8,12,15,18]); task=`Next simultaneous flash for ${a}s and ${b}s.`; ans=toFrac(lcm(a,b),1);}
+      else { const a=rand(24,60), b=rand(24,60); task=`Max equal bags from ${a} and ${b} candies (no leftovers).`; ans=toFrac(gcd(a,b),1); }
+    }
+    mixState.cur={task,ans};
+    id('mixQ').innerHTML = task; id('mixAns').value=''; id('mixHintBox').textContent=''; id('mixFb').textContent='';
+    renderMath(id('mixSlide'));
+  }
+  id('mixNew').addEventListener('click',mixNew); mixNew();
+  id('mixHint').addEventListener('click',()=>{
+    const t=id('mixQ').textContent.toLowerCase();
+    const msg = t.includes('unit price')? 'Divide total cost by number of items.' :
+                t.includes('distance')? 'Compute the difference and take absolute value.' :
+                t.includes('speed')? 'Speed = distance ÷ time (in hours).' :
+                t.includes('servings')? 'Multiply by scale factor (new ÷ original).' :
+                t.includes('flash')? 'Use LCM: first common multiple of the periods.' :
+                t.includes('bags')? 'Use GCF: largest factor common to both counts.' :
+                'Apply BEDMAS: multiply/divide before add/subtract.';
+    id('mixHintBox').innerHTML=`<div class="hint">${msg}</div>`;
+  });
+  id('mixCheck').addEventListener('click',()=>{
+    const got=parseRational(id('mixAns').value); const want=mixState.cur.ans;
+    const ok = !!(got && fracEq(toFrac(got[0],got[1]), toFrac(want[0],want[1])));
+    if(ok){ id('mixFb').textContent='✅ Correct! '+sFrac(want); id('mixFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); }
+    else { id('mixFb').textContent='❌ Not quite. Try again.'; id('mixFb').className='mt-2 h-6 font-semibold text-red-700'; }
+  });
+  id('mixExportCSV').addEventListener('click',()=>downloadCSV(`${deckTitle}_mixed_current.csv`, [['prompt','user'], [id('mixQ').textContent, id('mixAns').value||'']]));
+  id('mixExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_mixed_current.json`, {prompt:id('mixQ').textContent, user:id('mixAns').value||''}));
+
+  /* -------------------- Init -------------------- */
+  window.addEventListener('resize',()=>{ /* responsive hooks if needed */ });
+  show(0);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>G8 • Unit 1 • Squares & Roots — QLA</title>
+
+<!-- Fonts & Tailwind -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- KaTeX (robust auto-render) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+  // Boot KaTeX; expose a rerender helper for dynamic content
+  window.addEventListener('DOMContentLoaded', () => {
+    const run = (root=document.body) => {
+      if (!window.renderMathInElement) return;
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    };
+    if (window.renderMathInElement) run();
+    else {
+      const t=setInterval(()=>{ if(window.renderMathInElement){ clearInterval(t); run(); }},25);
+      setTimeout(()=>clearInterval(t),6000);
+    }
+    window._rerenderMath = run;
+  });
+</script>
+
+<style>
+  :root{--maroon:#6C1D45;--gold:#C7A34F;--dark:#2C2C2E;--light:#F5F5F5;--accent:#E8D5B7}
+  html,body{height:100%;background:#2d3748;color:#111;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  /* Stage */
+  #deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+  #slides{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#fff;box-shadow:0 14px 36px rgba(0,0,0,.35);overflow:hidden;border-radius:18px}
+  .slide{position:absolute;inset:0;padding:3.5%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;transform:translateY(14px) scale(.985);transition:.55s ease;pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .bg-maroon{background-color:var(--maroon)} .text-maroon{color:var(--maroon)} .text-gold{color:var(--gold)}
+  .banner{width:100%;height:110px;background:#fff center/contain no-repeat;border-bottom:3px solid var(--gold);border-radius:10px}
+  .card{border:1px solid #e5e7eb;border-radius:14px;background:#fafafa}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.05);border-radius:9999px;padding:.35rem .75rem;cursor:pointer}
+  .chip:hover{outline:2px solid var(--gold)}
+  .btn{padding:.55rem 1rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-weight:700}
+  .btn.maroon{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+  .btn:hover{filter:brightness(0.98)}
+  #controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);padding:.4rem .6rem;border-radius:999px;z-index:20;backdrop-filter:blur(6px)}
+  #controls button{width:42px;height:42px;border-radius:999px;border:none;background:#fff;cursor:pointer;font-weight:700}
+  #controls button:hover{transform:scale(1.06)}
+  #counter{color:#fff;font-weight:700;min-width:84px;text-align:center}
+  #progress{position:fixed;left:0;bottom:0;height:5px;width:0;background:var(--gold);z-index:30;transition:width .35s ease}
+  #fsHint{position:absolute;top:10px;right:12px;color:#fff;background:rgba(0,0,0,.35);padding:.25rem .5rem;border-radius:8px;font-size:.8rem}
+
+  /* Popover */
+  #pop{position:fixed;inset:auto auto 20px 20px;max-width:min(560px,90vw);background:#fff;border:2px solid var(--gold);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding:14px 16px;z-index:40;display:none;text-align:left}
+  #pop strong{color:var(--maroon)} #pop .close{float:right;color:#666;cursor:pointer;font-weight:800}
+
+  .hint{background:#fff3cd;border:1px solid #ffe69c;border-radius:10px;padding:.5rem .75rem}
+  .confetti{position:fixed;pointer-events:none;z-index:50}
+
+  /* Square growth visual */
+  #sqviz{width:100%;max-width:700px}
+  #sqviz canvas{width:100%;height:240px;border:2px solid #eee;border-radius:12px;background:linear-gradient(180deg,#fff,#fafafa)}
+</style>
+</head>
+<body>
+
+<div id="deck" aria-live="polite">
+  <div id="slides" class="relative">
+    <div id="fsHint">Press <strong>F</strong> for fullscreen</div>
+
+    <!-- 0 • Title -->
+    <section class="slide active bg-maroon text-white">
+      <div class="w-full h-16 banner mb-6 rounded-md" style="background-image:url('qla_banner.png')" aria-label="QLA Partner Banner"></div>
+      <div class="flex items-center gap-8">
+        <img src="qla_logo.png" alt="QLA Logo" class="h-20 w-auto" onerror="this.style.display='none'"/>
+        <div class="text-left">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Squares &amp; Roots</h1>
+          <p class="text-gold text-2xl md:text-3xl mt-2 font-semibold">Perfect Squares • Estimating Roots • Simplifying Radicals • Evaluating Expressions</p>
+          <p class="mt-2 text-lg">Qatar Leadership Academy — Grade 8</p>
+        </div>
+      </div>
+      <div class="absolute bottom-6 text-sm text-gray-100">Builds on: BEDMAS &amp; |absolute value| • Converting recurring decimals • Rounding numbers.</div>
+    </section>
+
+    <!-- 1 • Learning Objectives & Keywords -->
+    <section class="slide" id="loSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Learning Objectives &amp; Keywords</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Learning Objectives</h3>
+          <ul class="list-disc list-inside space-y-1 text-lg">
+            <li>Recognize and generate <b>perfect squares</b>; compute squares of integers &amp; simple fractions.</li>
+            <li>Understand the <b>principal square root</b> and the identity \( \sqrt{a^2}=|a| \).</li>
+            <li>Estimate \( \sqrt{n} \) to a required precision by bounding between consecutive squares and refining.</li>
+            <li>Simplify radicals like \( \sqrt{50}=5\sqrt{2} \) by extracting square factors.</li>
+            <li>Evaluate and compare expressions with squares/roots using <b>BEDMAS</b>.</li>
+            <li>Apply squares &amp; roots to **area/geometry** and everyday contexts.</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-2xl font-bold text-maroon mb-1">Keywords (tap)</h3>
+          <div class="flex flex-wrap gap-2 text-lg">
+            <span class="chip" data-key="sq">square \(n^2\)</span>
+            <span class="chip" data-key="ps">perfect square</span>
+            <span class="chip" data-key="rt">square root \( \sqrt{\phantom{a}} \)</span>
+            <span class="chip" data-key="pr">principal root</span>
+            <span class="chip" data-key="rad">radical &amp; radicand</span>
+            <span class="chip" data-key="simp">simplify radical</span>
+            <span class="chip" data-key="est">estimate a root</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">We use \( \sqrt{x} \ge 0 \) for real numbers (principal root). Example: \( \sqrt{(-7)^2}=|{-7}|=7 \).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 • Reveal explanations -->
+    <section class="slide" id="revealSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Tap to Reveal — Big Ideas</h2>
+      <div class="grid md:grid-cols-2 gap-6 w-full max-w-5xl text-left">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Squares grow fast</h3>
+          <div class="space-y-2 text-lg">
+            <button class="chip rev" data-t="g1">List of perfect squares</button>
+            <button class="chip rev" data-t="g2">Why \( (n+1)^2 = n^2 + 2n + 1 \)</button>
+            <button class="chip rev" data-t="g3">Comparing roots by comparing radicands</button>
+            <div id="revBox1" class="mt-3"></div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon mb-2">Roots in context</h3>
+          <div class="space-y-2 text-lg">
+            <button class="chip rev" data-t="r1">Area of a square \(A=s^2\) ↔ \(s=\sqrt{A}\)</button>
+            <button class="chip rev" data-t="r2">\( \sqrt{a^2}=|a| \) (connects to absolute value)</button>
+            <button class="chip rev" data-t="r3">Estimating \( \sqrt{n} \) quickly</button>
+            <div id="revBox2" class="mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 • Visual: Square growth -->
+    <section class="slide" id="vizSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Visualising \(n^2\): how squares grow</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="sqviz">
+          <canvas id="sqcanvas" width="840" height="300" aria-label="square growth"></canvas>
+        </div>
+        <div class="mt-3 flex items-center gap-3">
+          <span class="chip">n = <input id="sqN" type="range" min="1" max="25" value="8"/></span>
+          <span class="chip">n = <b id="sqNout">8</b></span>
+          <span class="chip">n² = <b id="sqSout">64</b></span>
+          <span class="chip">Increase from (n−1)²: <b id="sqDiff">15</b> (= \(2n-1\))</span>
+          <button id="sqRand" class="btn">Random n</button>
+        </div>
+        <div class="hint mt-3">Each step from \(n^2\) to \((n+1)^2\) adds the next <b>odd number</b>. This pattern supports quick mental checks.</div>
+      </div>
+    </section>
+
+    <!-- 4 • Explorer: Estimate a square root -->
+    <section class="slide" id="estimateSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Explorer: Estimating \( \sqrt{n} \)</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-lg">Pick \(n\) (not a perfect square):</div>
+            <div class="mt-2 flex items-center gap-2">
+              <input id="estN" class="border rounded px-2 py-1 w-28" value="45">
+              <button id="estRand" class="btn">Random</button>
+              <button id="estBounds" class="btn maroon">Show bounds</button>
+            </div>
+            <div id="estInfo" class="mt-2"></div>
+          </div>
+          <div>
+            <div class="text-lg">Your estimate (slider to 1 decimal):</div>
+            <input id="estSlider" type="range" min="6" max="7" step="0.1" value="6.5" class="w-full mt-2">
+            <div class="mt-1">Guess: <b id="estGuess">6.5</b></div>
+            <div class="mt-2 flex gap-2">
+              <button id="estCheck" class="btn maroon">Check accuracy</button>
+              <button id="estExplain" class="btn">Explain method</button>
+              <button id="estExportCSV" class="btn">Export CSV</button>
+              <button id="estExportJSON" class="btn">Export JSON</button>
+            </div>
+            <div id="estFb" class="mt-2 h-6 font-semibold"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 • Practice: Simplify radicals -->
+    <section class="slide" id="simpRadSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Simplify the Square Root</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <p class="text-lg">Write \( \sqrt{n} = a\sqrt{b} \) with \(b\) having no square factor \(>1\).</p>
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="srLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (≤ 100)</option>
+            <option value="med" selected>medium (≤ 200)</option>
+            <option value="hard">hard (≤ 400; include products)</option>
+          </select>
+          <button id="srNew" class="btn">New set</button>
+          <button id="srExportCSV" class="btn">Export CSV</button>
+          <button id="srExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="srList" class="grid md:grid-cols-2 gap-3 mt-3"></div>
+        <div class="mt-3">
+          <button id="srCheck" class="btn maroon">Check</button>
+          <div id="srFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 • Practice: Evaluate expressions (BEDMAS aware) -->
+    <section class="slide" id="evalSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Evaluate the Expression</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="evLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (perfect squares)</option>
+            <option value="med" selected>medium (mix; fractions)</option>
+            <option value="hard">hard (|a|, \(\sqrt{a^2}\), like radicals)</option>
+          </select>
+          <button id="evNew" class="btn">New set</button>
+          <button id="evExportCSV" class="btn">Export CSV</button>
+          <button id="evExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="evList" class="grid md:grid-cols-2 gap-3 mt-3"></div>
+        <div class="mt-3">
+          <button id="evCheck" class="btn maroon">Check</button>
+          <div id="evFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 • Practice: Compare & order roots -->
+    <section class="slide" id="cmpSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Compare the Numbers</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="cpLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy (√m vs integer)</option>
+            <option value="med" selected>medium (√m vs √n)</option>
+            <option value="hard">hard (negatives; rounded forms)</option>
+          </select>
+          <button id="cpNew" class="btn">New set</button>
+          <button id="cpExportCSV" class="btn">Export CSV</button>
+          <button id="cpExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="cpList" class="grid md:grid-cols-2 gap-3 mt-3"></div>
+        <div class="mt-3">
+          <button id="cpCheck" class="btn maroon">Check</button>
+          <div id="cpFb" class="mt-2 h-6 font-semibold"></div>
+        </div>
+        <div class="hint mt-2 text-sm">For non‑negative numbers: \( \sqrt{x} \lt \sqrt{y} \iff x \lt y \). Compare radicands!</div>
+      </div>
+    </section>
+
+    <!-- 8 • Real‑World Practice -->
+    <section class="slide" id="realSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Real‑World Practice</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div id="realList" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="mt-3 flex gap-2">
+          <button id="realNew" class="btn">New set</button>
+          <button id="realCheck" class="btn maroon">Check</button>
+          <button id="realExportCSV" class="btn">Export CSV</button>
+          <button id="realExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div id="realFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 9 • Challenge Mode -->
+    <section class="slide" id="challengeSlide">
+      <h2 class="text-3xl font-extrabold text-maroon mb-2">Challenge Mode</h2>
+      <div class="card p-5 w-full max-w-5xl text-left">
+        <div class="flex items-center gap-3">
+          <span>Level:</span>
+          <select id="chLevel" class="border rounded px-2 py-1">
+            <option value="easy">easy</option>
+            <option value="med" selected>medium</option>
+            <option value="hard">hard</option>
+          </select>
+          <button id="chNew" class="btn">New question</button>
+          <span class="chip">Streak: <b id="streakOut">0</b></span>
+          <button id="chExportCSV" class="btn">Export CSV</button>
+          <button id="chExportJSON" class="btn">Export JSON</button>
+        </div>
+        <div class="mt-3 text-2xl">Task: <span id="chText" class="font-extrabold"></span></div>
+        <div class="mt-2">
+          <input id="chAns" class="border rounded px-3 py-2 w-60" placeholder="answer"/>
+          <button id="chCheck" class="btn maroon">Check</button>
+          <button id="chHint" class="btn">Hint</button>
+        </div>
+        <div id="chHintBox" class="mt-3 text-sm"></div>
+        <div id="chFb" class="mt-2 h-6 font-semibold"></div>
+      </div>
+    </section>
+
+    <!-- 10 • Exit -->
+    <section class="slide" id="exitSlide">
+      <h2 class="text-4xl font-extrabold text-maroon mb-2">Exit Ticket &amp; Next Steps</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-left max-w-5xl">
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">3–2–1 Reflect</h3>
+          <ul class="list-disc list-inside">
+            <li>3 insights about squares/roots you can explain</li>
+            <li>2 radicals you simplified today</li>
+            <li>1 real‑world situation where a square root appears</li>
+          </ul>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-xl font-bold text-maroon">Up Next</h3>
+          <p><b>Pythagorean Theorem &amp; Distances in the Plane</b> — exact roots vs approximations; connections to rational/irrational numbers.</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[88%] h-[100px] banner rounded-md" style="background-image:url('qla_banner.png')"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls" role="group" aria-label="Slideshow controls">
+  <button id="prev" title="Previous (←)">&laquo;</button>
+  <button id="fs" title="Toggle Fullscreen (F)">⤢</button>
+  <div id="counter">1 / 11</div>
+  <button id="next" title="Next (→)">&raquo;</button>
+</div>
+<div id="progress"></div>
+
+<!-- Glossary popover -->
+<div id="pop" role="dialog" aria-modal="true" aria-live="polite">
+  <span class="close" title="Close">✕</span>
+  <div id="popBody"></div>
+</div>
+
+<script>
+/* ================= Core helpers, nav, math, export ================= */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const prev=id('prev'), next=id('next'), counter=id('counter'), progress=id('progress'), fsBtn=id('fs');
+  const deckTitle='G8_Squares_Roots';
+  let i=0;
+
+  function id(x){return document.getElementById(x)}
+  function renderMath(root=document){ if(window._rerenderMath) window._rerenderMath(root); }
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function confetti(x=window.innerWidth/2,y=window.innerHeight/2){
+    for(let k=0;k<20;k++){
+      const d=document.createElement('div'); d.className='confetti';
+      d.style.left=x+'px'; d.style.top=y+'px'; d.style.width='8px'; d.style.height='8px';
+      d.style.background=['#6C1D45','#C7A34F','#E8D5B7','#8a3d64'][k%4];
+      document.body.appendChild(d);
+      const dx=(Math.random()*2-1)*240, dy=(Math.random()*-1-0.3)*300, rot=Math.random()*720;
+      d.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`,opacity:0}],
+                {duration:900+Math.random()*700,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>d.remove();
+    }
+  }
+  function downloadJSON(filename, data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function downloadCSV(filename, rows){
+    const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  function show(k){
+    i=(k+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    renderMath(slides[i]);
+    if(slides[i].id==='vizSlide') drawSquareViz();
+  }
+  prev.addEventListener('click',()=>show(i-1));
+  next.addEventListener('click',()=>show(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    if(e.key==='ArrowLeft') show(i-1);
+    if(e.key.toLowerCase()==='f') toggleFS();
+  });
+  function toggleFS(){
+    const el=id('slides');
+    if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);}
+    else{(document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);}
+  }
+  fsBtn.addEventListener('click',toggleFS);
+
+  /* ---------- Glossary popover ---------- */
+  const POP=id('pop'), POP_BODY=id('popBody');
+  const GLOS={
+    sq:'<strong>Square</strong>: \\(n^2=n\\times n\\).',
+    ps:'<strong>Perfect square</strong>: a square of an integer (e.g., 1,4,9,16,25,…).',
+    rt:'<strong>Square root</strong>: \\(\\sqrt{x}\\) is a non‑negative number whose square is x.',
+    pr:'<strong>Principal root</strong>: the non‑negative root; \\(\\sqrt{25}=5\\), not −5.',
+    rad:'<strong>Radical</strong>: the \\(\\sqrt{\\ }\\) sign; the number inside is the <em>radicand</em>.',
+    simp:'<strong>Simplify radical</strong>: factor out perfect squares: \\(\\sqrt{50}=\\sqrt{25\\cdot2}=5\\sqrt2\\).',
+    est:'<strong>Estimate a root</strong>: find the two nearest perfect squares and refine between them.'
+  };
+  POP.querySelector('.close').addEventListener('click',()=>POP.style.display='none');
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('.chip[data-key]'); if(!el) return;
+    const key=el.dataset.key; if(!GLOS[key]) return;
+    POP_BODY.innerHTML=GLOS[key]; POP.style.display='block';
+    const r=el.getBoundingClientRect();
+    POP.style.left=Math.min(r.left, window.innerWidth-POP.offsetWidth-20)+'px';
+    POP.style.bottom=(window.innerHeight-r.top+10)+'px';
+    renderMath(POP_BODY);
+  });
+
+  /* ---------- Tap-to-reveal text ---------- */
+  const REV1={
+    g1:'Perfect squares: \\(1^2=1\\), \\(2^2=4\\), \\(3^2=9\\), \\(4^2=16\\), \\(5^2=25\\), \\(6^2=36\\), \\(7^2=49\\), \\(8^2=64\\), \\(9^2=81\\), \\(10^2=100\\), \\(11^2=121\\), \\(12^2=144\\), \\(13^2=169\\), \\(14^2=196\\), \\(15^2=225\\), \\(16^2=256\\), \\(17^2=289\\), \\(18^2=324\\), \\(19^2=361\\), \\(20^2=400\\).',
+    g2:'\\((n+1)^2=n^2+2n+1\\). Visual: to grow an \\(n\\times n\\) square to \\((n+1)\\times(n+1)\\), add one column of \\(n\\) squares, one row of \\(n\\) squares, and 1 more at the corner.',
+    g3:'For non‑negative numbers: \\(\\sqrt{x}<\\sqrt{y}\\iff x<y\\). So to compare roots, compare the radicands.'
+  };
+  const REV2={
+    r1:'If a square has area \\(A\\), its side length is \\(s=\\sqrt{A}\\). If a side is doubled, area quadruples: \\((2s)^2=4s^2\\).',
+    r2:'Because \\(a^2\\ge0\\), the principal root gives \\(\\sqrt{a^2}=|a|\\). Example: \\(\\sqrt{(-6)^2}=6\\).',
+    r3:'Find \\(k\\) with \\(k^2\\le n<(k+1)^2\\). Then \\(\\sqrt{n}\\) is between \\(k\\) and \\(k+1\\). Slide to the nearest tenth; square your guess to check.'
+  };
+  document.addEventListener('click',e=>{
+    const r=e.target.closest('.rev'); if(!r) return;
+    const key=r.dataset.t; const box=REV1[key]?id('revBox1'):id('revBox2'); box.innerHTML='<div class="hint">'+(REV1[key]||REV2[key])+'</div>'; renderMath(box);
+  });
+
+  /* ====================== Visual: n^2 growth ===================== */
+  const sqN=id('sqN'), sqNout=id('sqNout'), sqSout=id('sqSout'), sqDiff=id('sqDiff');
+  const canvas=id('sqcanvas');
+  function drawSquareViz(){
+    const ctx=canvas.getContext('2d'); const W=canvas.width, H=canvas.height;
+    ctx.clearRect(0,0,W,H);
+    // axes
+    ctx.strokeStyle='#6C1D45'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(50,H-40); ctx.lineTo(W-20,H-40); ctx.moveTo(50,H-40); ctx.lineTo(50,30); ctx.stroke();
+    ctx.font='14px Inter'; ctx.fillStyle='#444';
+    ctx.fillText('n', W-30, H-20); ctx.fillText('n²', 25, 40);
+    // plot squares n=1..25
+    const maxN=25, maxS=25*25;
+    function X(n){return 50+(W-90)*n/maxN}
+    function Y(s){return H-40-(H-90)*s/maxS}
+    ctx.strokeStyle='#C7A34F'; ctx.lineWidth=3; ctx.beginPath();
+    for(let n=1;n<=25;n++){
+      const x=X(n), y=Y(n*n); if(n===1) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      ctx.fillStyle='#C7A34F'; ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+    }
+    // highlight selected n
+    const n=Number(sqN.value); const x=X(n), y=Y(n*n);
+    ctx.fillStyle='#6C1D45'; ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
+    // label
+    ctx.fillStyle='#111'; ctx.fillText(`${n}²=${n*n}`, x+6, y-8);
+  }
+  function updateSq(){
+    const n=Number(sqN.value); sqNout.textContent=n; sqSout.textContent=n*n; sqDiff.textContent=2*n-1; drawSquareViz();
+  }
+  sqN.addEventListener('input',updateSq); id('sqRand').addEventListener('click',()=>{ sqN.value=Math.floor(Math.random()*25)+1; updateSq();}); updateSq();
+
+  /* ====================== Estimation Explorer ==================== */
+  const estN=id('estN'), estSlider=id('estSlider'), estGuess=id('estGuess'), estInfo=id('estInfo'), estFb=id('estFb');
+  function bounds(n){
+    const k=Math.floor(Math.sqrt(n)); return {k, low:k*k, high:(k+1)*(k+1)};
+  }
+  function setBoundsUI(n){
+    const {k,low,high}=bounds(n);
+    estSlider.min=k; estSlider.max=k+1; estSlider.step=0.1; estSlider.value=(k+0.5).toFixed(1);
+    estGuess.textContent=estSlider.value;
+    estInfo.innerHTML=`Between \\( ${low}=${k}^2 \\) and \\( ${(k+1)}^2=${high} \\) ⇒ \\( ${k} < \\sqrt{${n}} < ${k+1} \\).`;
+    renderMath(id('estimateSlide'));
+  }
+  id('estBounds').addEventListener('click',()=>{ const n=Number(estN.value); if(!Number.isFinite(n)||n<=0){estInfo.innerHTML='<span class="text-red-700">Enter a positive number.</span>'; return;} setBoundsUI(n); });
+  estSlider.addEventListener('input',()=>{ estGuess.textContent=Number(estSlider.value).toFixed(1); });
+  id('estCheck').addEventListener('click',()=>{
+    const n=Number(estN.value); if(!Number.isFinite(n)||n<=0){estFb.textContent='Enter a positive number.'; estFb.className='mt-2 h-6 font-semibold text-red-700'; return;}
+    const g=Number(estSlider.value); const trueV=Math.sqrt(n); const err=Math.abs(g-trueV);
+    estFb.textContent = `Your guess ${g.toFixed(1)} vs true value ${trueV.toFixed(3)} → error ${err.toFixed(3)}`;
+    estFb.className='mt-2 h-6 font-semibold '+(err<=0.05?'text-green-700':'text-amber-700');
+  });
+  id('estExplain').addEventListener('click',()=>{
+    const n=Number(estN.value)||45; const {k}=bounds(n);
+    estInfo.innerHTML=`<div class="hint">One‑decimal estimate: choose the tenth \\(t\\) between ${k} and ${k+1} so that \\(t^2\\) is as close to ${n} as possible. Because \\(t^2\\) grows steadily, if \\(t^2\\) is too small, slide right; if too large, slide left.</div>`; renderMath(id('estimateSlide'));
+  });
+  id('estRand').addEventListener('click',()=>{ const candidates=[5,6,7,8,10,11,12,13,15,17,18,19,21,22,23,26,27,28,30].map(x=>x*x+Math.floor(Math.random()*((2*x)+1))-x); const n=candidates[Math.floor(Math.random()*candidates.length)]; estN.value=n; setBoundsUI(n); estFb.textContent=''; });
+  id('estExportCSV').addEventListener('click',()=>downloadCSV(`${deckTitle}_estimate.csv`, [['n','guess'], [estN.value, estSlider.value]]));
+  id('estExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_estimate.json`, {n:Number(estN.value), guess:Number(estSlider.value)}));
+
+  /* ====================== Simplify radicals ======================= */
+  const srState={items:[]};
+  function largestSquareFactor(n){
+    n=Math.abs(Math.trunc(n)); let r=Math.floor(Math.sqrt(n));
+    for(let k=r;k>=2;k--) if(n%(k*k)===0) return k; return 1;
+  }
+  function simpRoot(n){
+    if(n<0) return null; if(n===0) return [0,1]; // sqrt(0)
+    const k=largestSquareFactor(n); const a=k; const b=n/(k*k); return [a,b]; // sqrt(n)=a*sqrt(b)
+  }
+  function newSRSet(){
+    const lv=id('srLevel').value; const box=id('srList'); box.innerHTML=''; const items=[];
+    function pickRad(){
+      if(lv==='easy'){ return [12,18,20,24,27,28,32,45,48,50,63,72,75,80,98][Math.floor(Math.random()*15)]; }
+      if(lv==='med'){ return [112,120,128,147,162,175,180,192,200,242,252,288][Math.floor(Math.random()*12)]; }
+      // hard: include product like 2*sqrt(18) etc. but keep format sqrt(n)
+      return [242,250,252,288,300,320,338,363,392,405,432,500][Math.floor(Math.random()*12)];
+    }
+    for(let i=0;i<6;i++){
+      const n=pickRad(); items.push(n);
+      const card=document.createElement('div'); card.className='card p-4';
+      card.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${i+1}</div>
+        <div class="text-xl mt-1">\\( \\sqrt{${n}} = \\) <input class="sra border rounded px-2 py-1 w-16" placeholder="a"> \\(\\,\\sqrt{\\ }\\) <input class="srb border rounded px-2 py-1 w-16" placeholder="b"></div>`;
+      box.appendChild(card);
+    }
+    srState.items=items; renderMath(id('simpRadSlide'));
+  }
+  id('srNew').addEventListener('click',newSRSet); newSRSet();
+  id('srCheck').addEventListener('click',()=>{
+    let ok=0; const cards=[...document.querySelectorAll('#srList .card')];
+    cards.forEach((row,idx)=>{
+      const n=srState.items[idx]; const [a,b]=simpRoot(n); const an=Number(row.querySelector('.sra').value), bn=Number(row.querySelector('.srb').value);
+      const good=(an===a && bn===b) || (a===0 && an===0); // handle 0
+      row.querySelector('.sra').style.borderColor=good?'#22c55e':'#ef4444';
+      row.querySelector('.srb').style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+    });
+    id('srFb').textContent = ok===cards.length? '✅ All simplified correctly!' : `Score: ${ok}/${cards.length}`;
+    if(ok===cards.length) confetti();
+  });
+  id('srExportCSV').addEventListener('click',()=>{
+    const rows=[['radicand','a','b']]; srState.items.forEach(n=>{ const [a,b]=simpRoot(n); rows.push([n,a,b]); }); downloadCSV(`${deckTitle}_simplify_radicals.csv`, rows);
+  });
+  id('srExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_simplify_radicals.json`, srState.items.map(n=>({n,ans:simpRoot(n)}))));
+
+  /* ====================== Evaluate expressions =================== */
+  const evState={items:[]};
+  const gcd=(a,b)=>{a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));while(b){[a,b]=[b,a%b]}return a||1};
+  function simplifyFrac(n,d){let g=gcd(n,d); if(d<0) g=-g; return [n/g,d/g]}
+  function toFracLatex(n,d){return d===1? String(n):`\\dfrac{${n}}{${d}}`}
+
+  function newEVSet(){
+    const lv=id('evLevel').value; const items=[]; const box=id('evList'); box.innerHTML='';
+    function addItem(expr, val){ items.push({expr, val}); const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl">${expr} = <input class="evAns border rounded px-2 py-1 w-28" placeholder="e.g., 49 or 7/8"></div>`; box.appendChild(row); }
+    function asFrac(x){ // represent exact simple rationals
+      const s=String(x);
+      if(Number.isInteger(x)) return [x,1];
+      const k= s.includes('.')? s.split('.')[1].length : 0; if(k>0 && k<=3){ const d=10**k; const n=Math.round(x*d); return simplifyFrac(n,d); }
+      return [x,1];
+    }
+    for(let i=0;i<6;i++){
+      if(lv==='easy'){
+        const type=Math.random();
+        if(type<0.4){ const a=2+Math.floor(Math.random()*18); addItem(`\\( (${a})^2 \\)`, asFrac(a*a)); }
+        else if(type<0.8){ const ps=[4,9,16,25,36,49,64,81,100,121,144,169,196,225,256,289,324,361,400]; const n=ps[Math.floor(Math.random()*ps.length)]; addItem(`\\( \\sqrt{${n}} \\)`, asFrac(Math.sqrt(n))); }
+        else { const a=1+Math.floor(Math.random()*9); const b=[2,3,4,5][Math.floor(Math.random()*4)]; addItem(`\\( \\left(\\dfrac{${a}}{${b}}\\right)^2 \\)`, simplifyFrac(a*a,b*b)); }
+      } else if(lv==='med'){
+        const t=Math.random();
+        if(t<0.33){ const a=1+Math.floor(Math.random()*9), b=1+Math.floor(Math.random()*9); addItem(`\\( ${a}^2 - ${b}^2 \\)`, asFrac(a*a-b*b)); }
+        else if(t<0.66){ const k=[18,20,45,75,98,200][Math.floor(Math.random()*6)]; const [A,B]=simpRoot(k); addItem(`\\( 3\\sqrt{${k}} \\)`, ['rad',3*A,B]); } // store as radical triple
+        else { const a=[-7,-6,-5,-4,4,5,6,7][Math.floor(Math.random()*8)]; addItem(`\\( \\sqrt{(${a})^2} \\)`, asFrac(Math.abs(a))); }
+      } else {
+        const t=Math.random();
+        if(t<0.34){ const a=[2,3,4,5][Math.floor(Math.random()*4)], b=[2,3,5][Math.floor(Math.random()*3)]; addItem(`\\( ( ${a}\\sqrt{${b}} )^2 \\)`, ['rad',a*a,b]); }
+        else if(t<0.68){ const k1=[12,27,48,75,108][Math.floor(Math.random()*5)], k2=[3,12,27][Math.floor(Math.random()*3)];
+          const [A1,B1]=simpRoot(k1), [A2,B2]=simpRoot(k2);
+          if(B1===B2) addItem(`\\( \\sqrt{${k1}} + \\sqrt{${k2}} \\)`, ['rad',A1+A2,B1]); else addItem(`\\( \\sqrt{${k1}} + \\sqrt{${k2}} \\)`, 'irr'); }
+        else { const a=[-8,-5,-3,3,5,8][Math.floor(Math.random()*6)]; const b=[2,3,5][Math.floor(Math.random()*3)]; addItem(`\\( |${a}| + \\sqrt{${b*b}} \\)`, asFrac(Math.abs(a)+b)); }
+      }
+    }
+    evState.items=items; renderMath(id('evalSlide'));
+  }
+  id('evNew').addEventListener('click',newEVSet); newEVSet();
+
+  function parseUserNumber(s){
+    s=String(s).trim().replace('−','-');
+    const f=s.match(/^(-?\d+)\s*\/\s*(-?\d+)$/);
+    if(f){ let n=+f[1], d=+f[2]; if(d===0) return null; const [nn,dd]=simplifyFrac(n,d); return nn/dd; }
+    const v=Number(s); if(Number.isFinite(v)) return v; return null;
+  }
+  id('evCheck').addEventListener('click',()=>{
+    let ok=0; const rows=[...document.querySelectorAll('#evList .card')];
+    rows.forEach((row,idx)=>{
+      const want=evState.items[idx].val; const inp=row.querySelector('.evAns');
+      if(Array.isArray(want)){ // ['rad',a,b]
+        const user=parseUserNumber(inp.value);
+        if(user===null){ // allow exact radicals only → mark wrong
+          inp.style.borderColor='#ef4444';
+        } else {
+          // user gave a decimal; compare approximate value
+          const approx = want[1]*Math.sqrt(want[2]);
+          const good = Math.abs(user-approx) < 1e-3;
+          inp.style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+        }
+      } else if(want==='irr'){
+        // expect "cannot simplify to like radicals" -> any numeric won't match; accept "irrational" words?
+        const txt=inp.value.trim().toLowerCase();
+        const good = (txt.includes('irr') || txt.includes('can') || txt.includes('not'));
+        inp.style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+      } else {
+        const wantNum = (want[1])? (want[0]/want[1]) : want; // fraction or integer
+        const user=parseUserNumber(inp.value);
+        const good = user!==null && Math.abs(user-wantNum) < 1e-9;
+        inp.style.borderColor=good?'#22c55e':'#ef4444'; if(good) ok++;
+      }
+    });
+    id('evFb').textContent = ok===rows.length? '✅ Excellent evaluation!' : `Score: ${ok}/${rows.length}`;
+    if(ok===rows.length) confetti();
+  });
+  id('evExportCSV').addEventListener('click',()=>{
+    const rows=[['expr','targetType/value','user']]; evState.items.forEach((it,idx)=>{ const user=document.querySelectorAll('#evList .evAns')[idx].value||''; rows.push([it.expr, JSON.stringify(it.val), user]); }); downloadCSV(`${deckTitle}_evaluate.csv`, rows);
+  });
+  id('evExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_evaluate.json`, evState.items));
+
+  /* ====================== Compare roots ========================== */
+  const cpState={items:[]};
+  function newCPSet(){
+    const lv=id('cpLevel').value; const box=id('cpList'); box.innerHTML=''; const items=[];
+    for(let i=0;i<6;i++){
+      if(lv==='easy'){
+        const m=[5,7,8,10,12,15,18,20,24,26,30][Math.floor(Math.random()*11)]; const k=[2,3,4,5,6][Math.floor(Math.random()*5)];
+        items.push({lhs:`\\sqrt{${m}}`, rhs:`${k}`, cmp: Math.sqrt(m) < k ? '<' : Math.sqrt(m) > k ? '>' : '='});
+      } else if(lv==='med'){
+        const m=[8,10,12,13,15,18,20,24,27,30,32,35][Math.floor(Math.random()*12)];
+        const n=[5,6,7,9,11,14,16,19,21,25,28,36][Math.floor(Math.random()*12)];
+        items.push({lhs:`\\sqrt{${m}}`, rhs:`\\sqrt{${n}}`, cmp: m<n?'<':m>n?'>':'='});
+      } else {
+        const m=[2,3,5,6,7,8,10,11][Math.floor(Math.random()*8)], n=[2,3,5,6,7,8,10,11][Math.floor(Math.random()*8)];
+        const neg=Math.random()<0.5; const L=neg?`-\\sqrt{${m}}`:`\\sqrt{${m}}`, R=`\\sqrt{${n}}`;
+        const cmp = (neg? -Math.sqrt(m):Math.sqrt(m)) < Math.sqrt(n) ? '<' : (neg? -Math.sqrt(m):Math.sqrt(m)) > Math.sqrt(n) ? '>' : '=';
+        items.push({lhs:L, rhs:R, cmp});
+      }
+    }
+    cpState.items=items;
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-left font-semibold text-maroon">Item ${idx+1}</div>
+        <div class="text-2xl mt-1">\\( ${o.lhs} \\)
+          <select class="cpsel border rounded px-2 py-1 mx-1">
+            <option value="?">?</option><option value="<">&lt;</option><option value=">">&gt;</option><option value="=">=</option>
+          </select>
+          \\( ${o.rhs} \\)
+        </div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('cmpSlide'));
+  }
+  id('cpNew').addEventListener('click',newCPSet); newCPSet();
+  id('cpCheck').addEventListener('click',()=>{
+    let ok=0; const rows=[...document.querySelectorAll('#cpList .card')];
+    rows.forEach((row,idx)=>{
+      const sel=row.querySelector('.cpsel').value; const want=cpState.items[idx].cmp;
+      row.querySelector('.cpsel').style.borderColor = sel===want ? '#22c55e':'#ef4444'; if(sel===want) ok++;
+    });
+    id('cpFb').textContent = ok===rows.length? '✅ All comparisons correct!' : `Score: ${ok}/${rows.length}`;
+    if(ok===rows.length) confetti();
+  });
+  id('cpExportCSV').addEventListener('click',()=>{
+    const rows=[['lhs','rhs','truth','user']]; document.querySelectorAll('#cpList .card').forEach((row,idx)=>{
+      const o=cpState.items[idx]; const sel=row.querySelector('.cpsel').value; rows.push([o.lhs,o.rhs,o.cmp,sel]);
+    }); downloadCSV(`${deckTitle}_compare.csv`, rows);
+  });
+  id('cpExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_compare.json`, cpState.items));
+
+  /* ====================== Real‑World practice ==================== */
+  const realState={items:[]};
+  function realNew(){
+    const items=[];
+    items.push({q:`A square garden has area 225 m². The side length is:`, opts:['13 m','14 m','15 m'], ans:'15 m', explain:'\\(s=\\sqrt{225}=15\\).'});
+    items.push({q:`A 13‑ft ladder leans against a wall with its base 5 ft from the wall. Approx height reached?`, opts:['11.2 ft','12 ft','12.6 ft'], ans:'12 ft', explain:'\\(h=\\sqrt{13^2-5^2}=\\sqrt{169-25}=\\sqrt{144}=12\\).'});
+    items.push({q:`A square sign has side 1.2 m. Its area is:`, opts:['1.24 m²','1.44 m²','2.4 m²'], ans:'1.44 m²', explain:'\\(A=s^2=1.2^2=1.44\\).'});
+    items.push({q:`Distance between (2,3) and (7,11) is approximately:`, opts:['9.4','8.9','10.1'], ans:'9.4', explain:'\\(\\sqrt{(5)^2+(8)^2}=\\sqrt{25+64}=\\sqrt{89}\\approx9.434\\).'});
+    realState.items=items;
+    const box=id('realList'); box.innerHTML='';
+    items.forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='card p-4';
+      row.innerHTML=`<div class="text-xl">${o.q}</div>
+        <div class="mt-1">${o.opts.map(v=>`<label class="mr-3"><input type="radio" name="rw${idx}" value="${v}"> ${v}</label>`).join(' ')}</div>
+        <div class="mt-1 text-sm text-gray-600">Reason: ${o.explain}</div>`;
+      box.appendChild(row);
+    });
+    renderMath(id('realSlide'));
+  }
+  id('realNew').addEventListener('click',realNew); realNew();
+  id('realCheck').addEventListener('click',()=>{
+    let ok=0; realState.items.forEach((o,idx)=>{ const sel=(document.querySelector(`input[name="rw${idx}"]:checked`)||{}).value||''; if(sel===o.ans) ok++;});
+    id('realFb').textContent = ok===realState.items.length? '✅ Real‑world ready!' : `Score: ${ok}/${realState.items.length}`; if(ok===realState.items.length) confetti();
+  });
+  id('realExportCSV').addEventListener('click',()=>{
+    const rows=[['question','answer','user']]; realState.items.forEach((o,idx)=>{ const sel=(document.querySelector(`input[name="rw${idx}"]:checked`)||{}).value||''; rows.push([o.q,o.ans,sel]); }); downloadCSV(`${deckTitle}_realworld.csv`, rows);
+  });
+  id('realExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_realworld.json`, realState.items));
+
+  /* ====================== Challenge Mode ========================= */
+  const chState={cur:null, streak:0, history:[]};
+  function chNew(){
+    const lv=id('chLevel').value; let prompt='', ans='', hint='';
+    if(lv==='easy'){
+      const ps=[49,64,81,100,121,144,169,196,225][Math.floor(Math.random()*9)];
+      prompt=`Compute \\( \\sqrt{${ps}} \\)`; ans=String(Math.sqrt(ps)); hint='Recall perfect squares through 20².';
+    } else if(lv==='med'){
+      const n=[72,98,108,200,242,288][Math.floor(Math.random()*6)];
+      const [a,b]=simpRoot(n);
+      prompt=`Simplify \\( \\sqrt{${n}} \\) to \\(a\\sqrt{b}\\). Type as a,b`; ans=`${a},${b}`; hint='Extract the largest square factor.';
+    } else {
+      const a=[-7,-5,-3,3,5,7][Math.floor(Math.random()*6)], b=[2,3,5,6,7,8,10,11][Math.floor(Math.random()*8)];
+      const type=Math.random();
+      if(type<0.5){ prompt=`Without a calculator, which is larger: \\( ${Math.abs(a)} \\) or \\( \\sqrt{${(Math.abs(a)+1)**2-1}} \\)? Type "left" or "right"`;
+        const lhs=Math.abs(a), rhs=Math.sqrt(((Math.abs(a)+1)**2-1)); ans = lhs>rhs? 'left':'right'; hint='Compare by squaring or bounding between squares.'; }
+      else { prompt=`Evaluate \\( \\sqrt{(${a})^2} + \\sqrt{${b^2}} \\)`; ans=String(Math.abs(a)+b); hint='Use \\(\\sqrt{a^2}=|a|\\).'; }
+    }
+    chState.cur={prompt,ans,hint}; id('chText').innerHTML=prompt; id('chAns').value=''; id('chFb').textContent=''; id('chHintBox').textContent=''; renderMath(id('challengeSlide'));
+  }
+  id('chNew').addEventListener('click',chNew); chNew();
+  id('chHint').addEventListener('click',()=>{ id('chHintBox').innerHTML=`<div class="hint">${chState.cur.hint||'Think: principal root, square factors, and bounds.'}</div>`; });
+  id('chCheck').addEventListener('click',()=>{
+    const got=id('chAns').value.trim(); const want=String(chState.cur.ans).trim();
+    const ok = got.toLowerCase()===want.toLowerCase();
+    if(ok){ chState.streak++; id('chFb').textContent='✅ Correct!'; id('chFb').className='mt-2 h-6 font-semibold text-green-700'; confetti(); chState.history.push({prompt:chState.cur.prompt, ans:want, correct:true}); chNew(); }
+    else { chState.streak=0; id('chFb').textContent='❌ Not quite.'; id('chFb').className='mt-2 h-6 font-semibold text-red-700'; chState.history.push({prompt:chState.cur.prompt, ans:want, correct:false}); }
+    id('streakOut').textContent=chState.streak;
+  });
+  id('chExportCSV').addEventListener('click',()=>{
+    const rows=[['prompt','answer','correct']]; chState.history.forEach(h=>rows.push([h.prompt,h.ans,h.correct])); downloadCSV(`${deckTitle}_challenge.csv`, rows);
+  });
+  id('chExportJSON').addEventListener('click',()=>downloadJSON(`${deckTitle}_challenge.json`, chState.history));
+
+  /* ---------- Init ---------- */
+  show(0);
+})();
+</script>
+</body>
+</html>
