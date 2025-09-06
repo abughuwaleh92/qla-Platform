@@ -10,14 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@600;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-  
-  <!-- KaTeX for Math Rendering -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
-
-  <!-- Socket.IO for real-time features -->
-  <script src="/socket.io/socket.io.js"></script>
 
   <style>
     :root{
@@ -81,6 +73,38 @@
     .progress-bar{ height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden }
     .progress-fill{ height:100%; background:linear-gradient(90deg,var(--gold),var(--maroon)); transition:width .5s ease }
 
+    .quiz-option{ padding:16px 20px; border:2px solid var(--line); border-radius:12px; cursor:pointer; transition:all .3s ease; margin:8px 0; background:#fff }
+    .quiz-option:hover{ border-color:var(--gold); background:rgba(199,163,79,.05); transform:translateY(-2px) }
+    .quiz-option.selected{ border-color:var(--maroon); background:rgba(108,29,69,.05) }
+    .quiz-option.correct{ border-color:var(--ok); background:rgba(19,111,58,.05); color:var(--ok) }
+    .quiz-option.incorrect{ border-color:var(--danger); background:rgba(220,38,38,.05); color:var(--danger) }
+
+    .video-player{
+      position:relative; width:100%; height:400px; background:#000; border-radius:12px; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .video-controls{
+      position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,.8));
+      padding:20px; display:flex; align-items:center; gap:15px; color:#fff;
+    }
+
+    .skill-badge{ 
+      display:inline-flex; align-items:center; gap:8px; padding:8px 16px; 
+      border-radius:20px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
+    }
+    .skill-assigned{ background:rgba(29,78,216,.1); color:var(--blue); border:1px solid rgba(29,78,216,.3) }
+    .skill-completed{ background:rgba(19,111,58,.1); color:var(--ok); border:1px solid rgba(19,111,58,.3) }
+    .skill-pending{ background:rgba(249,115,22,.1); color:#f97316; border:1px solid rgba(249,115,22,.3) }
+
+    .form-group{ margin-bottom:20px }
+    .form-label{ display:block; margin-bottom:8px; font-weight:600; color:var(--ink) }
+    .form-input{ 
+      width:100%; padding:12px 16px; border:2px solid var(--line); border-radius:12px; 
+      font-size:14px; transition:all .3s ease; background:#fff;
+    }
+    .form-input:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(199,163,79,.1) }
+    .form-textarea{ min-height:120px; resize:vertical }
+
     .btn{ 
       display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:12px; 
       font-weight:600; text-decoration:none; transition:all .3s ease; cursor:pointer; border:none;
@@ -89,17 +113,11 @@
     .btn-primary:hover{ background:var(--maroon2); transform:translateY(-2px) }
     .btn-secondary{ background:var(--gold); color:var(--maroon) }
     .btn-secondary:hover{ background:var(--gold2); transform:translateY(-2px) }
+    .btn-success{ background:var(--ok); color:#fff }
+    .btn-danger{ background:var(--danger); color:#fff }
 
-    .lesson-viewer{
-      position:relative; width:100%; height:600px; background:#fff; border-radius:12px; overflow:hidden;
-    }
-    .lesson-iframe{
-      width:100%; height:100%; border:none;
-    }
-
-    .video-player{
-      position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden;
-    }
+    .lesson-content{ max-height:60vh; overflow-y:auto; padding:20px }
+    .lesson-section{ margin-bottom:30px; padding:20px; border:1px solid var(--line); border-radius:12px }
 
     @keyframes slideIn{ from{transform:translateY(20px); opacity:0} to{transform:translateY(0); opacity:1} }
     .animate-slide-in{ animation:slideIn .5s ease-out }
@@ -113,12 +131,22 @@
     .notification.success{ background:var(--ok) }
     .notification.error{ background:var(--danger) }
     .notification.info{ background:var(--blue) }
+    .notification.warning{ background:var(--warning) }
 
-    .loader{
-      border:3px solid #f3f3f3; border-top:3px solid var(--maroon); border-radius:50%;
-      width:40px; height:40px; animation:spin 1s linear infinite;
+    .role-selector{ 
+      min-height:100vh; display:flex; align-items:center; justify-content:center; 
+      background:linear-gradient(135deg, var(--maroon) 0%, var(--maroon2) 100%);
     }
-    @keyframes spin{ 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+    .editor-toolbar{
+      display:flex; gap:8px; padding:12px; background:#f8f9fa; border-bottom:1px solid var(--line);
+      border-radius:12px 12px 0 0;
+    }
+    .editor-btn{
+      padding:8px 12px; border:1px solid var(--line); background:#fff; border-radius:6px;
+      cursor:pointer; transition:all .2s ease;
+    }
+    .editor-btn:hover{ background:var(--gold); color:var(--maroon) }
 
     @media (max-width: 768px) {
       .nav-tabs{ flex-direction:column }
@@ -129,35 +157,37 @@
 </head>
 <body>
 
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
-    <div class="text-center">
-      <div class="loader mx-auto mb-4"></div>
-      <h2 class="text-xl font-bold text-[var(--maroon)]">Loading QLA Mathematics LMS...</h2>
-    </div>
-  </div>
-
-  <!-- Login Screen -->
-  <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--maroon)] to-[var(--maroon2)] hidden">
-    <div class="card p-8 max-w-md w-full mx-4">
-      <div class="text-center">
-        <div class="logo-tile mx-auto mb-6">
-          <div class="w-20 h-20 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-2xl">QLA</div>
+  <!-- Role Selection Screen -->
+  <div id="roleSelector" class="role-selector">
+    <div class="text-center text-white">
+      <div class="logo-tile mb-8">
+        <div class="w-20 h-20 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-2xl">QLA</div>
+      </div>
+      <h1 class="text-4xl font-bold mb-4" style="font-family:Poppins">Mathematics Learning Platform</h1>
+      <p class="text-lg opacity-90 mb-12">Qatar Leadership Academy • Qatar Foundation</p>
+      
+      <div class="grid gap-8 md:grid-cols-2 max-w-2xl mx-auto px-4">
+        <div class="card p-8 text-center cursor-pointer hover:scale-105 transition-transform" onclick="selectRole('student')">
+          <div class="w-24 h-24 bg-gradient-to-r from-[var(--blue)] to-[var(--purple)] rounded-full mx-auto mb-6 flex items-center justify-center text-white text-4xl">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-[var(--maroon)] mb-3">Student Portal</h3>
+          <p class="text-gray-600">Access lessons, practice problems, and track your progress</p>
         </div>
-        <h1 class="text-3xl font-bold text-[var(--maroon)] mb-2">Mathematics LMS</h1>
-        <p class="text-gray-600 mb-8">Qatar Leadership Academy</p>
         
-        <a href="/auth/google" class="btn btn-primary w-full justify-center">
-          <i class="fab fa-google"></i>
-          Sign in with Google
-        </a>
-        <p class="text-sm text-gray-500 mt-4">Use your @qla.qfschools.qa email</p>
+        <div class="card p-8 text-center cursor-pointer hover:scale-105 transition-transform" onclick="selectRole('teacher')">
+          <div class="w-24 h-24 bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] rounded-full mx-auto mb-6 flex items-center justify-center text-white text-4xl">
+            <i class="fas fa-chalkboard-teacher"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-[var(--maroon)] mb-3">Teacher Portal</h3>
+          <p class="text-gray-600">Manage lessons, assign skills, and monitor student progress</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Main Application -->
-  <div id="app" class="hidden">
+  <!-- Student Portal -->
+  <div id="studentPortal" class="portal hidden">
     <header class="hero shadow-2xl">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="flex items-center justify-between py-6">
@@ -166,17 +196,194 @@
               <div class="w-16 h-16 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-xl">QLA</div>
             </span>
             <div>
-              <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins">
-                <span id="portalTitle">Mathematics LMS</span>
-              </h1>
-              <p class="text-sm opacity-90 mt-1">Qatar Leadership Academy</p>
+              <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins">Student Portal</h1>
+              <p class="text-sm opacity-90 mt-1">Mathematics Learning Platform</p>
             </div>
           </div>
           
           <div class="flex items-center gap-4">
             <div class="text-right">
-              <div class="font-semibold" id="userName">Loading...</div>
-              <div class="text-xs opacity-80" id="userRole">...</div>
+              <div class="font-semibold" id="studentName">Student Name</div>
+              <div class="text-xs opacity-80">Grade <span id="studentGrade">7</span></div>
+            </div>
+            <button onclick="logout()" class="bg-white/10 backdrop-blur rounded-full p-2 hover:bg-white/20 transition-colors">
+              <i class="fas fa-sign-out-alt text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="pb-6 flex flex-col gap-4">
+          <div class="nav-tabs" role="tablist">
+            <button class="nav-tab active" data-tab="dashboard"><i class="fas fa-home mr-2"></i>Dashboard</button>
+            <button class="nav-tab" data-tab="lessons"><i class="fas fa-book mr-2"></i>Lessons</button>
+            <button class="nav-tab" data-tab="practice"><i class="fas fa-dumbbell mr-2"></i>Practice</button>
+            <button class="nav-tab" data-tab="skills"><i class="fas fa-star mr-2"></i>Skills</button>
+            <button class="nav-tab" data-tab="progress"><i class="fas fa-chart-line mr-2"></i>Progress</button>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <select id="gradeSelect" class="bg-white/10 backdrop-blur border border-white/20 text-white rounded-lg px-3 py-2 font-semibold">
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+            </select>
+            <div class="text-sm bg-white/10 backdrop-blur rounded-lg px-4 py-2">
+              <i class="fas fa-clock mr-2"></i>Study Time: <span id="totalStudyTime">0h 0m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Student Dashboard -->
+      <section id="student-dashboard" class="tab-content">
+        <div class="grid gap-6 md:grid-cols-4 mb-8">
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold">
+              <span id="overallProgress">0%</span>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Progress</h3>
+            <div class="progress-bar">
+              <div class="progress-fill" id="overallProgressBar" style="width:0%"></div>
+            </div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-trophy text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Completed</h3>
+            <div class="text-3xl font-bold text-[var(--ok)]" id="completedCount">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-star text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Skills</h3>
+            <div class="text-3xl font-bold text-[var(--blue)]" id="skillsCount">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-fire text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Streak</h3>
+            <div class="text-3xl font-bold text-[var(--purple)]" id="streakCount">0</div>
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-3 mb-8">
+          <div class="lg:col-span-2">
+            <div class="card p-6">
+              <h3 class="font-bold text-xl mb-4"><i class="fas fa-rocket mr-2 text-[var(--gold)]"></i>Continue Learning</h3>
+              <div id="continueLesson" class="space-y-4">
+                <!-- Continue lesson content -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-target mr-2 text-[var(--maroon)]"></i>Assigned Skills</h3>
+            <div id="assignedSkills" class="space-y-3">
+              <!-- Assigned skills content -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Student Lessons -->
+      <section id="student-lessons" class="tab-content hidden">
+        <div class="card p-5 mb-6">
+          <input id="lessonSearch" type="search" placeholder="Search lessons..." 
+                 class="w-full form-input"/>
+        </div>
+        <div id="lessonsContent"></div>
+      </section>
+
+      <!-- Student Practice -->
+      <section id="student-practice" class="tab-content hidden">
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div class="card p-6 text-center cursor-pointer" onclick="startPracticeMode('arithmetic')">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-3xl">
+              <i class="fas fa-calculator"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Arithmetic</h3>
+            <p class="text-sm text-gray-600 mb-4">Basic operations and calculations</p>
+            <button class="btn btn-primary">Start Practice</button>
+          </div>
+
+          <div class="card p-6 text-center cursor-pointer" onclick="startPracticeMode('algebra')">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--blue)] to-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white text-3xl">
+              <i class="fas fa-function"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Algebra</h3>
+            <p class="text-sm text-gray-600 mb-4">Equations and expressions</p>
+            <button class="btn btn-primary">Start Practice</button>
+          </div>
+
+          <div class="card p-6 text-center cursor-pointer" onclick="startPracticeMode('geometry')">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--ok)] to-emerald-400 mx-auto mb-4 flex items-center justify-center text-white text-3xl">
+              <i class="fas fa-shapes"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Geometry</h3>
+            <p class="text-sm text-gray-600 mb-4">Shapes, angles, and measurements</p>
+            <button class="btn btn-primary">Start Practice</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Student Skills -->
+      <section id="student-skills" class="tab-content hidden">
+        <div class="card p-6">
+          <h3 class="font-bold text-xl mb-6"><i class="fas fa-star mr-2 text-[var(--gold)]"></i>Your Skills Progress</h3>
+          <div id="skillsProgress" class="space-y-4"></div>
+        </div>
+      </section>
+
+      <!-- Student Progress -->
+      <section id="student-progress" class="tab-content hidden">
+        <div class="grid gap-6">
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-chart-line mr-2 text-[var(--gold)]"></i>Learning Analytics</h3>
+            <div id="progressChart" class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+              <p class="text-gray-500">Progress visualization</p>
+            </div>
+          </div>
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Achievements</h4>
+              <div id="achievementsList"></div>
+            </div>
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Statistics</h4>
+              <div id="studyStats"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Teacher Portal -->
+  <div id="teacherPortal" class="portal hidden">
+    <header class="hero shadow-2xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="flex items-center justify-between py-6">
+          <div class="flex items-center gap-4">
+            <span class="logo-tile">
+              <div class="w-16 h-16 bg-[var(--maroon)] rounded-lg flex items-center justify-center text-white font-bold text-xl">QLA</div>
+            </span>
+            <div>
+              <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight" style="font-family:Poppins">Teacher Portal</h1>
+              <p class="text-sm opacity-90 mt-1">Mathematics Learning Management</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <div class="font-semibold" id="teacherName">Mr. Mohammad Abu Ghuwaleh</div>
+              <div class="text-xs opacity-80">Mathematics Teacher</div>
             </div>
             <button onclick="logout()" class="bg-white/10 backdrop-blur rounded-full p-2 hover:bg-white/20 transition-colors">
               <i class="fas fa-sign-out-alt text-xl"></i>
@@ -185,85 +392,256 @@
         </div>
 
         <div class="pb-6">
-          <div class="nav-tabs" role="tablist" id="navTabs">
-            <!-- Navigation tabs will be inserted here -->
+          <div class="nav-tabs" role="tablist">
+            <button class="nav-tab active" data-tab="teacher-dashboard"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</button>
+            <button class="nav-tab" data-tab="lesson-management"><i class="fas fa-book-open mr-2"></i>Lessons</button>
+            <button class="nav-tab" data-tab="skill-assignment"><i class="fas fa-tasks mr-2"></i>Skills</button>
+            <button class="nav-tab" data-tab="student-management"><i class="fas fa-users mr-2"></i>Students</button>
+            <button class="nav-tab" data-tab="analytics"><i class="fas fa-chart-bar mr-2"></i>Analytics</button>
           </div>
         </div>
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="mainContent">
-      <!-- Dynamic content will be loaded here -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Teacher Dashboard -->
+      <section id="teacher-dashboard" class="tab-content">
+        <div class="grid gap-6 md:grid-cols-4 mb-8">
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-users text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Total Students</h3>
+            <div class="text-3xl font-bold text-[var(--blue)]" id="totalStudents">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-book text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Active Lessons</h3>
+            <div class="text-3xl font-bold text-[var(--ok)]" id="activeLessons">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--warning)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-tasks text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Assigned Skills</h3>
+            <div class="text-3xl font-bold text-[var(--warning)]" id="assignedSkillsCount">0</div>
+          </div>
+          
+          <div class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
+              <i class="fas fa-chart-line text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Avg Progress</h3>
+            <div class="text-3xl font-bold text-[var(--purple)]" id="avgProgress">0%</div>
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2 mb-8">
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-clock mr-2 text-[var(--maroon)]"></i>Recent Activity</h3>
+            <div id="recentActivity" class="space-y-3"></div>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4"><i class="fas fa-exclamation-triangle mr-2 text-[var(--warning)]"></i>Attention Needed</h3>
+            <div id="attentionNeeded" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lesson Management -->
+      <section id="lesson-management" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Lesson Management</h2>
+          <button onclick="createNewLesson()" class="btn btn-primary">
+            <i class="fas fa-plus"></i>Create New Lesson
+          </button>
+        </div>
+        
+        <div class="grid gap-6">
+          <div class="card p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-lg">Existing Lessons</h3>
+              <select id="filterGrade" class="form-input w-auto">
+                <option value="">All Grades</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+              </select>
+            </div>
+            <div id="lessonsList" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Skill Assignment -->
+      <section id="skill-assignment" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Skill Assignment</h2>
+          <button onclick="createNewSkill()" class="btn btn-primary">
+            <i class="fas fa-plus"></i>Create New Skill
+          </button>
+        </div>
+        
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="card p-6">
+            <h3 class="font-bold text-lg mb-4">Available Skills</h3>
+            <div id="availableSkills" class="space-y-3"></div>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="font-bold text-lg mb-4">Assign to Students</h3>
+            <div id="skillAssignment" class="space-y-4"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Student Management -->
+      <section id="student-management" class="tab-content hidden">
+        <div class="card p-6">
+          <h3 class="font-bold text-xl mb-4">Student Overview</h3>
+          <div id="studentsTable" class="overflow-x-auto"></div>
+        </div>
+      </section>
+
+      <!-- Analytics -->
+      <section id="analytics" class="tab-content hidden">
+        <div class="grid gap-6">
+          <div class="card p-6">
+            <h3 class="font-bold text-xl mb-4">Class Performance Analytics</h3>
+            <div id="analyticsChart" class="h-80 bg-gray-50 rounded-lg flex items-center justify-center">
+              <p class="text-gray-500">Analytics visualization</p>
+            </div>
+          </div>
+          
+          <div class="grid gap-6 md:grid-cols-3">
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Top Performers</h4>
+              <div id="topPerformers" class="space-y-3"></div>
+            </div>
+            
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Struggling Students</h4>
+              <div id="strugglingStudents" class="space-y-3"></div>
+            </div>
+            
+            <div class="card p-6">
+              <h4 class="font-bold text-lg mb-4">Popular Lessons</h4>
+              <div id="popularLessons" class="space-y-3"></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
-  <!-- Lesson Viewer Modal -->
+  <!-- Enhanced Lesson Modal -->
   <div id="lessonModal" class="modal">
-    <div class="modal-content w-full max-w-7xl mx-4 p-0">
-      <div class="flex items-center justify-between p-4 border-b">
-        <h2 id="lessonTitle" class="text-2xl font-bold"></h2>
-        <button onclick="closeLessonModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="flex h-[80vh]">
-        <!-- Lesson Content -->
-        <div class="flex-1 overflow-hidden">
-          <iframe id="lessonFrame" class="lesson-iframe" src=""></iframe>
+    <div class="modal-content w-full max-w-6xl mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 id="lessonTitle" class="text-2xl font-bold"></h2>
+          <button onclick="closeLessonModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
         
-        <!-- Sidebar -->
-        <div class="w-80 border-l p-4 overflow-y-auto">
-          <div class="space-y-4">
-            <!-- Video Section -->
-            <div class="card p-4">
-              <h4 class="font-bold mb-3">Video Lesson</h4>
-              <div id="videoContainer" class="video-player bg-gray-100 flex items-center justify-center">
-                <i class="fas fa-play-circle text-6xl text-gray-400"></i>
+        <div class="grid gap-6 lg:grid-cols-3">
+          <!-- Video Section -->
+          <div class="lg:col-span-2">
+            <div class="video-player mb-6">
+              <div id="videoContent" class="w-full h-full flex items-center justify-center text-white">
+                <div class="text-center">
+                  <i class="fas fa-play-circle text-6xl mb-4"></i>
+                  <p class="text-lg">Click to start lesson video</p>
+                </div>
               </div>
-              <div class="mt-2">
-                <div class="progress-bar">
+              <div class="video-controls">
+                <button id="playBtn" class="btn btn-secondary text-sm">
+                  <i class="fas fa-play"></i>
+                </button>
+                <div class="progress-bar flex-1">
                   <div class="progress-fill" id="videoProgress" style="width:0%"></div>
                 </div>
-                <div class="text-sm text-gray-600 mt-1">
-                  Progress: <span id="videoProgressText">0%</span>
-                </div>
+                <span id="videoTime" class="text-sm">0:00 / 0:00</span>
               </div>
             </div>
             
-            <!-- Progress Overview -->
-            <div class="card p-4">
-              <h4 class="font-bold mb-3">Lesson Progress</h4>
-              <div class="space-y-2">
-                <div class="flex justify-between text-sm">
-                  <span>Slides Viewed</span>
-                  <span id="slidesProgress">0/0</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span>Activities Completed</span>
-                  <span id="activitiesProgress">0/0</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span>Time Spent</span>
-                  <span id="timeSpent">0m</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Actions -->
-            <div class="space-y-2">
-              <button onclick="startAssessment()" class="btn btn-primary w-full">
-                <i class="fas fa-clipboard-check"></i>Take Assessment
-              </button>
-              <button onclick="practiceProblems()" class="btn btn-secondary w-full">
-                <i class="fas fa-dumbbell"></i>Practice Problems
-              </button>
-              <button onclick="askQuestion()" class="btn w-full bg-[var(--purple)] text-white">
-                <i class="fas fa-question"></i>Ask Question
-              </button>
+            <!-- Lesson Content -->
+            <div class="lesson-content">
+              <div id="lessonSections"></div>
             </div>
           </div>
+          
+          <!-- Progress Sidebar -->
+          <div class="space-y-6">
+            <div class="card p-4">
+              <h4 class="font-bold mb-3">Lesson Progress</h4>
+              <div class="space-y-3">
+                <div class="flex justify-between text-sm">
+                  <span>Video Watched</span>
+                  <span id="videoProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="videoProgressBar" style="width:0%"></div>
+                </div>
+                
+                <div class="flex justify-between text-sm">
+                  <span>Content Read</span>
+                  <span id="contentProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="contentProgressBar" style="width:0%"></div>
+                </div>
+                
+                <div class="flex justify-between text-sm">
+                  <span>Practice Complete</span>
+                  <span id="practiceProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="practiceProgressBar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card p-4">
+              <h4 class="font-bold mb-3">Quick Actions</h4>
+              <div class="space-y-2">
+                <button onclick="startPracticeInLesson()" class="btn btn-secondary w-full text-sm">
+                  <i class="fas fa-dumbbell"></i>Practice Problems
+                </button>
+                <button onclick="takeAssessment()" class="btn btn-primary w-full text-sm">
+                  <i class="fas fa-clipboard-check"></i>Take Assessment
+                </button>
+                <button onclick="askQuestion()" class="btn w-full text-sm" style="background:var(--purple); color:white">
+                  <i class="fas fa-question"></i>Ask Question
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="flex justify-between mt-6 pt-6 border-t border-gray-200">
+          <button id="prevLessonBtn" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>Previous
+          </button>
+          
+          <div class="flex gap-3">
+            <button id="saveProgressBtn" class="btn" style="background:var(--warning); color:white">
+              <i class="fas fa-save"></i>Save Progress
+            </button>
+            <button id="completeAssessmentBtn" class="btn btn-primary">
+              <i class="fas fa-clipboard-check"></i>Complete Assessment
+            </button>
+          </div>
+          
+          <button id="nextLessonBtn" class="btn btn-primary">
+            Next<i class="fas fa-arrow-right ml-2"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -271,857 +649,1344 @@
 
   <!-- Assessment Modal -->
   <div id="assessmentModal" class="modal">
-    <div class="modal-content w-full max-w-4xl mx-4 p-6">
-      <div class="flex items-center justify-between mb-6">
-        <h2 id="assessmentTitle" class="text-2xl font-bold">Assessment</h2>
-        <div class="text-sm text-gray-600">
-          Question <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span>
-        </div>
-      </div>
-      
-      <div id="assessmentContent" class="min-h-[300px]">
-        <!-- Assessment questions will be loaded here -->
-      </div>
-      
-      <div class="flex justify-between mt-6 pt-6 border-t">
-        <button id="prevQuestionBtn" onclick="previousQuestion()" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i>Previous
-        </button>
-        
-        <div class="text-center">
-          <div class="text-sm text-gray-600">Time Remaining</div>
-          <div class="text-lg font-bold" id="assessmentTimer">15:00</div>
+    <div class="modal-content w-full max-w-4xl mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 id="assessmentTitle" class="text-2xl font-bold">Lesson Assessment</h2>
+          <div class="text-sm text-gray-600">
+            Question <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span>
+          </div>
         </div>
         
-        <button id="nextQuestionBtn" onclick="nextQuestion()" class="btn btn-primary">
-          Next<i class="fas fa-arrow-right ml-2"></i>
-        </button>
+        <div id="assessmentContent" class="space-y-6">
+          <!-- Assessment questions will be loaded here -->
+        </div>
+        
+        <div class="flex justify-between mt-6 pt-6 border-t border-gray-200">
+          <button id="prevQuestionBtn" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>Previous
+          </button>
+          
+          <div class="text-center">
+            <div class="text-sm text-gray-600 mb-2">Time Remaining</div>
+            <div class="text-lg font-bold" id="assessmentTimer">15:00</div>
+          </div>
+          
+          <button id="nextQuestionBtn" class="btn btn-primary">
+            Next<i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+        
+        <div class="mt-4 text-center">
+          <button id="submitAssessmentBtn" class="btn btn-success hidden">
+            <i class="fas fa-check"></i>Submit Assessment
+          </button>
+        </div>
       </div>
-      
-      <div class="mt-4 text-center">
-        <button id="submitAssessmentBtn" onclick="submitAssessment()" class="btn bg-[var(--ok)] text-white hidden">
-          <i class="fas fa-check"></i>Submit Assessment
-        </button>
+    </div>
+  </div>
+
+  <!-- Lesson Editor Modal (Teacher) -->
+  <div id="lessonEditorModal" class="modal">
+    <div class="modal-content w-full max-w-6xl mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 id="editorTitle" class="text-2xl font-bold">Lesson Editor</h2>
+          <button onclick="closeLessonEditor()" class="text-gray-500 hover:text-gray-700 text-2xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <form id="lessonForm" class="space-y-6">
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="form-group">
+              <label class="form-label">Lesson Title</label>
+              <input type="text" id="lessonTitleInput" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Grade Level</label>
+              <select id="lessonGrade" class="form-input" required>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Video URL</label>
+            <input type="url" id="lessonVideoURL" class="form-input" placeholder="https://...">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Lesson Content</label>
+            <div class="editor-toolbar">
+              <button type="button" class="editor-btn" onclick="formatText('bold')"><i class="fas fa-bold"></i></button>
+              <button type="button" class="editor-btn" onclick="formatText('italic')"><i class="fas fa-italic"></i></button>
+              <button type="button" class="editor-btn" onclick="formatText('underline')"><i class="fas fa-underline"></i></button>
+              <button type="button" class="editor-btn" onclick="insertList()"><i class="fas fa-list"></i></button>
+              <button type="button" class="editor-btn" onclick="insertLink()"><i class="fas fa-link"></i></button>
+            </div>
+            <textarea id="lessonContent" class="form-input form-textarea" style="border-radius:0 0 12px 12px; border-top:none"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Practice Problems (JSON format)</label>
+            <textarea id="practiceProblems" class="form-input form-textarea" placeholder='[{"question":"...", "options":["a","b","c","d"], "correct":0, "explanation":"..."}]'></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Assessment Questions (JSON format)</label>
+            <textarea id="assessmentQuestions" class="form-input form-textarea" placeholder='[{"question":"...", "options":["a","b","c","d"], "correct":0, "points":10}]'></textarea>
+          </div>
+          
+          <div class="flex justify-between">
+            <button type="button" onclick="previewLesson()" class="btn btn-secondary">
+              <i class="fas fa-eye"></i>Preview
+            </button>
+            
+            <div class="flex gap-3">
+              <button type="button" onclick="saveLessonDraft()" class="btn" style="background:var(--warning); color:white">
+                <i class="fas fa-save"></i>Save Draft
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check"></i>Publish Lesson
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skill Assignment Modal (Teacher) -->
+  <div id="skillModal" class="modal">
+    <div class="modal-content w-full max-w-2xl mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 id="skillModalTitle" class="text-2xl font-bold">Assign Skill</h2>
+          <button onclick="closeSkillModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <form id="skillForm" class="space-y-6">
+          <div class="form-group">
+            <label class="form-label">Skill Name</label>
+            <input type="text" id="skillName" class="form-input" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="skillDescription" class="form-input form-textarea"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Target Grade</label>
+            <select id="skillGrade" class="form-input">
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+              <option value="both">Both Grades</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Difficulty Level</label>
+            <select id="skillDifficulty" class="form-input">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Assign to Students</label>
+            <div id="studentsList" class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+              <!-- Students checkboxes will be loaded here -->
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" id="skillDueDate" class="form-input">
+          </div>
+          
+          <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeSkillModal()" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-tasks"></i>Assign Skill
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
   <script>
-    // Global variables
-    let socket = null;
+    // Global application state
     let currentUser = null;
-    let currentLesson = null;
-    let currentAssessment = null;
-    let assessmentTimer = null;
-    let lessonStartTime = null;
+    let currentRole = null;
+    let appData = {
+      students: [
+        { id: 1, name: "Ahmad Al-Rashid", grade: 7, progress: 65, studyTime: 240, completedLessons: 12, skills: [] },
+        { id: 2, name: "Fatima Al-Zahra", grade: 7, progress: 82, studyTime: 320, completedLessons: 18, skills: [] },
+        { id: 3, name: "Omar Al-Mansouri", grade: 8, progress: 71, studyTime: 280, completedLessons: 15, skills: [] },
+        { id: 4, name: "Aisha Al-Thani", grade: 8, progress: 89, studyTime: 380, completedLessons: 22, skills: [] }
+      ],
+      lessons: {},
+      skills: [],
+      assessments: {},
+      settings: {}
+    };
+
+    // Lesson content database
+    const lessonDatabase = {
+      "7-1-0": {
+        title: "Number System Overview",
+        grade: 7,
+        unit: 1,
+        videoUrl: "https://example.com/video1",
+        content: `
+          <div class="lesson-section">
+            <h3>Understanding Number Systems</h3>
+            <p>Numbers are the foundation of mathematics. Let's explore different types of numbers:</p>
+            <ul>
+              <li><strong>Natural Numbers:</strong> 1, 2, 3, 4, ... (counting numbers)</li>
+              <li><strong>Whole Numbers:</strong> 0, 1, 2, 3, 4, ... (natural numbers + zero)</li>
+              <li><strong>Integers:</strong> ..., -2, -1, 0, 1, 2, ... (positive and negative whole numbers)</li>
+              <li><strong>Rational Numbers:</strong> Numbers that can be expressed as a/b where b ≠ 0</li>
+              <li><strong>Irrational Numbers:</strong> Numbers that cannot be expressed as fractions (like π, √2)</li>
+            </ul>
+          </div>
+          
+          <div class="lesson-section">
+            <h3>Examples and Practice</h3>
+            <p>Let's look at some examples:</p>
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p><strong>Example 1:</strong> Is 0.5 a rational number?</p>
+              <p><strong>Solution:</strong> Yes! 0.5 = 1/2, so it can be expressed as a fraction.</p>
+            </div>
+          </div>
+        `,
+        practiceProblems: [
+          {
+            question: "Which of the following is an irrational number?",
+            options: ["1/3", "0.25", "√2", "2/5"],
+            correct: 2,
+            explanation: "√2 cannot be expressed as a fraction, making it irrational."
+          },
+          {
+            question: "What type of number is -7?",
+            options: ["Natural", "Whole", "Integer", "Irrational"],
+            correct: 2,
+            explanation: "-7 is an integer (negative whole number)."
+          }
+        ],
+        assessment: [
+          {
+            question: "Classify the number 3.14159...",
+            options: ["Rational", "Irrational", "Integer", "Whole"],
+            correct: 1,
+            points: 10,
+            explanation: "π (pi) is an irrational number as it cannot be expressed as a fraction."
+          },
+          {
+            question: "Which set contains only rational numbers?",
+            options: ["1/2, √3, 0.5", "2, 1/3, 0.75", "π, √2, 1.5", "√4, √9, √16"],
+            correct: 1,
+            points: 15,
+            explanation: "2, 1/3, and 0.75 can all be expressed as fractions."
+          }
+        ]
+      }
+    };
+
+    // Grade content structure
+    const grade7Units = [
+      {
+        num: 1, name: "Unit 1 — Numbers; Properties of Numbers & Fractions", when: "Sep–Nov 2025 (9 wks)",
+        lessons: [
+          "Number System Overview (Rational & Irrational Numbers)",
+          "Prime Factorization Toolkit (Factors/Multiples • Prime/Composite • Factor Trees • HCF/LCM)",
+          "Comparing & Simplifying Rational Numbers",
+          "Add/Sub across Rationals",
+          "Multiply/Divide across Rationals",
+          "Absolute Value of Numbers",
+          "Applications & Word Problems",
+          "BEDMAS with Rationals"
+        ]
+      },
+      {
+        num: 2, name: "Unit 2 — Expressions (Linear Expressions)", when: "Nov–Dec 2025 (3 wks)",
+        lessons: [
+          "Rules for Writing Algebraic Expressions",
+          "Simplify by Collecting Like Terms",
+          "Algebraic Products",
+          "Evaluating Algebraic Expressions",
+          "Expanding Brackets",
+          "Factorizing Expressions"
+        ]
+      }
+    ];
+
+    const grade8Units = [
+      {
+        num: 1, name: "Unit 1 — The Number System",
+        lessons: [
+          "Review of BEDMAS & absolute value",
+          "Converting recurring decimals",
+          "Rounding numbers",
+          "Squares & roots",
+          "Operations on fractions"
+        ]
+      }
+    ];
 
     // Initialize application
-    async function init() {
-      try {
-        // Check authentication status
-        const response = await fetch('/api/auth/status');
-        const data = await response.json();
+    function init() {
+      loadAppData();
+      showRoleSelector();
+    }
 
-        if (data.authenticated) {
-          currentUser = data.user;
-          initializeApp();
-        } else {
-          showLoginScreen();
-        }
-      } catch (error) {
-        console.error('Initialization error:', error);
-        showLoginScreen();
+    function loadAppData() {
+      const saved = localStorage.getItem('qla_app_data');
+      if (saved) {
+        Object.assign(appData, JSON.parse(saved));
       }
     }
 
-    function showLoginScreen() {
-      document.getElementById('loadingScreen').classList.add('hidden');
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('app').classList.add('hidden');
+    function saveAppData() {
+      localStorage.setItem('qla_app_data', JSON.stringify(appData));
     }
 
-    function initializeApp() {
-      document.getElementById('loadingScreen').classList.add('hidden');
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
+    function showRoleSelector() {
+      document.getElementById('roleSelector').classList.remove('hidden');
+      document.getElementById('studentPortal').classList.add('hidden');
+      document.getElementById('teacherPortal').classList.add('hidden');
+    }
 
-      // Initialize WebSocket
-      if (typeof io !== 'undefined') {
-        socket = io();
-      }
+    function selectRole(role) {
+      currentRole = role;
+      document.getElementById('roleSelector').classList.add('hidden');
       
-      // Set up user interface
-      document.getElementById('userName').textContent = currentUser.name;
-      document.getElementById('userRole').textContent = 
-        currentUser.role === 'teacher' ? 'Teacher' : `Grade ${currentUser.grade} Student`;
-      
-      // Set up navigation based on role
-      if (currentUser.role === 'teacher') {
-        setupTeacherPortal();
+      if (role === 'student') {
+        initStudentPortal();
       } else {
-        setupStudentPortal();
+        initTeacherPortal();
       }
+    }
 
-      // Initialize KaTeX
-      if (window.renderMathInElement) {
-        renderMathInElement(document.body, {
-          delimiters: [
-            {left: '$$', right: '$$', display: true},
-            {left: '\\[', right: '\\]', display: true},
-            {left: '\\(', right: '\\)', display: false}
-          ],
-          throwOnError: false
+    function logout() {
+      currentUser = null;
+      currentRole = null;
+      showRoleSelector();
+    }
+
+    // Student Portal Functions
+    function initStudentPortal() {
+      document.getElementById('studentPortal').classList.remove('hidden');
+      // For demo, use current user or create default
+      if (!currentUser || currentUser.role !== 'student') {
+        // Create a demo student if none exists
+        currentUser = createDemoStudent();
+      }
+      
+      setupStudentEventListeners();
+      updateStudentDashboard();
+      renderStudentLessons();
+      showStudentTab('dashboard');
+    }
+
+    function createDemoStudent() {
+      return {
+        id: 'STU001',
+        name: 'Demo Student',
+        email: googleUser ? googleUser.email : 'demo@qla.qfschools.qa',
+        role: 'student',
+        grade: 7,
+        progress: 25,
+        studyTime: 120,
+        completedLessons: ['7-1-0'],
+        skills: []
+      };
+    }
+
+    function setupStudentEventListeners() {
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab.replace('student-', '');
+          showStudentTab(tabName);
         });
-      }
-    }
-
-    function setupStudentPortal() {
-      document.getElementById('portalTitle').textContent = 'Student Portal';
-      
-      const navTabs = `
-        <button class="nav-tab active" onclick="showTab('dashboard')">
-          <i class="fas fa-home mr-2"></i>Dashboard
-        </button>
-        <button class="nav-tab" onclick="showTab('lessons')">
-          <i class="fas fa-book mr-2"></i>Lessons
-        </button>
-        <button class="nav-tab" onclick="showTab('practice')">
-          <i class="fas fa-dumbbell mr-2"></i>Practice
-        </button>
-        <button class="nav-tab" onclick="showTab('skills')">
-          <i class="fas fa-star mr-2"></i>Skills
-        </button>
-        <button class="nav-tab" onclick="showTab('progress')">
-          <i class="fas fa-chart-line mr-2"></i>Progress
-        </button>
-      `;
-      
-      document.getElementById('navTabs').innerHTML = navTabs;
-      loadStudentDashboard();
-    }
-
-    function setupTeacherPortal() {
-      document.getElementById('portalTitle').textContent = 'Teacher Portal';
-      
-      const navTabs = `
-        <button class="nav-tab active" onclick="showTab('dashboard')">
-          <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
-        </button>
-        <button class="nav-tab" onclick="showTab('lessons')">
-          <i class="fas fa-book-open mr-2"></i>Lessons
-        </button>
-        <button class="nav-tab" onclick="showTab('students')">
-          <i class="fas fa-users mr-2"></i>Students
-        </button>
-        <button class="nav-tab" onclick="showTab('skills')">
-          <i class="fas fa-tasks mr-2"></i>Skills
-        </button>
-        <button class="nav-tab" onclick="showTab('analytics')">
-          <i class="fas fa-chart-bar mr-2"></i>Analytics
-        </button>
-      `;
-      
-      document.getElementById('navTabs').innerHTML = navTabs;
-      loadTeacherDashboard();
-    }
-
-    async function loadStudentDashboard() {
-      try {
-        // Fetch user progress
-        const progressResponse = await fetch('/api/progress/overview');
-        const progress = await progressResponse.json();
-        
-        // Fetch lessons
-        const lessonsResponse = await fetch(`/api/lessons?grade=${currentUser.grade}`);
-        const lessons = await lessonsResponse.json();
-        
-        // Fetch skills
-        const skillsResponse = await fetch('/api/skills');
-        const skills = await skillsResponse.json();
-        
-        const completionRate = progress.total_lessons > 0 
-          ? Math.round((progress.completed_lessons / progress.total_lessons) * 100) 
-          : 0;
-        
-        const content = `
-          <div class="grid gap-6 md:grid-cols-4 mb-8">
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--maroon)] mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold">
-                ${completionRate}%
-              </div>
-              <h3 class="font-bold text-lg mb-2">Progress</h3>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width:${completionRate}%"></div>
-              </div>
-            </div>
-            
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
-                <i class="fas fa-trophy text-2xl"></i>
-              </div>
-              <h3 class="font-bold text-lg mb-2">Completed</h3>
-              <div class="text-3xl font-bold text-[var(--ok)]">${progress.completed_lessons || 0}</div>
-            </div>
-            
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
-                <i class="fas fa-star text-2xl"></i>
-              </div>
-              <h3 class="font-bold text-lg mb-2">Skills</h3>
-              <div class="text-3xl font-bold text-[var(--blue)]">${skills.length}</div>
-            </div>
-            
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
-                <i class="fas fa-fire text-2xl"></i>
-              </div>
-              <h3 class="font-bold text-lg mb-2">Streak</h3>
-              <div class="text-3xl font-bold text-[var(--purple)]">${progress.study_days || 0}</div>
-            </div>
-          </div>
-
-          <div class="grid gap-6 lg:grid-cols-3">
-            <div class="lg:col-span-2">
-              <div class="card p-6">
-                <h3 class="font-bold text-xl mb-4">
-                  <i class="fas fa-rocket mr-2 text-[var(--gold)]"></i>Continue Learning
-                </h3>
-                <div class="space-y-4">
-                  ${lessons.slice(0, 3).map(lesson => `
-                    <div class="interactive-row ${lesson.user_progress?.completed ? 'completed' : ''}" 
-                         onclick="openLesson(${lesson.id})">
-                      <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-lg bg-[var(--maroon)] text-white flex items-center justify-center">
-                          <i class="fas fa-play"></i>
-                        </div>
-                        <div>
-                          <div class="font-semibold">${lesson.title}</div>
-                          <div class="text-sm text-gray-600">Unit ${lesson.unit}</div>
-                        </div>
-                      </div>
-                      <span class="status ${lesson.user_progress?.completed ? 'completed' : 'open'}">
-                        ${lesson.user_progress?.completed ? 'Review' : 'Start'}
-                      </span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            </div>
-            
-            <div class="card p-6">
-              <h3 class="font-bold text-xl mb-4">
-                <i class="fas fa-target mr-2 text-[var(--maroon)]"></i>Assigned Skills
-              </h3>
-              <div class="space-y-3">
-                ${skills.slice(0, 5).map(skill => `
-                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <div class="font-semibold text-sm">${skill.name}</div>
-                      <div class="text-xs text-gray-600">${skill.difficulty || ''}</div>
-                    </div>
-                    <span class="status ${skill.status === 'completed' ? 'completed' : 'open'}">
-                      ${skill.progress || 0}%
-                    </span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          </div>
-        `;
-        
-        document.getElementById('mainContent').innerHTML = content;
-      } catch (error) {
-        console.error('Error loading dashboard:', error);
-        showNotification('Error loading dashboard', 'error');
-      }
-    }
-
-    async function loadTeacherDashboard() {
-      try {
-        // Fetch analytics
-        const analyticsResponse = await fetch('/api/analytics/class');
-        const analytics = await analyticsResponse.json();
-        
-        // Fetch students
-        const studentsResponse = await fetch('/api/analytics/students');
-        const students = await studentsResponse.json();
-        
-        const content = `
-          <div class="grid gap-6 md:grid-cols-4 mb-8">
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-[var(--blue)] mx-auto mb-4 flex items-center justify-center text-white">
-                <i class="fas fa-users text-2xl"></i>
-              </div>
-              <h3 class="font-bold text-lg mb-2">Total Students</h3>
-              <div class="text-3xl font-bold text-[var(--blue)]">${analytics.total_students || 0}</div>
-            </div>
-            
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-[var(--ok)] mx-auto mb-4 flex items-center justify-center text-white">
-                <i class="fas fa-percentage text-2xl"></i>
-              </div>
-              <h3 class="font-bold text-lg mb-2">Avg Progress</h3>
-              <div class="text-3xl font-bold text-[var(--ok)]">${Math.round(analytics.avg_progress || 0)}%</div>
-            </div>
-            
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-[var(--warning)] mx-auto mb-4 flex items-center justify-center text-white">
-                <i class="fas fa-clock text-2xl"></i>
-              </div>
-              <h3 class="font-bold text-lg mb-2">Study Time</h3>
-              <div class="text-3xl font-bold text-[var(--warning)]">${Math.round((analytics.total_study_time || 0) / 60)}h</div>
-            </div>
-            
-            <div class="card p-6 text-center">
-              <div class="w-16 h-16 rounded-full bg-[var(--purple)] mx-auto mb-4 flex items-center justify-center text-white">
-                <i class="fas fa-chart-line text-2xl"></i>
-              </div>
-              <h3 class="font-bold text-lg mb-2">Avg Score</h3>
-              <div class="text-3xl font-bold text-[var(--purple)]">${Math.round(analytics.avg_assessment_score || 0)}%</div>
-            </div>
-          </div>
-
-          <div class="grid gap-6 lg:grid-cols-2">
-            <div class="card p-6">
-              <h3 class="font-bold text-xl mb-4">
-                <i class="fas fa-trophy mr-2 text-[var(--gold)]"></i>Top Performers
-              </h3>
-              <div class="space-y-3">
-                ${students.slice(0, 5).map((student, index) => `
-                  <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div class="w-8 h-8 rounded-full bg-[var(--ok)] text-white flex items-center justify-center font-bold">
-                      ${index + 1}
-                    </div>
-                    <div class="flex-1">
-                      <div class="font-semibold">${student.name}</div>
-                      <div class="text-sm text-gray-600">Grade ${student.grade}</div>
-                    </div>
-                    <div class="text-right">
-                      <div class="font-bold text-[var(--ok)]">${Math.round(student.avg_progress || 0)}%</div>
-                      <div class="text-xs text-gray-600">${student.completed_lessons} lessons</div>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-            
-            <div class="card p-6">
-              <h3 class="font-bold text-xl mb-4">
-                <i class="fas fa-exclamation-triangle mr-2 text-[var(--warning)]"></i>Need Attention
-              </h3>
-              <div class="space-y-3">
-                ${students.filter(s => (s.avg_progress || 0) < 50).slice(0, 5).map(student => `
-                  <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-                    <div class="w-8 h-8 rounded-full bg-[var(--danger)] text-white flex items-center justify-center">
-                      <i class="fas fa-exclamation"></i>
-                    </div>
-                    <div class="flex-1">
-                      <div class="font-semibold">${student.name}</div>
-                      <div class="text-sm text-gray-600">Last active: ${student.last_active ? new Date(student.last_active).toLocaleDateString() : 'Never'}</div>
-                    </div>
-                    <div class="text-right">
-                      <div class="font-bold text-[var(--danger)]">${Math.round(student.avg_progress || 0)}%</div>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          </div>
-        `;
-        
-        document.getElementById('mainContent').innerHTML = content;
-      } catch (error) {
-        console.error('Error loading dashboard:', error);
-        showNotification('Error loading dashboard', 'error');
-      }
-    }
-
-    async function showTab(tabName) {
-      // Update active tab
-      document.querySelectorAll('.nav-tab').forEach(tab => {
-        tab.classList.remove('active');
       });
-      event.target.classList.add('active');
 
-      // Load content based on tab
+      document.getElementById('gradeSelect').addEventListener('change', (e) => {
+        currentUser.grade = parseInt(e.target.value);
+        updateStudentDashboard();
+        renderStudentLessons();
+        saveUserProgress();
+      });
+
+      document.getElementById('lessonSearch').addEventListener('input', (e) => {
+        filterStudentLessons(e.target.value);
+      });
+    }
+
+    function saveUserProgress() {
+      if (currentUser && currentUser.role === 'student') {
+        if (!appData.users.students[currentUser.id]) {
+          appData.users.students[currentUser.id] = {};
+        }
+        appData.users.students[currentUser.id] = { ...currentUser };
+        saveAppData();
+      }
+    }
+
+    function showStudentTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === `student-${tabName}` || tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#studentPortal .tab-content').forEach(content => {
+        content.classList.toggle('hidden', !content.id.includes(tabName));
+      });
+
+      // Load specific content
       switch(tabName) {
-        case 'dashboard':
-          if (currentUser.role === 'teacher') {
-            loadTeacherDashboard();
-          } else {
-            loadStudentDashboard();
-          }
-          break;
-        case 'lessons':
-          loadLessons();
-          break;
-        case 'practice':
-          loadPractice();
-          break;
         case 'skills':
-          loadSkills();
+          loadStudentSkills();
           break;
         case 'progress':
-          loadProgress();
-          break;
-        case 'students':
-          loadStudents();
-          break;
-        case 'analytics':
-          loadAnalytics();
+          loadStudentProgress();
           break;
       }
     }
 
-    async function loadLessons() {
-      try {
-        const grade = currentUser.role === 'student' ? currentUser.grade : '';
-        const response = await fetch(`/api/lessons${grade ? `?grade=${grade}` : ''}`);
-        const lessons = await response.json();
+    function updateStudentDashboard() {
+      const progress = Math.round(currentUser.progress || 0);
+      document.getElementById('overallProgress').textContent = `${progress}%`;
+      document.getElementById('overallProgressBar').style.width = `${progress}%`;
+      document.getElementById('completedCount').textContent = (currentUser.completedLessons || []).length;
+      document.getElementById('skillsCount').textContent = (currentUser.skills || []).length;
+      document.getElementById('streakCount').textContent = '5'; // Mock data
+      
+      const hours = Math.floor((currentUser.studyTime || 0) / 60);
+      const minutes = (currentUser.studyTime || 0) % 60;
+      document.getElementById('totalStudyTime').textContent = `${hours}h ${minutes}m`;
+
+      // Update student info
+      document.getElementById('studentName').textContent = currentUser.name;
+      document.getElementById('studentGrade').textContent = currentUser.grade;
+      document.getElementById('gradeSelect').value = currentUser.grade;
+
+      // Load continue lesson
+      loadContinueLesson();
+      loadAssignedSkills();
+    }
+
+    function loadContinueLesson() {
+      const container = document.getElementById('continueLesson');
+      const nextLessonId = getNextLessonForStudent();
+      
+      if (nextLessonId) {
+        const lesson = getLessonById(nextLessonId);
+        const lessonTitle = lesson ? lesson.title : getDefaultLessonTitle(nextLessonId);
         
-        console.log('Loaded lessons:', lessons);
-        
-        // Group lessons by unit
-        const units = {};
-        lessons.forEach(lesson => {
-          if (!units[lesson.unit]) {
-            units[lesson.unit] = [];
-          }
-          units[lesson.unit].push(lesson);
-        });
-        
-        const content = `
-          <div class="mb-6">
-            <h2 class="text-2xl font-bold mb-4">Lessons</h2>
-            ${currentUser.role === 'teacher' ? `
-              <button onclick="createLesson()" class="btn btn-primary mb-4">
-                <i class="fas fa-plus"></i>Create New Lesson
-              </button>
-            ` : ''}
-          </div>
-          
-          ${Object.entries(units).map(([unit, unitLessons]) => `
-            <div class="card p-6 mb-6">
-              <h3 class="font-bold text-xl mb-4">Unit ${unit}</h3>
-              <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                ${unitLessons.map(lesson => `
-                  <div class="interactive-row ${lesson.user_progress?.completed ? 'completed' : ''}" 
-                       onclick="openLesson(${lesson.id})">
-                    <div class="flex-1">
-                      <div class="font-semibold">${lesson.title}</div>
-                      <div class="text-sm text-gray-600">
-                        ${lesson.teacher_name ? `by ${lesson.teacher_name}` : ''}
-                      </div>
-                      ${lesson.user_progress ? `
-                        <div class="mt-2">
-                          <div class="progress-bar h-2">
-                            <div class="progress-fill" style="width:${lesson.user_progress.progress}%"></div>
-                          </div>
-                        </div>
-                      ` : ''}
-                    </div>
-                    <span class="status ${lesson.status || 'open'}">${lesson.status || 'Open'}</span>
-                  </div>
-                `).join('')}
+        container.innerHTML = `
+          <div class="interactive-row" onclick="openStudentLesson('${nextLessonId}', '${lessonTitle}')">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-lg bg-[var(--maroon)] text-white flex items-center justify-center">
+                <i class="fas fa-play"></i>
+              </div>
+              <div>
+                <div class="font-semibold">${lessonTitle}</div>
+                <div class="text-sm text-gray-600">Continue your learning journey</div>
               </div>
             </div>
-          `).join('')}
+            <button class="btn btn-primary">Continue</button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-trophy text-6xl text-[var(--gold)] mb-4"></i>
+            <h3 class="font-bold text-xl mb-2">All lessons completed!</h3>
+            <p class="text-gray-600">Congratulations on completing all available lessons.</p>
+          </div>
+        `;
+      }
+    }
+
+    function getDefaultLessonTitle(lessonId) {
+      const parts = lessonId.split('-');
+      const grade = parts[0];
+      const unit = parts[1];
+      const lesson = parts[2];
+      
+      const units = grade === '7' ? grade7Units : grade8Units;
+      const unitData = units.find(u => (u.num || units.indexOf(u) + 1) == unit);
+      
+      if (unitData && unitData.lessons[lesson]) {
+        return unitData.lessons[lesson];
+      }
+      
+      return `Grade ${grade} - Unit ${unit} - Lesson ${parseInt(lesson) + 1}`;
+    }
+
+    function loadAssignedSkills() {
+      const container = document.getElementById('assignedSkills');
+      const assignedSkills = (currentUser.skills || []).filter(s => s.status !== 'completed');
+      
+      if (assignedSkills.length > 0) {
+        container.innerHTML = assignedSkills.map(skill => `
+          <div class="skill-badge skill-${skill.status}">
+            <i class="fas fa-star"></i>
+            <span>${skill.name}</span>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No skills assigned yet.</p>';
+      }
+    }
+
+    function renderStudentLessons() {
+      const container = document.getElementById('lessonsContent');
+      const units = currentUser.grade === 7 ? grade7Units : grade8Units;
+      
+      container.innerHTML = '';
+
+      units.forEach((unit, unitIndex) => {
+        const unitDiv = document.createElement('div');
+        unitDiv.className = 'card p-5 mb-5 animate-slide-in';
+        
+        unitDiv.innerHTML = `
+          <div class="flex items-center gap-3 mb-4">
+            <div class="rounded-xl bg-[var(--maroon)] text-white w-12 h-12 flex items-center justify-center text-xl font-bold">
+              ${unit.num || unitIndex + 1}
+            </div>
+            <div>
+              <h3 class="font-bold text-lg">${unit.name}</h3>
+              <div class="text-sm text-gray-600">${unit.when || ''} • ${unit.lessons.length} lesson(s)</div>
+            </div>
+          </div>
+          <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3" id="unit-${unitIndex}-lessons"></div>
         `;
         
-        document.getElementById('mainContent').innerHTML = content;
-      } catch (error) {
-        console.error('Error loading lessons:', error);
-        showNotification('Error loading lessons', 'error');
-      }
-    }
-
-    async function openLesson(lessonId) {
-      try {
-        console.log('Opening lesson:', lessonId);
+        container.appendChild(unitDiv);
         
-        const response = await fetch(`/api/lessons/${lessonId}`);
-        currentLesson = await response.json();
-        
-        console.log('Lesson data:', currentLesson);
-        
-        // Set lesson title
-        document.getElementById('lessonTitle').textContent = currentLesson.title;
-        
-        // Load lesson content
-        const lessonFrame = document.getElementById('lessonFrame');
-        
-        // Build the correct file path - note the lowercase 'lessons'
-        
-        // Build candidate file paths (support both new and legacy naming)
-        const candidates = [
-          `/lessons/grade${currentLesson.grade}/lesson-${currentLesson.unit}-${currentLesson.lesson_order}.html`,
-          `/lessons/grade${currentLesson.grade}/lesson-${currentLesson.lesson_order}.html`,
-          `/lessons/grade${currentLesson.grade}/welcome.html`
-        ];
-
-        console.log('Candidate lesson files:', candidates);
-
-        let loaded = false;
-        for (const url of candidates) {
-          try {
-            const res = await fetch(url);
-            console.log('Probing', url, '->', res.status);
-            if (res.ok) {
-              const html = await res.text();
-              lessonFrame.srcdoc = html;
-              setTimeout(()=>injectLessonBridge(lessonFrame), 50);
-              window.addEventListener('message', handleLessonMessage);
-              loaded = true;
-              break;
-            }
-          } catch (e) {
-            console.warn('Probe failed for', url, e?.message || e);
-          }
-        }
-
-        if (!loaded) {
-          console.warn('No static lesson file found; falling back to HTML stored in DB (if any).');
-          const htmlContent = currentLesson.html_content || `
-            <div style="padding:40px;text-align:center;font-family:Inter,system-ui">
-              <h2 style="font-weight:800;color:var(--maroon)">Lesson file not found</h2>
-              <p style="margin-top:8px">The platform couldn't find a static lesson file for this record.</p>
-              <p style="margin-top:8px">Ensure the grade folder is being served (e.g., <code>/lessons/grade${currentLesson.grade}</code>) and the filename matches the pattern <code>lesson-${currentLesson.unit}-${currentLesson.lesson_order}.html</code> or <code>lesson-${currentLesson.lesson_order}.html</code>.</p>
-            </div>`;
-          lessonFrame.srcdoc = htmlContent;
-          setTimeout(()=>injectLessonBridge(lessonFrame), 50);
-        }
-
-        
-        // Set up video if available
-        if (currentLesson.video_url) {
-          document.getElementById('videoContainer').innerHTML = `
-            <video id="lessonVideo" controls class="w-full h-full">
-              <source src="${currentLesson.video_url}" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
+        const lessonsContainer = unitDiv.querySelector(`#unit-${unitIndex}-lessons`);
+        unit.lessons.forEach((lesson, lessonIndex) => {
+          const lessonId = `${currentUser.grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          const isCompleted = isLessonCompleted(lessonId);
+          
+          const lessonDiv = document.createElement('div');
+          lessonDiv.className = `interactive-row ${isCompleted ? 'completed' : ''}`;
+          lessonDiv.onclick = () => openStudentLesson(lessonId, lesson);
+          
+          lessonDiv.innerHTML = `
+            <div class="flex-1">
+              <div class="font-semibold text-sm">${lesson}</div>
+              ${isCompleted ? '<div class="text-xs text-[var(--ok)] mt-1"><i class="fas fa-check-circle mr-1"></i>Completed</div>' : ''}
+            </div>
+            <span class="status ${isCompleted ? 'completed' : 'open'}">${isCompleted ? 'Review' : 'Start'}</span>
           `;
           
-          // Track video progress
-          const video = document.getElementById('lessonVideo');
-          video.addEventListener('timeupdate', () => {
-            const progress = (video.currentTime / video.duration) * 100;
-            document.getElementById('videoProgress').style.width = `${progress}%`;
-            document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
-          });
-        }
-        
-        // Initialize progress tracking
-        lessonStartTime = Date.now();
-        updateLessonProgress();
-        
-        // Join lesson room for real-time features
-        if (socket) {
-          socket.emit('join-lesson', lessonId);
-        }
-        
-        // Show modal
-        document.getElementById('lessonModal').classList.add('show');
-      } catch (error) {
-        console.error('Error opening lesson:', error);
-        showNotification('Error opening lesson: ' + error.message, 'error');
-      }
-    }
-
-    function handleLessonMessage(event) {
-      // Handle messages from the lesson iframe
-      if (event.data.type === 'lesson-progress') {
-        console.log('Lesson progress update:', event.data);
-        // Update progress tracking
-      }
-    }
-
-    function closeLessonModal() {
-      // Save progress before closing
-      if (currentLesson && lessonStartTime) {
-        const timeSpent = Math.round((Date.now() - lessonStartTime) / 1000); // in seconds
-        saveLessonProgress(timeSpent);
-      }
-      
-      // Remove message listener
-      window.removeEventListener('message', handleLessonMessage);
-      
-      document.getElementById('lessonModal').classList.remove('show');
-      currentLesson = null;
-      lessonStartTime = null;
-    }
-
-    async function saveLessonProgress(timeSpent) {
-      if (!currentLesson || currentUser.role !== 'student') return;
-      
-      try {
-        const video = document.getElementById('lessonVideo');
-        const videoProgress = video ? (video.currentTime / video.duration) * 100 : 0;
-        
-        await fetch('/api/progress/lesson', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lesson_id: currentLesson.id,
-            progress: currentLesson.user_progress?.progress || 0,
-            time_spent: timeSpent,
-            video_progress: videoProgress,
-            completed: false
-          })
+          lessonsContainer.appendChild(lessonDiv);
         });
-      } catch (error) {
-        console.error('Error saving progress:', error);
+      });
+    }
+
+    function openStudentLesson(lessonId, lessonTitle) {
+      const lesson = getLessonById(lessonId) || createDefaultLesson(lessonId, lessonTitle);
+      
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      setupLessonModal(lesson);
+      document.getElementById('lessonModal').classList.add('show');
+    }
+
+    function setupLessonModal(lesson) {
+      // Setup video
+      const videoContent = document.getElementById('videoContent');
+      if (lesson.videoUrl) {
+        videoContent.innerHTML = `
+          <video id="lessonVideo" class="w-full h-full" controls>
+            <source src="${lesson.videoUrl}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      } else {
+        videoContent.innerHTML = `
+          <div class="text-center">
+            <i class="fas fa-video text-6xl mb-4"></i>
+            <p class="text-lg">${lesson.title} - Video Lesson</p>
+            <p class="text-sm opacity-80">Video content will be available soon</p>
+          </div>
+        `;
+      }
+
+      // Setup lesson content
+      document.getElementById('lessonSections').innerHTML = lesson.content || `
+        <div class="lesson-section">
+          <h3>${lesson.title}</h3>
+          <p>This lesson content is being prepared by your teacher.</p>
+          <p>Please check back later for the complete lesson materials.</p>
+        </div>
+      `;
+
+      // Setup progress tracking
+      updateLessonProgress(lesson);
+
+      // Setup navigation
+      setupLessonNavigation(lesson);
+    }
+
+    function updateLessonProgress(lesson) {
+      // Mock progress for demo
+      document.getElementById('videoProgress').textContent = '0%';
+      document.getElementById('videoProgressBar').style.width = '0%';
+      document.getElementById('contentProgress').textContent = '0%';
+      document.getElementById('contentProgressBar').style.width = '0%';
+      document.getElementById('practiceProgress').textContent = '0%';
+      document.getElementById('practiceProgressBar').style.width = '0%';
+    }
+
+    function setupLessonNavigation(lesson) {
+      document.getElementById('completeAssessmentBtn').onclick = () => {
+        closeLessonModal();
+        openAssessment(lesson);
+      };
+    }
+
+    function getLessonById(lessonId) {
+      return appData.lessons[lessonId] || lessonDatabase[lessonId] || null;
+    }
+
+    function createDefaultLesson(lessonId, title) {
+      return {
+        id: lessonId,
+        title: title,
+        content: `
+          <div class="lesson-section">
+            <h3>${title}</h3>
+            <p>This lesson content is being prepared by your teacher.</p>
+            <p>Key topics to be covered:</p>
+            <ul>
+              <li>Core concepts and definitions</li>
+              <li>Step-by-step examples</li>
+              <li>Practice problems</li>
+              <li>Real-world applications</li>
+            </ul>
+          </div>
+        `,
+        practiceProblems: [
+          {
+            question: `Practice problem for ${title}`,
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            correct: 0,
+            explanation: "This is a sample practice problem. Your teacher will add more specific content."
+          }
+        ],
+        assessment: [
+          {
+            question: `Assessment question for ${title}`,
+            options: ["Answer A", "Answer B", "Answer C", "Answer D"],
+            correct: 0,
+            points: 10,
+            explanation: "This is a sample assessment question."
+          }
+        ]
+      };
+    }
+
+    function getNextLessonForStudent() {
+      // Simple logic to get next incomplete lesson
+      const grade = currentUser.grade;
+      const units = grade === 7 ? grade7Units : grade8Units;
+      
+      for (let unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        const unit = units[unitIndex];
+        for (let lessonIndex = 0; lessonIndex < unit.lessons.length; lessonIndex++) {
+          const lessonId = `${grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          if (!isLessonCompleted(lessonId)) {
+            return lessonId;
+          }
+        }
+      }
+      return null;
+    }
+
+    function isLessonCompleted(lessonId) {
+      return currentUser && currentUser.completedLessons && 
+             currentUser.completedLessons.includes(lessonId);
+    }
+
+    function markLessonCompleted(lessonId) {
+      if (currentUser) {
+        if (!currentUser.completedLessons) {
+          currentUser.completedLessons = [];
+        }
+        if (!currentUser.completedLessons.includes(lessonId)) {
+          currentUser.completedLessons.push(lessonId);
+          currentUser.progress = Math.min(100, (currentUser.progress || 0) + 5);
+          currentUser.studyTime = (currentUser.studyTime || 0) + 30;
+          saveUserProgress();
+        }
       }
     }
 
-    function updateLessonProgress() {
-      if (!currentLesson) return;
-      
-      // Update time spent
-      if (lessonStartTime) {
-        const minutes = Math.round((Date.now() - lessonStartTime) / 60000);
-        document.getElementById('timeSpent').textContent = `${minutes}m`;
-      }
-      
-      // Update other progress indicators
-      // This would be enhanced with actual tracking from the lesson iframe
-      document.getElementById('slidesProgress').textContent = '0/0';
-      document.getElementById('activitiesProgress').textContent = '0/0';
-      
-      // Schedule next update
-      setTimeout(updateLessonProgress, 30000); // Update every 30 seconds
+    function startPracticeMode(type) {
+      showNotification(`Starting ${type} practice mode...`, 'info');
     }
 
-    async function startAssessment() {
-      if (!currentLesson || !currentLesson.assessment_questions || currentLesson.assessment_questions.length === 0) {
+    function loadStudentSkills() {
+      const container = document.getElementById('skillsProgress');
+      const skills = currentUser.skills || [];
+      
+      if (skills.length > 0) {
+        container.innerHTML = skills.map(skill => `
+          <div class="card p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold">${skill.name}</h4>
+              <span class="skill-badge skill-${skill.status}">
+                ${skill.status.charAt(0).toUpperCase() + skill.status.slice(1)}
+              </span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">${skill.description || 'No description provided'}</p>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${skill.progress || 0}%"></div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No skills assigned yet.</p>';
+      }
+    }
+
+    function loadStudentProgress() {
+      loadStudentAchievements();
+      loadStudentStats();
+    }
+
+    function loadStudentAchievements() {
+      const container = document.getElementById('achievementsList');
+      const achievements = [
+        { title: 'First Lesson', description: 'Completed your first lesson', icon: 'graduation-cap', earned: (currentUser.completedLessons || []).length > 0 },
+        { title: 'Practice Master', description: 'Solved 10 practice problems', icon: 'trophy', earned: (currentUser.studyTime || 0) > 60 },
+        { title: 'Week Streak', description: 'Studied for 7 days in a row', icon: 'fire', earned: false },
+        { title: 'Unit Master', description: 'Completed an entire unit', icon: 'medal', earned: (currentUser.completedLessons || []).length >= 8 }
+      ];
+
+      container.innerHTML = achievements.map(achievement => `
+        <div class="flex items-center gap-3 p-3 rounded-lg ${achievement.earned ? 'bg-[var(--ok)]/10' : 'bg-gray-50'}">
+          <div class="w-10 h-10 rounded-full ${achievement.earned ? 'bg-[var(--ok)]' : 'bg-gray-400'} flex items-center justify-center text-white">
+            <i class="fas fa-${achievement.icon}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold ${achievement.earned ? 'text-[var(--ok)]' : 'text-gray-600'}">${achievement.title}</div>
+            <div class="text-sm text-gray-600">${achievement.description}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadStudentStats() {
+      const container = document.getElementById('studyStats');
+      const hours = Math.floor((currentUser.studyTime || 0) / 60);
+      const minutes = (currentUser.studyTime || 0) % 60;
+      
+      const stats = [
+        { label: 'Total Study Time', value: `${hours}h ${minutes}m` },
+        { label: 'Lessons Completed', value: (currentUser.completedLessons || []).length },
+        { label: 'Current Progress', value: `${currentUser.progress || 0}%` },
+        { label: 'Average Score', value: '85%' },
+        { label: 'Current Streak', value: '5 days' }
+      ];
+
+      container.innerHTML = stats.map(stat => `
+        <div class="flex justify-between">
+          <span class="text-gray-600">${stat.label}</span>
+          <span class="font-semibold">${stat.value}</span>
+        </div>
+      `).join('');
+    }
+
+    // Teacher Portal Functions
+    function initTeacherPortal() {
+      document.getElementById('teacherPortal').classList.remove('hidden');
+      
+      // For demo, use current user or create default teacher
+      if (!currentUser || currentUser.role !== 'teacher') {
+        currentUser = createDemoTeacher();
+      }
+      
+      setupTeacherEventListeners();
+      updateTeacherDashboard();
+      showTeacherTab('teacher-dashboard');
+    }
+
+    function createDemoTeacher() {
+      return {
+        id: 'TCH001',
+        name: googleUser ? googleUser.name : 'Demo Teacher',
+        email: googleUser ? googleUser.email : 'teacher@qla.qfschools.qa',
+        role: 'teacher',
+        subject: 'Mathematics',
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    function setupTeacherEventListeners() {
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          showTeacherTab(tab.dataset.tab);
+        });
+      });
+    }
+
+    function showTeacherTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#teacherPortal .tab-content').forEach(content => {
+        content.classList.toggle('hidden', !content.id.includes(tabName.replace('teacher-', '')));
+      });
+
+      // Load specific content
+      switch(tabName) {
+        case 'lesson-management':
+          loadTeacherLessonManagement();
+          break;
+        case 'skill-assignment':
+          loadTeacherSkillAssignment();
+          break;
+        case 'student-management':
+          loadTeacherStudentManagement();
+          break;
+        case 'analytics':
+          loadTeacherAnalytics();
+          break;
+      }
+    }
+
+    function updateTeacherDashboard() {
+      const students = Object.values(appData.users.students || {});
+      const lessons = Object.values(appData.lessons || {});
+      const skills = appData.skills || [];
+
+      document.getElementById('totalStudents').textContent = students.length;
+      document.getElementById('activeLessons').textContent = lessons.filter(l => l.status === 'published').length;
+      document.getElementById('assignedSkillsCount').textContent = skills.length;
+      
+      const avgProgress = students.length > 0 ? 
+        students.reduce((sum, s) => sum + (s.progress || 0), 0) / students.length : 0;
+      document.getElementById('avgProgress').textContent = `${Math.round(avgProgress)}%`;
+
+      loadTeacherRecentActivity();
+      loadTeacherAttentionNeeded();
+    }
+
+    function loadTeacherRecentActivity() {
+      const container = document.getElementById('recentActivity');
+      const activities = [
+        { text: "New lesson created: Number Systems", time: "2 hours ago", type: "lesson" },
+        { text: "Student completed assessment: Fractions", time: "4 hours ago", type: "completion" },
+        { text: "Skill assigned to Grade 7 students", time: "6 hours ago", type: "skill" }
+      ];
+
+      container.innerHTML = activities.map(activity => `
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-8 h-8 rounded-full ${getActivityColor(activity.type)} flex items-center justify-center text-white text-sm">
+            <i class="fas ${getActivityIcon(activity.type)}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-medium">${activity.text}</div>
+            <div class="text-xs text-gray-500">${activity.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadTeacherAttentionNeeded() {
+      const container = document.getElementById('attentionNeeded');
+      const alerts = [
+        { text: "3 students need help with Unit 2", type: "warning" },
+        { text: "Assessment deadline approaching", type: "info" },
+        { text: "Low engagement in Grade 8", type: "danger" }
+      ];
+
+      container.innerHTML = alerts.map(alert => `
+        <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+          <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white text-sm">
+            <i class="fas fa-exclamation"></i>
+          </div>
+          <div class="text-sm font-medium text-red-800">${alert.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function loadTeacherLessonManagement() {
+      const container = document.getElementById('lessonsList');
+      const lessons = Object.entries(appData.lessons || {});
+      
+      if (lessons.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No lessons created yet. Click "Create New Lesson" to get started.</p>';
+        return;
+      }
+
+      container.innerHTML = lessons.map(([lessonId, lesson]) => `
+        <div class="interactive-row">
+          <div class="flex-1">
+            <div class="font-semibold">${lesson.title}</div>
+            <div class="text-sm text-gray-600">Grade ${lesson.grade} • ${lesson.status} • Created ${new Date(lesson.createdAt).toLocaleDateString()}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editTeacherLesson('${lessonId}')" class="text-blue-600 hover:text-blue-800" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="duplicateTeacherLesson('${lessonId}')" class="text-green-600 hover:text-green-800" title="Duplicate">
+              <i class="fas fa-copy"></i>
+            </button>
+            <button onclick="toggleLessonStatus('${lessonId}')" class="text-yellow-600 hover:text-yellow-800" title="Toggle Status">
+              <i class="fas fa-toggle-on"></i>
+            </button>
+            <button onclick="deleteTeacherLesson('${lessonId}')" class="text-red-600 hover:text-red-800" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadTeacherSkillAssignment() {
+      loadAvailableSkills();
+      loadSkillAssignmentInterface();
+    }
+
+    function loadAvailableSkills() {
+      const container = document.getElementById('availableSkills');
+      const skills = appData.skills || [];
+
+      if (skills.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No skills created yet.</p>';
+        return;
+      }
+
+      container.innerHTML = skills.map((skill, index) => `
+        <div class="interactive-row">
+          <div class="flex-1">
+            <div class="font-semibold">${skill.name}</div>
+            <div class="text-sm text-gray-600">${skill.description}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editSkill(${index})" class="text-blue-600 hover:text-blue-800">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="assignSkillToStudents(${index})" class="text-green-600 hover:text-green-800">
+              <i class="fas fa-user-plus"></i>
+            </button>
+            <button onclick="deleteSkill(${index})" class="text-red-600 hover:text-red-800">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadSkillAssignmentInterface() {
+      const container = document.getElementById('skillAssignment');
+      container.innerHTML = `
+        <div class="card p-4">
+          <h4 class="font-bold mb-3">Quick Assign</h4>
+          <div class="space-y-3">
+            <select id="quickSkillSelect" class="form-input">
+              <option value="">Select a skill...</option>
+              ${(appData.skills || []).map((skill, index) => 
+                `<option value="${index}">${skill.name}</option>`
+              ).join('')}
+            </select>
+            <select id="quickGradeSelect" class="form-input">
+              <option value="">Select grade...</option>
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+            </select>
+            <button onclick="quickAssignSkill()" class="btn btn-primary w-full">
+              <i class="fas fa-bolt"></i>Quick Assign
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function loadTeacherStudentManagement() {
+      const container = document.getElementById('studentsTable');
+      const students = Object.values(appData.users.students || {});
+
+      if (students.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No students registered yet.</p>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-semibold">Name</th>
+              <th class="text-left py-3 px-4 font-semibold">Grade</th>
+              <th class="text-left py-3 px-4 font-semibold">Progress</th>
+              <th class="text-left py-3 px-4 font-semibold">Study Time</th>
+              <th class="text-left py-3 px-4 font-semibold">Last Active</th>
+              <th class="text-left py-3 px-4 font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${students.map(student => `
+              <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="py-3 px-4">${student.name}</td>
+                <td class="py-3 px-4">${student.grade}</td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-2">
+                    <div class="progress-bar flex-1 h-2">
+                      <div class="progress-fill h-full" style="width:${student.progress || 0}%"></div>
+                    </div>
+                    <span class="text-sm">${student.progress || 0}%</span>
+                  </div>
+                </td>
+                <td class="py-3 px-4">${Math.floor((student.studyTime || 0) / 60)}h ${(student.studyTime || 0) % 60}m</td>
+                <td class="py-3 px-4">${student.updatedAt ? new Date(student.updatedAt).toLocaleDateString() : 'Never'}</td>
+                <td class="py-3 px-4">
+                  <button onclick="viewStudentDetails('${student.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button onclick="messageStudent('${student.id}')" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-envelope"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function loadTeacherAnalytics() {
+      const container = document.getElementById('analyticsChart');
+      container.innerHTML = `
+        <div class="text-center py-16">
+          <i class="fas fa-chart-line text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-xl font-bold text-gray-600 mb-2">Analytics Dashboard</h3>
+          <p class="text-gray-500">Detailed analytics and reporting features will be available here</p>
+        </div>
+      `;
+
+      loadTopPerformers();
+      loadStrugglingStudents();
+      loadPopularLessons();
+    }
+
+    function loadTopPerformers() {
+      const container = document.getElementById('topPerformers');
+      const students = Object.values(appData.users.students || {})
+        .sort((a, b) => (b.progress || 0) - (a.progress || 0))
+        .slice(0, 5);
+
+      container.innerHTML = students.map(student => `
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-8 h-8 rounded-full bg-[var(--ok)] text-white flex items-center justify-center text-sm font-bold">
+            ${student.name.charAt(0)}
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${student.name}</div>
+            <div class="text-xs text-gray-600">${student.progress || 0}% progress</div>
+          </div>
+        </div>
+      `).join('') || '<p class="text-gray-500 text-sm">No student data available</p>';
+    }
+
+    function loadStrugglingStudents() {
+      const container = document.getElementById('strugglingStudents');
+      const students = Object.values(appData.users.students || {})
+        .filter(s => (s.progress || 0) < 30)
+        .slice(0, 5);
+
+      container.innerHTML = students.map(student => `
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-8 h-8 rounded-full bg-[var(--warning)] text-white flex items-center justify-center text-sm font-bold">
+            ${student.name.charAt(0)}
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${student.name}</div>
+            <div class="text-xs text-gray-600">${student.progress || 0}% progress</div>
+          </div>
+        </div>
+      `).join('') || '<p class="text-gray-500 text-sm">All students are doing well!</p>';
+    }
+
+    function loadPopularLessons() {
+      const container = document.getElementById('popularLessons');
+      const lessons = Object.entries(appData.lessons || {}).slice(0, 5);
+
+      container.innerHTML = lessons.map(([id, lesson]) => `
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-8 h-8 rounded-full bg-[var(--blue)] text-white flex items-center justify-center text-sm">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${lesson.title}</div>
+            <div class="text-xs text-gray-600">Grade ${lesson.grade}</div>
+          </div>
+        </div>
+      `).join('') || '<p class="text-gray-500 text-sm">No lessons available</p>';
+    }
+
+    // Assessment Functions
+    function openAssessment(lesson) {
+      if (!lesson.assessment || lesson.assessment.length === 0) {
         showNotification('No assessment available for this lesson', 'info');
         return;
       }
+
+      document.getElementById('assessmentTitle').textContent = `${lesson.title} - Assessment`;
+      document.getElementById('totalQuestions').textContent = lesson.assessment.length;
       
       currentAssessment = {
-        lesson_id: currentLesson.id,
-        questions: currentLesson.assessment_questions,
+        lesson: lesson,
+        questions: lesson.assessment,
         currentQuestion: 0,
         answers: [],
-        startTime: Date.now(),
-        timeLimit: 15 * 60 // 15 minutes in seconds
+        timeRemaining: (appData.settings.assessmentTimeLimit || 15) * 60
       };
-      
-      document.getElementById('assessmentTitle').textContent = `${currentLesson.title} - Assessment`;
-      document.getElementById('totalQuestions').textContent = currentAssessment.questions.length;
-      
+
       loadAssessmentQuestion();
       startAssessmentTimer();
-      
       document.getElementById('assessmentModal').classList.add('show');
-      closeLessonModal();
     }
+
+    let currentAssessment = null;
+    let assessmentTimer = null;
 
     function loadAssessmentQuestion() {
       const question = currentAssessment.questions[currentAssessment.currentQuestion];
       document.getElementById('currentQuestion').textContent = currentAssessment.currentQuestion + 1;
       
-      const content = `
+      document.getElementById('assessmentContent').innerHTML = `
         <div class="card p-6">
           <h4 class="font-bold text-lg mb-4">Question ${currentAssessment.currentQuestion + 1}</h4>
           <p class="text-lg mb-6">${question.question}</p>
           <div class="space-y-3">
             ${question.options.map((option, index) => `
-              <div class="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-[var(--gold)] transition-colors"
-                   onclick="selectAnswer(${index})" id="option-${index}">
-                <label class="cursor-pointer">
-                  <input type="radio" name="answer" value="${index}" class="mr-3">
-                  ${String.fromCharCode(65 + index)}. ${option}
-                </label>
+              <div class="quiz-option" onclick="selectAssessmentAnswer(${index})" data-index="${index}">
+                ${String.fromCharCode(65 + index)}. ${option}
               </div>
             `).join('')}
           </div>
         </div>
       `;
-      
-      document.getElementById('assessmentContent').innerHTML = content;
-      
-      // Restore selected answer if any
-      if (currentAssessment.answers[currentAssessment.currentQuestion] !== undefined) {
-        selectAnswer(currentAssessment.answers[currentAssessment.currentQuestion]);
-      }
-      
-      // Update navigation buttons
+
+      // Show/hide navigation buttons
       document.getElementById('prevQuestionBtn').style.display = 
         currentAssessment.currentQuestion === 0 ? 'none' : 'block';
       
       document.getElementById('nextQuestionBtn').style.display = 
         currentAssessment.currentQuestion === currentAssessment.questions.length - 1 ? 'none' : 'block';
       
-      document.getElementById('submitAssessmentBtn').classList.toggle('hidden',
+      document.getElementById('submitAssessmentBtn').classList.toggle('hidden', 
         currentAssessment.currentQuestion !== currentAssessment.questions.length - 1);
+
+      // Setup navigation
+      document.getElementById('prevQuestionBtn').onclick = () => {
+        if (currentAssessment.currentQuestion > 0) {
+          currentAssessment.currentQuestion--;
+          loadAssessmentQuestion();
+        }
+      };
+
+      document.getElementById('nextQuestionBtn').onclick = () => {
+        if (currentAssessment.currentQuestion < currentAssessment.questions.length - 1) {
+          currentAssessment.currentQuestion++;
+          loadAssessmentQuestion();
+        }
+      };
+
+      document.getElementById('submitAssessmentBtn').onclick = submitAssessment;
     }
 
-    function selectAnswer(index) {
-      // Store answer
-      currentAssessment.answers[currentAssessment.currentQuestion] = index;
-      
-      // Update UI
-      document.querySelectorAll('[id^="option-"]').forEach(el => {
-        el.classList.remove('border-[var(--maroon)]', 'bg-gray-50');
+    function selectAssessmentAnswer(index) {
+      // Remove previous selections
+      document.querySelectorAll('#assessmentContent .quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
       });
       
-      document.getElementById(`option-${index}`).classList.add('border-[var(--maroon)]', 'bg-gray-50');
-      document.querySelector(`input[value="${index}"]`).checked = true;
-    }
-
-    function previousQuestion() {
-      if (currentAssessment.currentQuestion > 0) {
-        currentAssessment.currentQuestion--;
-        loadAssessmentQuestion();
-      }
-    }
-
-    function nextQuestion() {
-      if (currentAssessment.currentQuestion < currentAssessment.questions.length - 1) {
-        currentAssessment.currentQuestion++;
-        loadAssessmentQuestion();
-      }
+      // Add selection
+      document.querySelector(`#assessmentContent .quiz-option[data-index="${index}"]`).classList.add('selected');
+      
+      // Store answer
+      currentAssessment.answers[currentAssessment.currentQuestion] = index;
     }
 
     function startAssessmentTimer() {
-      let timeRemaining = currentAssessment.timeLimit;
-      
       assessmentTimer = setInterval(() => {
-        timeRemaining--;
-        const minutes = Math.floor(timeRemaining / 60);
-        const seconds = timeRemaining % 60;
+        currentAssessment.timeRemaining--;
+        const minutes = Math.floor(currentAssessment.timeRemaining / 60);
+        const seconds = currentAssessment.timeRemaining % 60;
         document.getElementById('assessmentTimer').textContent = 
           `${minutes}:${seconds.toString().padStart(2, '0')}`;
         
-        if (timeRemaining <= 0) {
-          clearInterval(assessmentTimer);
+        if (currentAssessment.timeRemaining <= 0) {
           submitAssessment();
         }
       }, 1000);
     }
 
-    async function submitAssessment() {
+    function submitAssessment() {
       clearInterval(assessmentTimer);
       
-      const timeTaken = Math.round((Date.now() - currentAssessment.startTime) / 1000);
-      
-      try {
-        const response = await fetch('/api/assessments/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lesson_id: currentAssessment.lesson_id,
-            answers: currentAssessment.answers,
-            time_taken: timeTaken
-          })
-        });
-        
-        const result = await response.json();
-        
-        // Show results
-        const content = `
-          <div class="text-center py-8">
-            <div class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold ${result.passed ? 'bg-[var(--ok)] text-white' : 'bg-[var(--danger)] text-white'}">
-              ${result.percentage}%
+      // Calculate score
+      let correct = 0;
+      let totalPoints = 0;
+      let earnedPoints = 0;
+
+      currentAssessment.questions.forEach((question, index) => {
+        totalPoints += question.points || 10;
+        if (currentAssessment.answers[index] === question.correct) {
+          correct++;
+          earnedPoints += question.points || 10;
+        }
+      });
+
+      const percentage = Math.round((earnedPoints / totalPoints) * 100);
+      const passPercentage = appData.settings.passPercentage || 70;
+      const passed = percentage >= passPercentage;
+
+      // Show results
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="text-center py-8">
+          <div class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold ${passed ? 'bg-[var(--ok)] text-white' : 'bg-[var(--danger)] text-white'}">
+            ${percentage}%
+          </div>
+          <h3 class="text-2xl font-bold mb-2">${passed ? 'Congratulations!' : 'Keep Practicing!'}</h3>
+          <p class="text-lg mb-4">${passed ? 'You passed the assessment!' : `You need ${passPercentage}% to pass.`}</p>
+          <div class="grid gap-4 md:grid-cols-3 max-w-md mx-auto mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${correct}</div>
+              <div class="text-sm text-gray-600">Correct</div>
             </div>
-            <h3 class="text-2xl font-bold mb-2">${result.passed ? 'Congratulations!' : 'Keep Practicing!'}</h3>
-            <p class="text-lg mb-4">${result.passed ? 'You passed the assessment!' : `You need 70% to pass. You scored ${result.percentage}%.`}</p>
-            
-            <div class="grid gap-4 md:grid-cols-3 max-w-md mx-auto mb-6">
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="font-bold text-2xl">${result.score}</div>
-                <div class="text-sm text-gray-600">Points Earned</div>
-              </div>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="font-bold text-2xl">${result.total_points}</div>
-                <div class="text-sm text-gray-600">Total Points</div>
-              </div>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="font-bold text-2xl">${Math.round(timeTaken / 60)}m</div>
-                <div class="text-sm text-gray-600">Time Taken</div>
-              </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${currentAssessment.questions.length - correct}</div>
+              <div class="text-sm text-gray-600">Incorrect</div>
             </div>
-            
-            <div class="space-y-4">
-              ${result.results.map((q, index) => `
-                <div class="card p-4 text-left ${q.is_correct ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
-                  <div class="flex justify-between items-start mb-2">
-                    <h4 class="font-bold">Question ${index + 1}</h4>
-                    <span class="${q.is_correct ? 'text-green-600' : 'text-red-600'} font-bold">
-                      ${q.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                    </span>
-                  </div>
-                  <p class="mb-2">${q.question}</p>
-                  <div class="text-sm">
-                    <p>Your answer: ${currentAssessment.questions[index].options[q.user_answer] || 'No answer'}</p>
-                    ${!q.is_correct ? `
-                      <p class="text-green-600">Correct answer: ${currentAssessment.questions[index].options[q.correct_answer]}</p>
-                    ` : ''}
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-            
-            <div class="mt-6">
-              <button onclick="closeAssessmentModal()" class="btn btn-primary">
-                <i class="fas fa-check"></i>Continue
-              </button>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${earnedPoints}</div>
+              <div class="text-sm text-gray-600">Points</div>
             </div>
           </div>
-        `;
-        
-        document.getElementById('assessmentContent').innerHTML = content;
-        
-        // Hide navigation
-        document.getElementById('prevQuestionBtn').style.display = 'none';
-        document.getElementById('nextQuestionBtn').style.display = 'none';
-        document.getElementById('submitAssessmentBtn').classList.add('hidden');
-        
-        if (result.passed) {
-          showNotification('🎉 Congratulations! You passed the assessment!', 'success');
-        }
-      } catch (error) {
-        console.error('Error submitting assessment:', error);
-        showNotification('Error submitting assessment', 'error');
+          <div class="flex gap-4 justify-center">
+            <button onclick="reviewAssessment()" class="btn btn-secondary">
+              <i class="fas fa-eye"></i>Review Answers
+            </button>
+            ${passed ? `
+              <button onclick="completeLesson()" class="btn btn-success">
+                <i class="fas fa-check"></i>Complete Lesson
+              </button>
+            ` : `
+              <button onclick="retakeAssessment()" class="btn btn-primary">
+                <i class="fas fa-redo"></i>Retake Assessment
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+
+      // Hide navigation
+      document.getElementById('prevQuestionBtn').style.display = 'none';
+      document.getElementById('nextQuestionBtn').style.display = 'none';
+      document.getElementById('submitAssessmentBtn').classList.add('hidden');
+
+      if (passed) {
+        // Mark lesson as completed
+        markLessonCompleted(currentAssessment.lesson.id);
       }
     }
 
-    function closeAssessmentModal() {
+    function reviewAssessment() {
+      // Show detailed review of answers
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="space-y-6">
+          ${currentAssessment.questions.map((question, index) => {
+            const userAnswer = currentAssessment.answers[index];
+            const isCorrect = userAnswer === question.correct;
+            return `
+              <div class="card p-4 ${isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+                <h4 class="font-bold mb-2">Question ${index + 1}</h4>
+                <p class="mb-3">${question.question}</p>
+                <div class="space-y-2">
+                  ${question.options.map((option, optIndex) => `
+                    <div class="p-2 rounded ${
+                      optIndex === question.correct ? 'bg-green-100 border border-green-300' :
+                      optIndex === userAnswer && !isCorrect ? 'bg-red-100 border border-red-300' :
+                      'bg-gray-50'
+                    }">
+                      ${String.fromCharCode(65 + optIndex)}. ${option}
+                      ${optIndex === question.correct ? ' ✓' : ''}
+                      ${optIndex === userAnswer && !isCorrect ? ' ✗' : ''}
+                    </div>
+                  `).join('')}
+                </div>
+                ${question.explanation ? `<p class="text-sm text-gray-600 mt-2"><strong>Explanation:</strong> ${question.explanation}</p>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function completeLesson() {
       document.getElementById('assessmentModal').classList.remove('show');
-      currentAssessment = null;
-      loadLessons(); // Refresh lessons to show updated progress
+      showNotification('Lesson completed successfully! 🎉', 'success');
+      updateStudentDashboard();
+      renderStudentLessons();
     }
 
-    function practiceProblems() {
-      showNotification('Practice problems coming soon!', 'info');
+    function retakeAssessment() {
+      currentAssessment.currentQuestion = 0;
+      currentAssessment.answers = [];
+      currentAssessment.timeRemaining = (appData.settings.assessmentTimeLimit || 15) * 60;
+      loadAssessmentQuestion();
+      startAssessmentTimer();
     }
 
-    function askQuestion() {
-      showNotification('Q&A feature coming soon!', 'info');
+    function closeLessonModal() {
+      document.getElementById('lessonModal').classList.remove('show');
     }
 
-    function loadPractice() {
-      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Practice Problems</h2><p>Practice section coming soon...</p></div>';
+    // Utility Functions
+    function getActivityColor(type) {
+      const colors = {
+        completion: 'bg-[var(--ok)]',
+        start: 'bg-[var(--blue)]',
+        assessment: 'bg-[var(--purple)]',
+        lesson: 'bg-[var(--maroon)]',
+        skill: 'bg-[var(--gold)]',
+        user: 'bg-[var(--blue)]',
+        system: 'bg-[var(--slate)]'
+      };
+      return colors[type] || 'bg-gray-500';
     }
 
-    function loadSkills() {
-      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Skills</h2><p>Skills section coming soon...</p></div>';
-    }
-
-    function loadProgress() {
-      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Progress</h2><p>Progress section coming soon...</p></div>';
-    }
-
-    function loadStudents() {
-      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Students</h2><p>Students section coming soon...</p></div>';
-    }
-
-    function loadAnalytics() {
-      document.getElementById('mainContent').innerHTML = '<div class="card p-6"><h2 class="text-2xl font-bold mb-4">Analytics</h2><p>Analytics section coming soon...</p></div>';
-    }
-
-    function createLesson() {
-      window.location.href = '/teacher-tools.html';
+    function getActivityIcon(type) {
+      const icons = {
+        completion: 'fa-check',
+        start: 'fa-play',
+        assessment: 'fa-clipboard-check',
+        lesson: 'fa-book',
+        skill: 'fa-star',
+        user: 'fa-user',
+        system: 'fa-cog'
+      };
+      return icons[type] || 'fa-info';
     }
 
     function showNotification(message, type = 'info') {
@@ -1129,7 +1994,7 @@
       notification.className = `notification ${type}`;
       notification.innerHTML = `
         <div class="flex items-center gap-3">
-          <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i>
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
           <span>${message}</span>
         </div>
       `;
@@ -1148,26 +2013,954 @@
       }, 3000);
     }
 
-    function logout() {
-      window.location.href = '/auth/logout';
+    // Teacher-specific functions
+    function createNewLesson() {
+      openAdvancedLessonCreator();
     }
 
-    // Initialize on page load
+    function editTeacherLesson(lessonId) {
+      editLesson(lessonId);
+    }
+
+    function duplicateTeacherLesson(lessonId) {
+      duplicateLesson(lessonId);
+    }
+
+    function toggleLessonStatus(lessonId) {
+      const lesson = appData.lessons[lessonId];
+      if (!lesson) return;
+
+      lesson.status = lesson.status === 'published' ? 'draft' : 'published';
+      if (lesson.status === 'published') {
+        lesson.publishedAt = new Date().toISOString();
+      }
+      
+      saveAppData();
+      loadTeacherLessonManagement();
+      showNotification(`Lesson ${lesson.status === 'published' ? 'published' : 'unpublished'} successfully!`, 'info');
+    }
+
+    function deleteTeacherLesson(lessonId) {
+      deleteLesson(lessonId);
+    }
+
+    function createNewSkill() {
+      document.getElementById('skillModalTitle').textContent = 'Create New Skill';
+      document.getElementById('skillForm').reset();
+      loadStudentsForSkillAssignment();
+      document.getElementById('skillModal').classList.add('show');
+    }
+
+    function closeSkillModal() {
+      document.getElementById('skillModal').classList.remove('show');
+    }
+
+    function loadStudentsForSkillAssignment() {
+      const container = document.getElementById('studentsList');
+      const students = Object.values(appData.users.students || {});
+      
+      container.innerHTML = students.map(student => `
+        <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+          <input type="checkbox" name="students" value="${student.id}" class="rounded">
+          <span class="flex-1">${student.name} (Grade ${student.grade})</span>
+          <span class="text-sm text-gray-500">${student.progress || 0}% progress</span>
+        </label>
+      `).join('') || '<p class="text-gray-500 text-sm">No students available</p>';
+    }
+
+    function quickAssignSkill() {
+      const skillIndex = document.getElementById('quickSkillSelect').value;
+      const grade = document.getElementById('quickGradeSelect').value;
+      
+      if (!skillIndex || !grade) {
+        showNotification('Please select both skill and grade', 'warning');
+        return;
+      }
+
+      const skill = appData.skills[skillIndex];
+      const students = Object.values(appData.users.students || {}).filter(s => s.grade == grade);
+      
+      students.forEach(student => {
+        if (!student.skills) student.skills = [];
+        if (!student.skills.find(s => s.name === skill.name)) {
+          student.skills.push({
+            ...skill,
+            status: 'assigned',
+            assignedAt: new Date().toISOString(),
+            progress: 0
+          });
+        }
+      });
+
+      saveAppData();
+      showNotification(`Skill "${skill.name}" assigned to ${students.length} Grade ${grade} students`, 'success');
+    }
+
+    function viewStudentDetails(studentId) {
+      const student = appData.users.students[studentId];
+      if (!student) return;
+
+      showNotification(`Viewing details for ${student.name} - Feature coming soon!`, 'info');
+    }
+
+    function messageStudent(studentId) {
+      const student = appData.users.students[studentId];
+      if (!student) return;
+
+      showNotification(`Messaging ${student.name} - Feature coming soon!`, 'info');
+    }
+
+    // Event Listeners Setup
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up form submissions
+      const forms = [
+        'userCreationForm',
+        'authSettingsForm', 
+        'systemConfigForm',
+        'skillForm'
+      ];
+
+      forms.forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form && !form.onsubmit) {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            switch(formId) {
+              case 'userCreationForm':
+                createNewUser();
+                break;
+              case 'authSettingsForm':
+                saveAuthSettings();
+                break;
+              case 'systemConfigForm':
+                saveSystemConfig();
+                break;
+              case 'skillForm':
+                createSkill();
+                break;
+            }
+          });
+        }
+      });
+
+      // Grade change listener for lesson creator
+      const gradeSelect = document.getElementById('advancedLessonGrade');
+      if (gradeSelect) {
+        gradeSelect.addEventListener('change', populateUnitDropdown);
+      }
+    });
+
+    function createSkill() {
+      const skillData = {
+        name: document.getElementById('skillName').value,
+        description: document.getElementById('skillDescription').value,
+        grade: document.getElementById('skillGrade').value,
+        difficulty: document.getElementById('skillDifficulty').value,
+        dueDate: document.getElementById('skillDueDate').value,
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser.email
+      };
+
+      if (!appData.skills) appData.skills = [];
+      appData.skills.push(skillData);
+
+      // Assign to selected students
+      const selectedStudents = Array.from(document.querySelectorAll('input[name="students"]:checked'))
+        .map(cb => cb.value);
+
+      selectedStudents.forEach(studentId => {
+        const student = appData.users.students[studentId];
+        if (student) {
+          if (!student.skills) student.skills = [];
+          student.skills.push({
+            ...skillData,
+            status: 'assigned',
+            assignedAt: new Date().toISOString(),
+            progress: 0
+          });
+        }
+      });
+
+      saveAppData();
+      closeSkillModal();
+      loadAvailableSkills();
+      showNotification(`Skill "${skillData.name}" created and assigned to ${selectedStudents.length} students!`, 'success');
+    }
+
+    function editSkill(index) {
+      const skill = appData.skills[index];
+      if (!skill) return;
+
+      document.getElementById('skillName').value = skill.name;
+      document.getElementById('skillDescription').value = skill.description;
+      document.getElementById('skillGrade').value = skill.grade;
+      document.getElementById('skillDifficulty').value = skill.difficulty;
+      document.getElementById('skillDueDate').value = skill.dueDate;
+
+      document.getElementById('skillModalTitle').textContent = 'Edit Skill';
+      document.getElementById('skillModal').classList.add('show');
+
+      // Change form submission to edit mode
+      document.getElementById('skillForm').onsubmit = function(e) {
+        e.preventDefault();
+        updateSkill(index);
+      };
+    }
+
+    function updateSkill(index) {
+      const skill = appData.skills[index];
+      skill.name = document.getElementById('skillName').value;
+      skill.description = document.getElementById('skillDescription').value;
+      skill.grade = document.getElementById('skillGrade').value;
+      skill.difficulty = document.getElementById('skillDifficulty').value;
+      skill.dueDate = document.getElementById('skillDueDate').value;
+      skill.updatedAt = new Date().toISOString();
+
+      saveAppData();
+      closeSkillModal();
+      loadAvailableSkills();
+      showNotification('Skill updated successfully!', 'success');
+
+      // Reset form submission
+      document.getElementById('skillForm').onsubmit = function(e) {
+        e.preventDefault();
+        createSkill();
+      };
+    }
+
+    function deleteSkill(index) {
+      if (!confirm('Are you sure you want to delete this skill?')) return;
+
+      appData.skills.splice(index, 1);
+      saveAppData();
+      loadAvailableSkills();
+      showNotification('Skill deleted successfully!', 'success');
+    }
+
+    function assignSkillToStudents(index) {
+      const skill = appData.skills[index];
+      document.getElementById('skillName').value = skill.name;
+      document.getElementById('skillDescription').value = skill.description;
+      document.getElementById('skillGrade').value = skill.grade;
+      document.getElementById('skillDifficulty').value = skill.difficulty;
+      
+      loadStudentsForSkillAssignment();
+      document.getElementById('skillModalTitle').textContent = `Assign: ${skill.name}`;
+      document.getElementById('skillModal').classList.add('show');
+    }
+
+    // Initialize application when page loads
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
 
+    function setupStudentEventListeners() {
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab.replace('student-', '');
+          showStudentTab(tabName);
+        });
+      });
 
-// Inject QLA Lesson Bridge inside the loaded iframe (srcdoc or same-origin src)
-async function injectLessonBridge(iframe){
-  try{
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
-    if(!doc) return;
-    const s = doc.createElement('script');
-    s.src = '/lesson-bridge.js';
-    doc.head ? doc.head.appendChild(s) : doc.body.appendChild(s);
-  }catch(e){
-    console.warn('injectLessonBridge failed:', e?.message || e);
-  }
-}
+      document.getElementById('gradeSelect').addEventListener('change', (e) => {
+        currentUser.grade = parseInt(e.target.value);
+        updateStudentDashboard();
+        renderStudentLessons();
+      });
+
+      document.getElementById('lessonSearch').addEventListener('input', (e) => {
+        filterStudentLessons(e.target.value);
+      });
+    }
+
+    function showStudentTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#studentPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === `student-${tabName}` || tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#studentPortal .tab-content').forEach(content => {
+        content.classList.toggle('hidden', !content.id.includes(tabName));
+      });
+
+      // Load specific content
+      switch(tabName) {
+        case 'skills':
+          loadStudentSkills();
+          break;
+        case 'progress':
+          loadStudentProgress();
+          break;
+      }
+    }
+
+    function updateStudentDashboard() {
+      const progress = Math.round(currentUser.progress);
+      document.getElementById('overallProgress').textContent = `${progress}%`;
+      document.getElementById('overallProgressBar').style.width = `${progress}%`;
+      document.getElementById('completedCount').textContent = currentUser.completedLessons;
+      document.getElementById('skillsCount').textContent = currentUser.skills.length;
+      document.getElementById('streakCount').textContent = '5'; // Mock data
+      
+      const hours = Math.floor(currentUser.studyTime / 60);
+      const minutes = currentUser.studyTime % 60;
+      document.getElementById('totalStudyTime').textContent = `${hours}h ${minutes}m`;
+
+      // Update student info
+      document.getElementById('studentName').textContent = currentUser.name;
+      document.getElementById('studentGrade').textContent = currentUser.grade;
+      document.getElementById('gradeSelect').value = currentUser.grade;
+
+      // Load continue lesson
+      loadContinueLesson();
+      loadAssignedSkills();
+    }
+
+    function loadContinueLesson() {
+      const container = document.getElementById('continueLesson');
+      const nextLessonId = getNextLessonForStudent();
+      
+      if (nextLessonId) {
+        const lesson = getLessonById(nextLessonId);
+        container.innerHTML = `
+          <div class="interactive-row" onclick="openStudentLesson('${nextLessonId}')">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-lg bg-[var(--maroon)] text-white flex items-center justify-center">
+                <i class="fas fa-play"></i>
+              </div>
+              <div>
+                <div class="font-semibold">${lesson ? lesson.title : 'Next Lesson'}</div>
+                <div class="text-sm text-gray-600">Continue your learning journey</div>
+              </div>
+            </div>
+            <button class="btn btn-primary">Continue</button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-trophy text-6xl text-[var(--gold)] mb-4"></i>
+            <h3 class="font-bold text-xl mb-2">All lessons completed!</h3>
+            <p class="text-gray-600">Congratulations on completing all available lessons.</p>
+          </div>
+        `;
+      }
+    }
+
+    function loadAssignedSkills() {
+      const container = document.getElementById('assignedSkills');
+      const assignedSkills = currentUser.skills.filter(s => s.status !== 'completed');
+      
+      if (assignedSkills.length > 0) {
+        container.innerHTML = assignedSkills.map(skill => `
+          <div class="skill-badge skill-${skill.status}">
+            <i class="fas fa-star"></i>
+            <span>${skill.name}</span>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No skills assigned yet.</p>';
+      }
+    }
+
+    function renderStudentLessons() {
+      const container = document.getElementById('lessonsContent');
+      const units = currentUser.grade === 7 ? grade7Units : grade8Units;
+      
+      container.innerHTML = '';
+
+      units.forEach((unit, unitIndex) => {
+        const unitDiv = document.createElement('div');
+        unitDiv.className = 'card p-5 mb-5 animate-slide-in';
+        
+        unitDiv.innerHTML = `
+          <div class="flex items-center gap-3 mb-4">
+            <div class="rounded-xl bg-[var(--maroon)] text-white w-12 h-12 flex items-center justify-center text-xl font-bold">
+              ${unit.num || unitIndex + 1}
+            </div>
+            <div>
+              <h3 class="font-bold text-lg">${unit.name}</h3>
+              <div class="text-sm text-gray-600">${unit.when || ''} • ${unit.lessons.length} lesson(s)</div>
+            </div>
+          </div>
+          <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3" id="unit-${unitIndex}-lessons"></div>
+        `;
+        
+        container.appendChild(unitDiv);
+        
+        const lessonsContainer = unitDiv.querySelector(`#unit-${unitIndex}-lessons`);
+        unit.lessons.forEach((lesson, lessonIndex) => {
+          const lessonId = `${currentUser.grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          const isCompleted = isLessonCompleted(lessonId);
+          
+          const lessonDiv = document.createElement('div');
+          lessonDiv.className = `interactive-row ${isCompleted ? 'completed' : ''}`;
+          lessonDiv.onclick = () => openStudentLesson(lessonId, lesson);
+          
+          lessonDiv.innerHTML = `
+            <div class="flex-1">
+              <div class="font-semibold text-sm">${lesson}</div>
+              ${isCompleted ? '<div class="text-xs text-[var(--ok)] mt-1"><i class="fas fa-check-circle mr-1"></i>Completed</div>' : ''}
+            </div>
+            <span class="status ${isCompleted ? 'completed' : 'open'}">${isCompleted ? 'Review' : 'Start'}</span>
+          `;
+          
+          lessonsContainer.appendChild(lessonDiv);
+        });
+      });
+    }
+
+    function openStudentLesson(lessonId, lessonTitle) {
+      const lesson = getLessonById(lessonId) || createDefaultLesson(lessonId, lessonTitle);
+      
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      setupLessonModal(lesson);
+      document.getElementById('lessonModal').classList.add('show');
+    }
+
+    function setupLessonModal(lesson) {
+      // Setup video
+      const videoContent = document.getElementById('videoContent');
+      if (lesson.videoUrl) {
+        videoContent.innerHTML = `
+          <video id="lessonVideo" class="w-full h-full" controls>
+            <source src="${lesson.videoUrl}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      } else {
+        videoContent.innerHTML = `
+          <div class="text-center">
+            <i class="fas fa-video text-6xl mb-4"></i>
+            <p class="text-lg">${lesson.title} - Video Lesson</p>
+            <p class="text-sm opacity-80">Video content will be available soon</p>
+          </div>
+        `;
+      }
+
+      // Setup lesson content
+      document.getElementById('lessonSections').innerHTML = lesson.content || '<p>Lesson content is being prepared.</p>';
+
+      // Setup progress tracking
+      updateLessonProgress(lesson);
+
+      // Setup navigation
+      setupLessonNavigation(lesson);
+    }
+
+    function updateLessonProgress(lesson) {
+      // Mock progress for demo
+      document.getElementById('videoProgress').textContent = '0%';
+      document.getElementById('videoProgressBar').style.width = '0%';
+      document.getElementById('contentProgress').textContent = '0%';
+      document.getElementById('contentProgressBar').style.width = '0%';
+      document.getElementById('practiceProgress').textContent = '0%';
+      document.getElementById('practiceProgressBar').style.width = '0%';
+    }
+
+    function setupLessonNavigation(lesson) {
+      document.getElementById('completeAssessmentBtn').onclick = () => {
+        closeLessonModal();
+        openAssessment(lesson);
+      };
+    }
+
+    function openAssessment(lesson) {
+      if (!lesson.assessment || lesson.assessment.length === 0) {
+        showNotification('No assessment available for this lesson', 'info');
+        return;
+      }
+
+      document.getElementById('assessmentTitle').textContent = `${lesson.title} - Assessment`;
+      document.getElementById('totalQuestions').textContent = lesson.assessment.length;
+      
+      currentAssessment = {
+        lesson: lesson,
+        questions: lesson.assessment,
+        currentQuestion: 0,
+        answers: [],
+        timeRemaining: 15 * 60 // 15 minutes
+      };
+
+      loadAssessmentQuestion();
+      startAssessmentTimer();
+      document.getElementById('assessmentModal').classList.add('show');
+    }
+
+    let currentAssessment = null;
+    let assessmentTimer = null;
+
+    function loadAssessmentQuestion() {
+      const question = currentAssessment.questions[currentAssessment.currentQuestion];
+      document.getElementById('currentQuestion').textContent = currentAssessment.currentQuestion + 1;
+      
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="card p-6">
+          <h4 class="font-bold text-lg mb-4">Question ${currentAssessment.currentQuestion + 1}</h4>
+          <p class="text-lg mb-6">${question.question}</p>
+          <div class="space-y-3">
+            ${question.options.map((option, index) => `
+              <div class="quiz-option" onclick="selectAssessmentAnswer(${index})" data-index="${index}">
+                ${String.fromCharCode(65 + index)}. ${option}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Show/hide navigation buttons
+      document.getElementById('prevQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === 0 ? 'none' : 'block';
+      
+      document.getElementById('nextQuestionBtn').style.display = 
+        currentAssessment.currentQuestion === currentAssessment.questions.length - 1 ? 'none' : 'block';
+      
+      document.getElementById('submitAssessmentBtn').style.display = 
+        currentAssessment.currentQuestion === currentAssessment.questions.length - 1 ? 'block' : 'none';
+    }
+
+    function selectAssessmentAnswer(index) {
+      // Remove previous selections
+      document.querySelectorAll('#assessmentContent .quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selection
+      document.querySelector(`#assessmentContent .quiz-option[data-index="${index}"]`).classList.add('selected');
+      
+      // Store answer
+      currentAssessment.answers[currentAssessment.currentQuestion] = index;
+    }
+
+    function startAssessmentTimer() {
+      assessmentTimer = setInterval(() => {
+        currentAssessment.timeRemaining--;
+        const minutes = Math.floor(currentAssessment.timeRemaining / 60);
+        const seconds = currentAssessment.timeRemaining % 60;
+        document.getElementById('assessmentTimer').textContent = 
+          `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (currentAssessment.timeRemaining <= 0) {
+          submitAssessment();
+        }
+      }, 1000);
+    }
+
+    function submitAssessment() {
+      clearInterval(assessmentTimer);
+      
+      // Calculate score
+      let correct = 0;
+      let totalPoints = 0;
+      let earnedPoints = 0;
+
+      currentAssessment.questions.forEach((question, index) => {
+        totalPoints += question.points || 10;
+        if (currentAssessment.answers[index] === question.correct) {
+          correct++;
+          earnedPoints += question.points || 10;
+        }
+      });
+
+      const percentage = Math.round((earnedPoints / totalPoints) * 100);
+      const passed = percentage >= 70; // 70% passing grade
+
+      // Show results
+      document.getElementById('assessmentContent').innerHTML = `
+        <div class="text-center py-8">
+          <div class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold ${passed ? 'bg-[var(--ok)] text-white' : 'bg-[var(--danger)] text-white'}">
+            ${percentage}%
+          </div>
+          <h3 class="text-2xl font-bold mb-2">${passed ? 'Congratulations!' : 'Keep Practicing!'}</h3>
+          <p class="text-lg mb-4">${passed ? 'You passed the assessment!' : 'You need 70% to pass.'}</p>
+          <div class="grid gap-4 md:grid-cols-3 max-w-md mx-auto mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${correct}</div>
+              <div class="text-sm text-gray-600">Correct</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${currentAssessment.questions.length - correct}</div>
+              <div class="text-sm text-gray-600">Incorrect</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="font-bold text-2xl">${earnedPoints}</div>
+              <div class="text-sm text-gray-600">Points</div>
+            </div>
+          </div>
+          <div class="flex gap-4 justify-center">
+            <button onclick="reviewAssessment()" class="btn btn-secondary">
+              <i class="fas fa-eye"></i>Review Answers
+            </button>
+            ${passed ? `
+              <button onclick="completeLesson()" class="btn btn-success">
+                <i class="fas fa-check"></i>Complete Lesson
+              </button>
+            ` : `
+              <button onclick="retakeAssessment()" class="btn btn-primary">
+                <i class="fas fa-redo"></i>Retake Assessment
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+
+      // Hide navigation
+      document.getElementById('prevQuestionBtn').style.display = 'none';
+      document.getElementById('nextQuestionBtn').style.display = 'none';
+      document.getElementById('submitAssessmentBtn').style.display = 'none';
+
+      if (passed) {
+        // Mark lesson as completed
+        markLessonCompleted(currentAssessment.lesson.id);
+      }
+    }
+
+    function completeLesson() {
+      document.getElementById('assessmentModal').classList.remove('show');
+      showNotification('Lesson completed successfully! 🎉', 'success');
+      updateStudentDashboard();
+      renderStudentLessons();
+    }
+
+    function retakeAssessment() {
+      currentAssessment.currentQuestion = 0;
+      currentAssessment.answers = [];
+      currentAssessment.timeRemaining = 15 * 60;
+      loadAssessmentQuestion();
+      startAssessmentTimer();
+    }
+
+    function closeLessonModal() {
+      document.getElementById('lessonModal').classList.remove('show');
+    }
+
+    // Teacher Portal Functions
+    function initTeacherPortal() {
+      document.getElementById('teacherPortal').classList.remove('hidden');
+      
+      setupTeacherEventListeners();
+      updateTeacherDashboard();
+      showTeacherTab('teacher-dashboard');
+    }
+
+    function setupTeacherEventListeners() {
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          showTeacherTab(tab.dataset.tab);
+        });
+      });
+    }
+
+    function showTeacherTab(tabName) {
+      // Update nav tabs
+      document.querySelectorAll('#teacherPortal .nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+      });
+
+      // Update content
+      document.querySelectorAll('#teacherPortal .tab-content').forEach(content => {
+        content.classList.toggle('hidden', !content.id.includes(tabName.replace('teacher-', '')));
+      });
+
+      // Load specific content
+      switch(tabName) {
+        case 'lesson-management':
+          loadLessonManagement();
+          break;
+        case 'skill-assignment':
+          loadSkillAssignment();
+          break;
+        case 'student-management':
+          loadStudentManagement();
+          break;
+        case 'analytics':
+          loadTeacherAnalytics();
+          break;
+      }
+    }
+
+    function updateTeacherDashboard() {
+      document.getElementById('totalStudents').textContent = appData.students.length;
+      document.getElementById('activeLessons').textContent = Object.keys(lessonDatabase).length;
+      document.getElementById('assignedSkillsCount').textContent = appData.skills.length;
+      
+      const avgProgress = appData.students.reduce((sum, s) => sum + s.progress, 0) / appData.students.length;
+      document.getElementById('avgProgress').textContent = `${Math.round(avgProgress)}%`;
+
+      loadRecentActivity();
+      loadAttentionNeeded();
+    }
+
+    function loadRecentActivity() {
+      const container = document.getElementById('recentActivity');
+      const activities = [
+        { text: "Ahmad Al-Rashid completed 'Number System Overview'", time: "2 hours ago", type: "completion" },
+        { text: "Fatima Al-Zahra started 'Prime Factorization'", time: "4 hours ago", type: "start" },
+        { text: "New assessment submitted by Omar Al-Mansouri", time: "6 hours ago", type: "assessment" }
+      ];
+
+      container.innerHTML = activities.map(activity => `
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-8 h-8 rounded-full ${getActivityColor(activity.type)} flex items-center justify-center text-white text-sm">
+            <i class="fas ${getActivityIcon(activity.type)}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-medium">${activity.text}</div>
+            <div class="text-xs text-gray-500">${activity.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadAttentionNeeded() {
+      const container = document.getElementById('attentionNeeded');
+      const alerts = [
+        { text: "3 students haven't submitted this week's assignment", type: "warning" },
+        { text: "Quiz completion rate below 80% for Unit 2", type: "danger" },
+        { text: "2 students need additional practice in fractions", type: "info" }
+      ];
+
+      container.innerHTML = alerts.map(alert => `
+        <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+          <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white text-sm">
+            <i class="fas fa-exclamation"></i>
+          </div>
+          <div class="text-sm font-medium text-red-800">${alert.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function createNewLesson() {
+      document.getElementById('editorTitle').textContent = 'Create New Lesson';
+      document.getElementById('lessonForm').reset();
+      document.getElementById('lessonEditorModal').classList.add('show');
+    }
+
+    function closeLessonEditor() {
+      document.getElementById('lessonEditorModal').classList.remove('show');
+    }
+
+    function createNewSkill() {
+      document.getElementById('skillModalTitle').textContent = 'Create New Skill';
+      document.getElementById('skillForm').reset();
+      loadStudentsForSkillAssignment();
+      document.getElementById('skillModal').classList.add('show');
+    }
+
+    function closeSkillModal() {
+      document.getElementById('skillModal').classList.remove('show');
+    }
+
+    function loadStudentsForSkillAssignment() {
+      const container = document.getElementById('studentsList');
+      container.innerHTML = appData.students.map(student => `
+        <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+          <input type="checkbox" name="students" value="${student.id}" class="rounded">
+          <span class="flex-1">${student.name} (Grade ${student.grade})</span>
+          <span class="text-sm text-gray-500">${student.progress}% progress</span>
+        </label>
+      `).join('');
+    }
+
+    // Utility Functions
+    function getLessonById(lessonId) {
+      return lessonDatabase[lessonId] || null;
+    }
+
+    function createDefaultLesson(lessonId, title) {
+      return {
+        id: lessonId,
+        title: title,
+        content: `<div class="lesson-section"><h3>${title}</h3><p>This lesson content is being prepared by your teacher.</p></div>`,
+        practiceProblems: [],
+        assessment: []
+      };
+    }
+
+    function getNextLessonForStudent() {
+      // Simple logic to get next incomplete lesson
+      const grade = currentUser.grade;
+      const units = grade === 7 ? grade7Units : grade8Units;
+      
+      for (let unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        const unit = units[unitIndex];
+        for (let lessonIndex = 0; lessonIndex < unit.lessons.length; lessonIndex++) {
+          const lessonId = `${grade}-${unit.num || unitIndex + 1}-${lessonIndex}`;
+          if (!isLessonCompleted(lessonId)) {
+            return lessonId;
+          }
+        }
+      }
+      return null;
+    }
+
+    function isLessonCompleted(lessonId) {
+      return currentUser && currentUser.completedLessons && 
+             currentUser.completedLessons.includes(lessonId);
+    }
+
+    function markLessonCompleted(lessonId) {
+      if (currentUser) {
+        if (!currentUser.completedLessons) {
+          currentUser.completedLessons = [];
+        }
+        if (!currentUser.completedLessons.includes(lessonId)) {
+          currentUser.completedLessons.push(lessonId);
+          currentUser.progress = Math.min(100, currentUser.progress + 5);
+          currentUser.studyTime += 30;
+          saveAppData();
+        }
+      }
+    }
+
+    function getActivityColor(type) {
+      const colors = {
+        completion: 'bg-[var(--ok)]',
+        start: 'bg-[var(--blue)]',
+        assessment: 'bg-[var(--purple)]'
+      };
+      return colors[type] || 'bg-gray-500';
+    }
+
+    function getActivityIcon(type) {
+      const icons = {
+        completion: 'fa-check',
+        start: 'fa-play',
+        assessment: 'fa-clipboard-check'
+      };
+      return icons[type] || 'fa-info';
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => document.body.removeChild(notification), 300);
+      }, 3000);
+    }
+
+    function filterStudentLessons(query) {
+      const lessons = document.querySelectorAll('#lessonsContent .interactive-row');
+      const units = document.querySelectorAll('#lessonsContent .card');
+      
+      lessons.forEach(lesson => {
+        const text = lesson.textContent.toLowerCase();
+        const matches = text.includes(query.toLowerCase());
+        lesson.style.display = matches ? '' : 'none';
+      });
+
+      units.forEach(unit => {
+        const visibleLessons = unit.querySelectorAll('.interactive-row[style=""], .interactive-row:not([style])');
+        unit.style.display = visibleLessons.length > 0 ? '' : 'none';
+      });
+    }
+
+    function startPracticeMode(type) {
+      showNotification(`Starting ${type} practice mode...`, 'info');
+    }
+
+    function loadStudentSkills() {
+      const container = document.getElementById('skillsProgress');
+      if (currentUser.skills.length > 0) {
+        container.innerHTML = currentUser.skills.map(skill => `
+          <div class="card p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold">${skill.name}</h4>
+              <span class="skill-badge skill-${skill.status}">
+                ${skill.status.charAt(0).toUpperCase() + skill.status.slice(1)}
+              </span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">${skill.description}</p>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${skill.progress || 0}%"></div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No skills assigned yet.</p>';
+      }
+    }
+
+    function loadStudentProgress() {
+      loadStudentAchievements();
+      loadStudentStats();
+    }
+
+    function loadStudentAchievements() {
+      const container = document.getElementById('achievementsList');
+      const achievements = [
+        { title: 'First Lesson', description: 'Completed your first lesson', icon: 'graduation-cap', earned: true },
+        { title: 'Practice Master', description: 'Solved 10 practice problems', icon: 'trophy', earned: currentUser.studyTime > 60 },
+        { title: 'Week Streak', description: 'Studied for 7 days in a row', icon: 'fire', earned: false },
+        { title: 'Unit Master', description: 'Completed an entire unit', icon: 'medal', earned: false }
+      ];
+
+      container.innerHTML = achievements.map(achievement => `
+        <div class="flex items-center gap-3 p-3 rounded-lg ${achievement.earned ? 'bg-[var(--ok)]/10' : 'bg-gray-50'}">
+          <div class="w-10 h-10 rounded-full ${achievement.earned ? 'bg-[var(--ok)]' : 'bg-gray-400'} flex items-center justify-center text-white">
+            <i class="fas fa-${achievement.icon}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold ${achievement.earned ? 'text-[var(--ok)]' : 'text-gray-600'}">${achievement.title}</div>
+            <div class="text-sm text-gray-600">${achievement.description}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadStudentStats() {
+      const container = document.getElementById('studyStats');
+      const hours = Math.floor(currentUser.studyTime / 60);
+      const minutes = currentUser.studyTime % 60;
+      
+      const stats = [
+        { label: 'Total Study Time', value: `${hours}h ${minutes}m` },
+        { label: 'Lessons Completed', value: currentUser.completedLessons || 0 },
+        { label: 'Current Progress', value: `${currentUser.progress}%` },
+        { label: 'Average Score', value: '85%' },
+        { label: 'Current Streak', value: '5 days' }
+      ];
+
+      container.innerHTML = stats.map(stat => `
+        <div class="flex justify-between">
+          <span class="text-gray-600">${stat.label}</span>
+          <span class="font-semibold">${stat.value}</span>
+        </div>
+      `).join('');
+    }
+
+    // Teacher management functions (stubs for demo)
+    function loadLessonManagement() {
+      const container = document.getElementById('lessonsList');
+      container.innerHTML = '<p class="text-gray-500">Lesson management interface will be loaded here.</p>';
+    }
+
+    function loadSkillAssignment() {
+      const container = document.getElementById('availableSkills');
+      container.innerHTML = '<p class="text-gray-500">Skill management interface will be loaded here.</p>';
+    }
+
+    function loadStudentManagement() {
+      const container = document.getElementById('studentsTable');
+      container.innerHTML = '<p class="text-gray-500">Student management interface will be loaded here.</p>';
+    }
+
+    function loadTeacherAnalytics() {
+      // Load analytics content
+    }
+
+    // Initialize application when page loads
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
