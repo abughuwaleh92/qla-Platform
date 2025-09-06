@@ -210,3 +210,11 @@
     "host": "0.0.0.0"
   }
 }
+
+{
+  "scripts": {
+    "start": "node server.js",
+    "railway-fix": "node railway-fix.js",
+    "postinstall": "node railway-fix.js"
+  }
+}
