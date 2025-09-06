@@ -12,7 +12,6 @@
     "verify": "node public/verify-lessons.js",
     "fix-lessons": "node setup-lessons.js",
     "test": "npm run verify",
-    "sync-lessons": "node scripts/sync-lessons-from-files.js",
     "postinstall": "npm run setup",
     "railway-postbuild": "npm run setup"
   },
